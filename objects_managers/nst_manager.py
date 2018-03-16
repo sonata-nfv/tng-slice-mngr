@@ -26,32 +26,27 @@ def createNST(jsondata):
     NST.nstUsageState = jsondata['nstUsageState']
     NST.notificationTypes = jsondata['notificationTypes']
     NST.userDefinedData = jsondata['userDefinedData']
-
-    db.nst_dict[jsondata['id']] = NST  # TODO: utilitzem id o nstId??
-
+    
+    db.nst_dict[jsondata['id']] = NST
     return NST.nstId
 
+
 def getNST(nstId):
-    NST = nst.nst_content()
     NST = db.nst_dict.get(nstId)
-    
     return (vars(NST))
   
-
+  
 def getAllNst():
-    NST = nst.nst_content()
     nst_list = []
     for nst_item in db.nst_dict:
         NST = db.nst_dict.get(nst_item)
         nst_string = vars(NST)
         nst_list.append(nst_string)
     return nst_list 
+    
         
-
 def deleteNST(nstId):
     logging.info("Deleting Network Slice Template")
     del db.nst_dict[nstId]
-
     return nstId
-
-
+    

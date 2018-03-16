@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import database.database as db
+
 class nst_content:
     def __init__(self):
         self.id = ""
