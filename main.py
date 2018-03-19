@@ -85,4 +85,4 @@ def postNSItermination(nsiId):
 
 #MAIN FUNCTION OF THE SERVER
 if __name__ == '__main__':
-  app.run(debug=True, host='0.0.0.0', port='5998')
+  app.run(debug=True, host='0.0.0.0', port=5998)
