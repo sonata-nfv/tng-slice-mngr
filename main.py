@@ -83,8 +83,6 @@ def postNSItermination(nsiId):
   
   return terminate_nsiId
 
-
-
 #MAIN FUNCTION OF THE SERVER
 if __name__ == '__main__':
-  app.run(debug=True)
+  app.run(debug=True, host='0.0.0.0')
