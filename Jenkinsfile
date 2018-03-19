@@ -88,7 +88,7 @@ pipeline {
   post {
     always {
       echo 'Clean Up'
-      sh 'TODO Clean environment'
+      sh 'echo TODO Clean environment'
     }
     success {
         emailext (
