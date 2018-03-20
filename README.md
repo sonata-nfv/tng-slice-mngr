@@ -22,7 +22,7 @@ GET SPECIFIC NST
 curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/nst/v1/descriptors/<id>
 
 DELETE SPECIFIC NST
-curl -X DELETE http://127.0.0.1:5000/nst/v1/descriptors/<id>
+curl -X DELETE http://127.0.0.1:5998/nst/v1/descriptors/<id>
 
 -----------------------------------------------------------------------------------------------
 #NSI curls

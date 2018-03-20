@@ -16,7 +16,7 @@ def postNST():
     new_NST = nst_manager.createNST(receivedNSTd)
     jsonNST = json.dumps(new_NST, indent=4, sort_keys=True)
     
-    return (jsonNST)
+    return (jsonNST),201
 
 @app.route('/nst/v1/descriptors', methods=['GET'])
 def getAllNST():
@@ -24,7 +24,7 @@ def getAllNST():
     jsonNSTList = json.dumps(allNST, indent=4, sort_keys=True)
     logging.info('Returning all NST')
     
-    return (jsonNSTList)
+    return (jsonNSTList),200
 
 @app.route('/nst/v1/descriptors/<int:nstId>', methods=['GET'])
 def getNST(nstId):
@@ -32,13 +32,13 @@ def getNST(nstId):
     jsonNST = json.dumps(returnedNST, indent=4, sort_keys=True)
     logging.info('Returning the desired NST')
     
-    return jsonNST
+    return jsonNST,200
 
 @app.route('/nst/v1/descriptors/<int:nstId>', methods=['DELETE'])
 def deleteNST(nstId):
     deleted_NSTid = nst_manager.deleteNST(nstId)
     
-    return ('Deletes the specified NST with id: ' +str(deleted_NSTid))
+    return ('The NST was deleted successfully.'),204
 
 
 ## ----- NETSLICE INSTANCE Actions -----
@@ -53,7 +53,7 @@ def getALLNSI():
   jsonNSIList = json.dumps(allNSI, indent=4, sort_keys=True)
   logging.info('Returning all existing NSIs (instantiated/terminated/etc.)')
   
-  return (jsonNSIList)
+  return (jsonNSIList),200
 
 @app.route('/nsilcm/v1/nsi/<int:nsiId>', methods=['GET'])
 def getNSI(nsiId):
@@ -61,7 +61,7 @@ def getNSI(nsiId):
   returnedNSI = nsi_manager.getNSI(nsiId)
   jsonNSI = json.dumps(returnedNSI, indent=4, sort_keys=True)
     
-  return (jsonNSI)
+  return (jsonNSI),200
 
 #@app.route('/nsi/<int:nsiId>', methods=['DELETE'])
 #def deleteNSI(nsiId):
@@ -77,7 +77,7 @@ def postNSIinstantiation(nsiId):
   instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
   jsonNSI = json.dumps(instantiatedNSI, indent=4, sort_keys=True)
   
-  return (jsonNSI)
+  return (jsonNSI),201
 
 @app.route('/nsilcm/v1/nsi/<int:nsiId>/terminate', methods=['POST'])
 def postNSItermination(nsiId):
@@ -85,7 +85,7 @@ def postNSItermination(nsiId):
   terminateNSI = nsi_manager.terminateNSI(nsiId, terminationRx)
   jsonNSI = json.dumps(terminateNSI, indent=4, sort_keys=True)
   
-  return (jsonNSI)
+  return (jsonNSI),201
 
 
 
