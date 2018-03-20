@@ -19,10 +19,10 @@ GET ALL NST:
 curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/nst/v1/descriptors
 
 GET SPECIFIC NST:
-curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/nst/v1/descriptors/<uuid>
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/nst/v1/descriptors/{uuid}
 
 DELETE SPECIFIC NST:
-curl -X DELETE http://127.0.0.1:5998/nst/v1/descriptors/<uuid>
+curl -X DELETE http://127.0.0.1:5998/nst/v1/descriptors/{uuid}
 
 -----------------------------------------------------------------------------------------------
 #NSI curls
@@ -31,10 +31,10 @@ POST INSTANTIATE NSI:
 curl -i -H "Content-Type:application/json" -X POST -d'{"nsiName": "tango_NSI", "nsiDescription": "string", "nstId": 1, "nstInfoId": "string", "flavorId": "string", "sapInfo": "string", "nsiState": "NOT_INSTANTIATED", "instantiateTime": "2018-03-15T08:45:43.502"}' http://127.0.0.1:5998/nsilcm/v1/nsi
 
 POST TERMINATE NSI:
-curl -i -H "Content-Type:application/json" -X POST -d'{"terminateTime":"2019-03-15T10:47:42.174"}' http://127.0.0.1:5998/nsilcm/v1/nsi/<uuid>/terminate
+curl -i -H "Content-Type:application/json" -X POST -d'{"terminateTime":"2019-03-15T10:47:42.174"}' http://127.0.0.1:5998/nsilcm/v1/nsi/{uuid}/terminate
 
 GET ALL NSI:
 curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/nsilcm/v1/nsi
 
 GET SPECIFIC NSI:
-curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/nsilcm/v1/nsi/<uuid>
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/nsilcm/v1/nsi/{uuid}
