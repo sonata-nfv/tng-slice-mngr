@@ -3,8 +3,8 @@
 from flask import Flask, request
 import os, sys, logging, json
 
-import objects_managers.nst_manager as nst_manager
-import objects_managers.nsi_manager as nsi_manager
+import slice_lifecycle_mgr.nst_manager as nst_manager
+import slice_lifecycle_mgr.nsi_manager as nsi_manager
 
 
 app = Flask(__name__)
@@ -26,7 +26,7 @@ def getAllNST():
     
     return (jsonNSTList),200
 
-@app.route('/nst/v1/descriptors/<int:nstId>', methods=['GET'])
+@app.route('/nst/v1/descriptors/<nstId>', methods=['GET'])
 def getNST(nstId):
     returnedNST = nst_manager.getNST(nstId)
     jsonNST = json.dumps(returnedNST, indent=4, sort_keys=True)
@@ -34,7 +34,7 @@ def getNST(nstId):
     
     return jsonNST,200
 
-@app.route('/nst/v1/descriptors/<int:nstId>', methods=['DELETE'])
+@app.route('/nst/v1/descriptors/<nstId>', methods=['DELETE'])
 def deleteNST(nstId):
     deleted_NSTid = nst_manager.deleteNST(nstId)
     
@@ -55,7 +55,7 @@ def getALLNSI():
   
   return (jsonNSIList),200
 
-@app.route('/nsilcm/v1/nsi/<int:nsiId>', methods=['GET'])
+@app.route('/nsilcm/v1/nsi/<nsiId>', methods=['GET'])
 def getNSI(nsiId):
   logging.info('Returning the desired NSI')
   returnedNSI = nsi_manager.getNSI(nsiId)
@@ -69,9 +69,9 @@ def getNSI(nsiId):
 
 #  return 'Deletes the specific NSI'
 
-#@app.route('/nsilcm/v1/nsi/<int:nsiId>/instantiate', methods=['POST']) #TODO: decide if we use two-steps creation or not
-@app.route('/nsi', methods=['POST'])
-def postNSIinstantiation(nsiId):
+#@app.route('/nsilcm/v1/nsi/<nsiId>/instantiate', methods=['POST']) #TODO: decide if we use two-steps creation or not
+@app.route('/nsilcm/v1/nsi/instantiate', methods=['POST'])
+def postNSIinstantiation():
   receivedNSI = request.json
   new_NSI = nsi_manager.createNSI(receivedNSI)
   instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
@@ -79,7 +79,7 @@ def postNSIinstantiation(nsiId):
   
   return (jsonNSI),201
 
-@app.route('/nsilcm/v1/nsi/<int:nsiId>/terminate', methods=['POST'])
+@app.route('/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
 def postNSItermination(nsiId):
   terminationRx = request.json
   terminateNSI = nsi_manager.terminateNSI(nsiId, terminationRx)
