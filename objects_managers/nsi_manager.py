@@ -37,7 +37,7 @@ def instantiateNSI(nsiId):
       instantiateTime = datetime.datetime.now()
       NSI.instantiateTime = str(instantiateTime.isoformat())
       
-      return nsiId
+      return vars(NSI)
     else:
       return "NSI not instantiated"
       
@@ -57,7 +57,7 @@ def terminateNSI(nsiId, terminationRx):
 
             NSI.nsiState = "NOT_INSTANTIATED"
             
-            return ("Termination done of NSI with ID: " + str(nsiId))
+            return (vars(NSI))
         else:
             return "NSI is still instantiated: it was not possible to change the state."
     else:
@@ -78,7 +78,7 @@ def getAllNsi():
         nsi_string = vars(NSI)
         nsi_list.append(nsi_string)
     
-    return nsi_list
+    return (nsi_list)
 
 
 def deleteNSI(nsiId):
@@ -86,4 +86,4 @@ def deleteNSI(nsiId):
     logging.info("Deleting Network Slice Instantiation")
     del db.nst_dict[nsiId]
     
-    return nsiId
+    return (nsiId)

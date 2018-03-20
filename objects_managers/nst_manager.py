@@ -7,11 +7,10 @@ import database.database as db
 
 def createNST(jsondata):
     logging.info("CREATING A NEW NST")
-    # print(json.dumps(jsondata, indent=4, sort_keys=True))
 
     NST = nst.nst_content()
-    NST.id = jsondata['id']
-    NST.nstId = jsondata['nstId']
+    NST.id = jsondata['id']                                      #given by the slice manager (check the database)
+    NST.nstId = jsondata['nstId']                                #given by the slice creator
     NST.nstName = jsondata['nstName']
     NST.nstVersion = jsondata['nstVersion']
     NST.nstDesigner = jsondata['nstDesigner']
@@ -28,7 +27,8 @@ def createNST(jsondata):
     NST.userDefinedData = jsondata['userDefinedData']
     
     db.nst_dict[jsondata['id']] = NST
-    return NST.nstId
+    
+    return vars(NST)
 
 
 def getNST(nstId):

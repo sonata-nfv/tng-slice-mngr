@@ -13,9 +13,10 @@ app = Flask(__name__)
 @app.route('/nst/v1/descriptors', methods=['POST'])
 def postNST():
     receivedNSTd = request.json
-    new_NSTid = nst_manager.createNST(receivedNSTd)
+    new_NST = nst_manager.createNST(receivedNSTd)
+    jsonNST = json.dumps(new_NST, indent=4, sort_keys=True)
     
-    return ('New NST created into the database with id: ' + str(new_NSTid))
+    return (jsonNST)
 
 @app.route('/nst/v1/descriptors', methods=['GET'])
 def getAllNST():
@@ -56,11 +57,11 @@ def getALLNSI():
 
 @app.route('/nsilcm/v1/nsi/<int:nsiId>', methods=['GET'])
 def getNSI(nsiId):
+  logging.info('Returning the desired NSI')
   returnedNSI = nsi_manager.getNSI(nsiId)
   jsonNSI = json.dumps(returnedNSI, indent=4, sort_keys=True)
-  logging.info('Returning the desired NSI')
-  
-  return jsonNSI
+    
+  return (jsonNSI)
 
 #@app.route('/nsi/<int:nsiId>', methods=['DELETE'])
 #def deleteNSI(nsiId):
@@ -68,20 +69,25 @@ def getNSI(nsiId):
 
 #  return 'Deletes the specific NSI'
 
-@app.route('/nsilcm/v1/nsi/<int:nsiId>/instantiate', methods=['POST'])
+#@app.route('/nsilcm/v1/nsi/<int:nsiId>/instantiate', methods=['POST']) #TODO: decide if we use two-steps creation or not
+@app.route('/nsi', methods=['POST'])
 def postNSIinstantiation(nsiId):
   receivedNSI = request.json
   new_NSI = nsi_manager.createNSI(receivedNSI)
-  nsiId_instantiated = nsi_manager.instantiateNSI(new_NSI)
+  instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
+  jsonNSI = json.dumps(instantiatedNSI, indent=4, sort_keys=True)
   
-  return ("Instantiation done of NSI with ID: " + str(nsiId_instantiated))
+  return (jsonNSI)
 
 @app.route('/nsilcm/v1/nsi/<int:nsiId>/terminate', methods=['POST'])
 def postNSItermination(nsiId):
   terminationRx = request.json
-  terminate_nsiId = nsi_manager.terminateNSI(nsiId, terminationRx)
+  terminateNSI = nsi_manager.terminateNSI(nsiId, terminationRx)
+  jsonNSI = json.dumps(terminateNSI, indent=4, sort_keys=True)
   
-  return terminate_nsiId
+  return (jsonNSI)
+
+
 
 #MAIN FUNCTION OF THE SERVER
 if __name__ == '__main__':
