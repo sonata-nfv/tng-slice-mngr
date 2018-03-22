@@ -4,6 +4,7 @@ import os, sys, logging, datetime, uuid
 import dateutil.parser
 
 import objects.nsi_content as nsi
+import slice2ns_mapper.mapper as mapper
 import database.database as db
 
 
@@ -34,9 +35,14 @@ def instantiateNSI(nsiId):
     logging.info("INSTANTIATING A NSI")
     NSI = db.nsi_dict.get(nsiId)
     if NSI.nsiState == "NOT_INSTANTIATED":
+      #requests token value for the sonata session
+      token = mapper.connect2sonata()
       
-      #do all the necessary processes (call functions to SONATA)
+      #sends the requests to instantiate a NetService in sonata
+      #service_uuid = NSI.flavorId #TODO: (ref: main.py 79) is flavourID the parameter to tell to sonata to deploy??
+      #instantiation = mapper.instantiation2sonata(token, service_uuid)
       
+      #updates the NetSliceInstantiation information
       NSI.nsiState = "INSTANTIATED"
       instantiateTime = datetime.datetime.now()
       NSI.instantiateTime = str(instantiateTime.isoformat())
@@ -56,16 +62,16 @@ def terminateNSI(nsiId, terminationRx):
     if instan_time < termin_time:
         NSI.terminateTime = terminationRx['terminateTime']
         if NSI.nsiState == "INSTANTIATED":
-
-            # do all the necessary processes (call functions to SONATA)
-
-            NSI.nsiState = "NOT_INSTANTIATED"
+        
+          # SENDS REQUESTS TO SONATA GATEKEEPER/SP
+          # do all the necessary processes (call functions to SONATA)
+          NSI.nsiState = "NOT_INSTANTIATED"
             
-            return (vars(NSI))
+          return (vars(NSI))
         else:
-            return "NSI is still instantiated: it was not possible to change the state."
+          return "NSI is still instantiated: it was not possible to change the state."
     else:
-        return ("Please specify a correct termination time bigger than: " + NSI.instantiateTime)
+      return ("Please specify a correct termination time bigger than: " + NSI.instantiateTime)
 
 def getNSI(nsiId):
     logging.info("RETRIEVING A NSI")

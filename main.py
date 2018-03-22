@@ -7,6 +7,7 @@ import slice_lifecycle_mgr.nst_manager as nst_manager
 import slice_lifecycle_mgr.nsi_manager as nsi_manager
 
 
+
 app = Flask(__name__)
 
 # ----- NETSLICE TEMPLATE Actions -----
