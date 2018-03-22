@@ -11,7 +11,7 @@ import slice_lifecycle_mgr.nsi_manager as nsi_manager
 app = Flask(__name__)
 
 # ----- NETSLICE TEMPLATE Actions -----
-@app.route('/nst/v1/descriptors', methods=['POST'])
+@app.route('/api/nst/v1/descriptors', methods=['POST'])
 def postNST():
     receivedNSTd = request.json
     new_NST = nst_manager.createNST(receivedNSTd)
@@ -19,7 +19,7 @@ def postNST():
     
     return (jsonNST),201
 
-@app.route('/nst/v1/descriptors', methods=['GET'])
+@app.route('/api/nst/v1/descriptors', methods=['GET'])
 def getAllNST():
     allNST = nst_manager.getAllNst()
     jsonNSTList = json.dumps(allNST, indent=4, sort_keys=True)
@@ -27,7 +27,7 @@ def getAllNST():
     
     return (jsonNSTList),200
 
-@app.route('/nst/v1/descriptors/<nstId>', methods=['GET'])
+@app.route('/api/nst/v1/descriptors/<nstId>', methods=['GET'])
 def getNST(nstId):
     returnedNST = nst_manager.getNST(nstId)
     jsonNST = json.dumps(returnedNST, indent=4, sort_keys=True)
@@ -35,7 +35,7 @@ def getNST(nstId):
     
     return jsonNST,200
 
-@app.route('/nst/v1/descriptors/<nstId>', methods=['DELETE'])
+@app.route('/api/nst/v1/descriptors/<nstId>', methods=['DELETE'])
 def deleteNST(nstId):
     deleted_NSTid = nst_manager.deleteNST(nstId)
     
@@ -43,12 +43,12 @@ def deleteNST(nstId):
 
 
 ## ----- NETSLICE INSTANCE Actions -----
-#@app.route('/nsi', methods=['POST'])
+#@app.route('/api/nsi', methods=['POST'])
 #def createNSI():
 
 #  return 'Creating a new NSI!'
 
-@app.route('/nsilcm/v1/nsi', methods=['GET'])
+@app.route('/api/nsilcm/v1/nsi', methods=['GET'])
 def getALLNSI():
   allNSI = nsi_manager.getAllNsi()
   jsonNSIList = json.dumps(allNSI, indent=4, sort_keys=True)
@@ -56,7 +56,7 @@ def getALLNSI():
   
   return (jsonNSIList),200
 
-@app.route('/nsilcm/v1/nsi/<nsiId>', methods=['GET'])
+@app.route('/api/nsilcm/v1/nsi/<nsiId>', methods=['GET'])
 def getNSI(nsiId):
   logging.info('Returning the desired NSI')
   returnedNSI = nsi_manager.getNSI(nsiId)
@@ -70,8 +70,8 @@ def getNSI(nsiId):
 
 #  return 'Deletes the specific NSI'
 
-#@app.route('/nsilcm/v1/nsi/<nsiId>/instantiate', methods=['POST']) #TODO: decide if we use two-steps creation or not
-@app.route('/nsilcm/v1/nsi/instantiate', methods=['POST'])
+#@app.route('/api/nsilcm/v1/nsi/<nsiId>/instantiate', methods=['POST']) #TODO: decide if we use two-steps creation or not
+@app.route('/api/nsilcm/v1/nsi/instantiate', methods=['POST'])
 def postNSIinstantiation():
   receivedNSI = request.json
   new_NSI = nsi_manager.createNSI(receivedNSI)
@@ -80,7 +80,7 @@ def postNSIinstantiation():
   
   return (jsonNSI),201
 
-@app.route('/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
+@app.route('/api/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
 def postNSItermination(nsiId):
   terminationRx = request.json
   terminateNSI = nsi_manager.terminateNSI(nsiId, terminationRx)
