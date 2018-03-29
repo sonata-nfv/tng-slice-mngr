@@ -5,12 +5,23 @@ import os, sys, logging, json
 
 import slice_lifecycle_mgr.nst_manager as nst_manager
 import slice_lifecycle_mgr.nsi_manager as nsi_manager
-
+import slice2ns_mapper.mapper as sonata_mapper
 
 
 app = Flask(__name__)
 
-# ----- NETSLICE TEMPLATE Actions -----
+########################################## NETWORK SERVICES Actions #########################################
+@app.route('/api/services', methods=['GET'])
+def getAllNetServ():
+    token  = sonata_mapper.create_sonata_session()
+    ServDict = sonata_mapper.getListNetServices(token)
+    jsonNSIdict = json.dumps(ServDict, indent=4, sort_keys=True)
+    
+    logging.info('Returning all network Services')
+    return (jsonNSIdict), 200
+
+
+######################################### NETSLICE TEMPLATE Actions #########################################
 @app.route('/api/nst/v1/descriptors', methods=['POST'])
 def postNST():
     receivedNSTd = request.json
@@ -42,10 +53,10 @@ def deleteNST(nstId):
     return ('The NST was deleted successfully.'),204
 
 
-## ----- NETSLICE INSTANCE Actions -----
+######################################### NETSLICE INSTANCE Actions #########################################
+
 #@app.route('/api/nsi', methods=['POST'])
 #def createNSI():
-
 #  return 'Creating a new NSI!'
 
 @app.route('/api/nsilcm/v1/nsi', methods=['GET'])
@@ -70,7 +81,7 @@ def getNSI(nsiId):
 
 #  return 'Deletes the specific NSI'
 
-#@app.route('/api/nsilcm/v1/nsi/<nsiId>/instantiate', methods=['POST']) #TODO: decide if we use two-steps creation or not
+#@app.route('/api/nsilcm/v1/nsi/<nsiId>/instantiate', methods=['POST']) #TODO:decide if we use two-steps creation
 @app.route('/api/nsilcm/v1/nsi/instantiate', methods=['POST'])
 def postNSIinstantiation():
   receivedNSI = request.json
@@ -82,12 +93,11 @@ def postNSIinstantiation():
 
 @app.route('/api/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
 def postNSItermination(nsiId):
-  terminationRx = request.json
-  terminateNSI = nsi_manager.terminateNSI(nsiId, terminationRx)
+  receivedTerminOrder = request.json    #this json contains only the terminationTime to apply
+  terminateNSI = nsi_manager.terminateNSI(nsiId, receivedTerminOrder)
   jsonNSI = json.dumps(terminateNSI, indent=4, sort_keys=True)
   
   return (jsonNSI),201
-
 
 
 #MAIN FUNCTION OF THE SERVER

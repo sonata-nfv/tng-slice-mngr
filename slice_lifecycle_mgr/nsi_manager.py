@@ -31,16 +31,16 @@ def createNSI(jsondata):
     return NSI.id
 
 
+
 def instantiateNSI(nsiId):
     logging.info("INSTANTIATING A NSI")
     NSI = db.nsi_dict.get(nsiId)
     if NSI.nsiState == "NOT_INSTANTIATED":
       #requests token value for the sonata session
-      token = mapper.connect2sonata()
+      token = mapper.create_sonata_session()
       
       #sends the requests to instantiate a NetService in sonata
-      #service_uuid = NSI.flavorId #TODO: (ref: main.py 79) is flavourID the parameter to tell to sonata to deploy??
-      #instantiation = mapper.instantiation2sonata(token, service_uuid)
+      instantiation = mapper.net_serv_instantiate(token, NSI.flavorId)    #TODO: validate if flavorID is the NetService_uuid to instantiate
       
       #updates the NetSliceInstantiation information
       NSI.nsiState = "INSTANTIATED"
@@ -51,21 +51,25 @@ def instantiateNSI(nsiId):
     else:
       return "NSI not instantiated"
       
-def terminateNSI(nsiId, terminationRx):
+def terminateNSI(nsiId, TerminOrder):
     logging.info("TERMINATING A NSI")
     NSI = db.nsi_dict.get(nsiId)
-
+    
     #Parsing from string ISO to datetime format to compare values
     instan_time = dateutil.parser.parse(NSI.instantiateTime)
-    termin_time = dateutil.parser.parse(terminationRx['terminateTime'])
+    termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
 
     if instan_time < termin_time:
-        NSI.terminateTime = terminationRx['terminateTime']
+        NSI.terminateTime = TerminOrder['terminateTime']
         if NSI.nsiState == "INSTANTIATED":
+          #requests token value for the sonata session
+          token = mapper.create_sonata_session()
         
-          # SENDS REQUESTS TO SONATA GATEKEEPER/SP
-          # do all the necessary processes (call functions to SONATA)
-          NSI.nsiState = "NOT_INSTANTIATED"
+          #sends the requests to terminate a NetServiceInstance in sonata
+          termination = mapper.net_serv_terminate(token, nsiId)     
+          
+          #updates the NetSliceInstantiation information
+          NSI.nsiState = "TERMINATE"
             
           return (vars(NSI))
         else:
