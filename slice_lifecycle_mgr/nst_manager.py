@@ -1,17 +1,21 @@
 #!/usr/bin/python
 
-import os, sys, logging
+import os, sys, logging, uuid
 import objects.nst_content as nst
 import database.database as db
 
 
 def createNST(jsondata):
     logging.info("CREATING A NEW NST")
-    # print(json.dumps(jsondata, indent=4, sort_keys=True))
-
+    
+    #Generate the UUID for this NSI
+    uuident = uuid.uuid4()
+    nst_uuid = str(uuident)
+    
+    #Assigns the received information to the right parameter
     NST = nst.nst_content()
-    NST.id = jsondata['id']
-    NST.nstId = jsondata['nstId']
+    NST.id = nst_uuid
+    NST.nstId = jsondata['nstId']                                #given by the slice creator
     NST.nstName = jsondata['nstName']
     NST.nstVersion = jsondata['nstVersion']
     NST.nstDesigner = jsondata['nstDesigner']
@@ -27,8 +31,8 @@ def createNST(jsondata):
     NST.notificationTypes = jsondata['notificationTypes']
     NST.userDefinedData = jsondata['userDefinedData']
     
-    db.nst_dict[jsondata['id']] = NST
-    return NST.nstId
+    db.nst_dict[NST.id] = NST  
+    return vars(NST)
 
 
 def getNST(nstId):

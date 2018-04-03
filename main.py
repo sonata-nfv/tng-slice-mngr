@@ -3,64 +3,77 @@
 from flask import Flask, request
 import os, sys, logging, json
 
-import objects_managers.nst_manager as nst_manager
-import objects_managers.nsi_manager as nsi_manager
+import slice_lifecycle_mgr.nst_manager as nst_manager
+import slice_lifecycle_mgr.nsi_manager as nsi_manager
+import slice2ns_mapper.mapper as sonata_mapper
 
 
 app = Flask(__name__)
 
-# ----- NETSLICE TEMPLATE Actions -----
-@app.route('/nst/v1/descriptors', methods=['POST'])
+########################################## NETWORK SERVICES Actions #########################################
+@app.route('/api/services', methods=['GET'])
+def getAllNetServ():
+    token  = sonata_mapper.create_sonata_session()
+    ServDict = sonata_mapper.getListNetServices(token)
+    jsonNSIdict = json.dumps(ServDict, indent=4, sort_keys=True)
+    
+    logging.info('Returning all network Services')
+    return (jsonNSIdict), 200
+
+
+######################################### NETSLICE TEMPLATE Actions #########################################
+@app.route('/api/nst/v1/descriptors', methods=['POST'])
 def postNST():
     receivedNSTd = request.json
-    new_NSTid = nst_manager.createNST(receivedNSTd)
+    new_NST = nst_manager.createNST(receivedNSTd)
+    jsonNST = json.dumps(new_NST, indent=4, sort_keys=True)
     
-    return ('New NST created into the database with id: ' + str(new_NSTid))
+    return (jsonNST),201
 
-@app.route('/nst/v1/descriptors', methods=['GET'])
+@app.route('/api/nst/v1/descriptors', methods=['GET'])
 def getAllNST():
     allNST = nst_manager.getAllNst()
     jsonNSTList = json.dumps(allNST, indent=4, sort_keys=True)
     logging.info('Returning all NST')
     
-    return (jsonNSTList)
+    return (jsonNSTList),200
 
-@app.route('/nst/v1/descriptors/<int:nstId>', methods=['GET'])
+@app.route('/api/nst/v1/descriptors/<nstId>', methods=['GET'])
 def getNST(nstId):
     returnedNST = nst_manager.getNST(nstId)
     jsonNST = json.dumps(returnedNST, indent=4, sort_keys=True)
     logging.info('Returning the desired NST')
     
-    return jsonNST
+    return jsonNST,200
 
-@app.route('/nst/v1/descriptors/<int:nstId>', methods=['DELETE'])
+@app.route('/api/nst/v1/descriptors/<nstId>', methods=['DELETE'])
 def deleteNST(nstId):
     deleted_NSTid = nst_manager.deleteNST(nstId)
     
-    return ('Deletes the specified NST with id: ' +str(deleted_NSTid))
+    return ('The NST was deleted successfully.'),204
 
 
-## ----- NETSLICE INSTANCE Actions -----
-#@app.route('/nsi', methods=['POST'])
+######################################### NETSLICE INSTANCE Actions #########################################
+
+#@app.route('/api/nsi', methods=['POST'])
 #def createNSI():
-
 #  return 'Creating a new NSI!'
 
-@app.route('/nsilcm/v1/nsi', methods=['GET'])
+@app.route('/api/nsilcm/v1/nsi', methods=['GET'])
 def getALLNSI():
   allNSI = nsi_manager.getAllNsi()
   jsonNSIList = json.dumps(allNSI, indent=4, sort_keys=True)
   logging.info('Returning all existing NSIs (instantiated/terminated/etc.)')
   
-  return (jsonNSIList)
+  return (jsonNSIList),200
 
-@app.route('/nsilcm/v1/nsi/<int:nsiId>', methods=['GET'])
+@app.route('/api/nsilcm/v1/nsi/<nsiId>', methods=['GET'])
 def getNSI(nsiId):
+  logging.info('Returning the desired NSI')
   returnedNSI = nsi_manager.getNSI(nsiId)
   jsonNSI = json.dumps(returnedNSI, indent=4, sort_keys=True)
-  logging.info('Returning the desired NSI')
-  
-  return jsonNSI
+    
+  return (jsonNSI),200
 
 #@app.route('/nsi/<int:nsiId>', methods=['DELETE'])
 #def deleteNSI(nsiId):
@@ -68,20 +81,24 @@ def getNSI(nsiId):
 
 #  return 'Deletes the specific NSI'
 
-@app.route('/nsilcm/v1/nsi/<int:nsiId>/instantiate', methods=['POST'])
-def postNSIinstantiation(nsiId):
+#@app.route('/api/nsilcm/v1/nsi/<nsiId>/instantiate', methods=['POST']) #TODO:decide if we use two-steps creation
+@app.route('/api/nsilcm/v1/nsi/instantiate', methods=['POST'])
+def postNSIinstantiation():
   receivedNSI = request.json
   new_NSI = nsi_manager.createNSI(receivedNSI)
-  nsiId_instantiated = nsi_manager.instantiateNSI(new_NSI)
+  instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
+  jsonNSI = json.dumps(instantiatedNSI, indent=4, sort_keys=True)
   
-  return ("Instantiation done of NSI with ID: " + str(nsiId_instantiated))
+  return (jsonNSI),201
 
-@app.route('/nsilcm/v1/nsi/<int:nsiId>/terminate', methods=['POST'])
+@app.route('/api/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
 def postNSItermination(nsiId):
-  terminationRx = request.json
-  terminate_nsiId = nsi_manager.terminateNSI(nsiId, terminationRx)
+  receivedTerminOrder = request.json    #this json contains only the terminationTime to apply
+  terminateNSI = nsi_manager.terminateNSI(nsiId, receivedTerminOrder)
+  jsonNSI = json.dumps(terminateNSI, indent=4, sort_keys=True)
   
-  return terminate_nsiId
+  return (jsonNSI),201
+
 
 #MAIN FUNCTION OF THE SERVER
 if __name__ == '__main__':
