@@ -13,7 +13,7 @@ app = Flask(__name__)
 ########################################## NETWORK SERVICES Actions #########################################
 @app.route('/api/services', methods=['GET'])
 def getAllNetServ():
-    token  = sonata_mapper.create_sonata_session()
+    token  = sonata_mapper.create_sonata_session()                #requests session token for sonata
     ServDict = sonata_mapper.getListNetServices(token)
     jsonNSIdict = json.dumps(ServDict, indent=4, sort_keys=True)
     
@@ -50,14 +50,33 @@ def getNST(nstId):
 def deleteNST(nstId):
     deleted_NSTid = nst_manager.deleteNST(nstId)
     
-    return ('The NST was deleted successfully.'),204
+    if deleted_NSTid == 403:
+      returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
+      jsonReturn = json.dumps(returnMessage, indent=4, sort_keys=True)
+      return (jsonReturn),403
+    else:
+      returnMessage = "The NST was deleted successfully."
+      jsonReturn = json.dumps(returnMessage, indent=4, sort_keys=True)
+      return (jsonReturn),204
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
+@app.route('/api/nsilcm/v1/nsi', methods=['POST'])
+def postNSIinstantiation():
+  receivedNSI = request.json
+  new_NSI = nsi_manager.createNSI(receivedNSI)
+  instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
+  jsonNSI = json.dumps(instantiatedNSI, indent=4, sort_keys=True)
+  
+  return (jsonNSI),201
 
-#@app.route('/api/nsi', methods=['POST'])
-#def createNSI():
-#  return 'Creating a new NSI!'
+@app.route('/api/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
+def postNSItermination(nsiId):
+  receivedTerminOrder = request.json    #this json contains only the terminationTime to apply
+  terminateNSI = nsi_manager.terminateNSI(nsiId, receivedTerminOrder)
+  jsonNSI = json.dumps(terminateNSI, indent=4, sort_keys=True)
+  
+  return (jsonNSI),201
 
 @app.route('/api/nsilcm/v1/nsi', methods=['GET'])
 def getALLNSI():
@@ -81,23 +100,6 @@ def getNSI(nsiId):
 
 #  return 'Deletes the specific NSI'
 
-#@app.route('/api/nsilcm/v1/nsi/<nsiId>/instantiate', methods=['POST']) #TODO:decide if we use two-steps creation
-@app.route('/api/nsilcm/v1/nsi/instantiate', methods=['POST'])
-def postNSIinstantiation():
-  receivedNSI = request.json
-  new_NSI = nsi_manager.createNSI(receivedNSI)
-  instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
-  jsonNSI = json.dumps(instantiatedNSI, indent=4, sort_keys=True)
-  
-  return (jsonNSI),201
-
-@app.route('/api/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
-def postNSItermination(nsiId):
-  receivedTerminOrder = request.json    #this json contains only the terminationTime to apply
-  terminateNSI = nsi_manager.terminateNSI(nsiId, receivedTerminOrder)
-  jsonNSI = json.dumps(terminateNSI, indent=4, sort_keys=True)
-  
-  return (jsonNSI),201
 
 
 #MAIN FUNCTION OF THE SERVER

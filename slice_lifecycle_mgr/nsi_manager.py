@@ -12,44 +12,50 @@ import database.database as db
 def createNSI(jsondata):
     logging.info("CREATING A NEW NSI")
     
-    #Generate the UUID for this NSI
+    #Generates a RANDOM (uuid4) UUID for this NSI
     uuident = uuid.uuid4()
     nsi_uuid = str(uuident)
     
     #Assigns the received information to the right parameter
     NSI = nsi.nsi_content()
-    NSI.id = nsi_uuid
+    NSI.nsiId = nsi_uuid
     NSI.nsiName = jsondata['nsiName']
     NSI.nsiDescription = jsondata['nsiDescription']
     NSI.nstId = jsondata['nstId']
-    NSI.nstInfoId = jsondata['nstInfoId']
-    NSI.flavorId = jsondata['flavorId']
-    NSI.sapInfo = jsondata['sapInfo']
-    NSI.nsiState = jsondata['nsiState']
+    #NSI.nstInfoId = jsondata['nstInfoId']
+    #NSI.flavorId = jsondata['flavorId']
+    #NSI.sapInfo = jsondata['sapInfo']
+    NSI.nsiState = "NOT_INSTANTIATED"
 
-    db.nsi_dict[NSI.id] = NSI
-    return NSI.id
-
+    db.nsi_dict[NSI.nsiId] = NSI
+    return NSI.nsiId
 
 
 def instantiateNSI(nsiId):
-    logging.info("INSTANTIATING A NSI")
+    logging.info("INSTANTIATING A NSI")  
+
+    #updates the NetSlice Instantiation information
     NSI = db.nsi_dict.get(nsiId)
+    instantiateTime = datetime.datetime.now()
+    NSI.instantiateTime = str(instantiateTime.isoformat())
     if NSI.nsiState == "NOT_INSTANTIATED":
-      #requests token value for the sonata session
-      token = mapper.create_sonata_session()
-      
-      #sends the requests to instantiate a NetService in sonata
-      instantiation = mapper.net_serv_instantiate(token, NSI.flavorId)    #TODO: validate if flavorID is the NetService_uuid to instantiate
-      
-      #updates the NetSliceInstantiation information
       NSI.nsiState = "INSTANTIATED"
-      instantiateTime = datetime.datetime.now()
-      NSI.instantiateTime = str(instantiateTime.isoformat())
+    
+    #requests session token for sonata
+    token = mapper.create_sonata_session()
+    
+    #sends NetServices requests to SonataSP
+    NST = db.nst_dict.get(NSI.nstId)
+    for uuidNetServ_item in NST.nstNsdIds:
+      instantiation = mapper.net_serv_instantiate(token, uuidNetServ_item)
+    
+    #updates nstUsageState parameter
+    if NST.nstUsageState == "NOT_USED":
+      NST.nstUsageState = "IN_USE"
+      db.nst_dict[NST.nstId] = NST
       
-      return vars(NSI)
-    else:
-      return "NSI not instantiated"
+    return vars(NSI)
+    
       
 def terminateNSI(nsiId, TerminOrder):
     logging.info("TERMINATING A NSI")
@@ -62,11 +68,11 @@ def terminateNSI(nsiId, TerminOrder):
     if instan_time < termin_time:
         NSI.terminateTime = TerminOrder['terminateTime']
         if NSI.nsiState == "INSTANTIATED":
-          #requests token value for the sonata session
-          token = mapper.create_sonata_session()
+          #requests session token for sonata
+          #token = mapper.create_sonata_session()
         
           #sends the requests to terminate a NetServiceInstance in sonata
-          termination = mapper.net_serv_terminate(token, nsiId)     
+          #termination = mapper.net_serv_terminate(token, nsiId)     
           
           #updates the NetSliceInstantiation information
           NSI.nsiState = "TERMINATE"

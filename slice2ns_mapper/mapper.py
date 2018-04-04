@@ -49,7 +49,7 @@ def net_serv_instantiate(token, service_uuid):
     headers_instantiation = {"authorization":"bearer " + str(token)}
     data_instantiation = '{"service_uuid":"'+ service_uuid + '", "ingresses":[], "egresses":[]}'
 
-    # sends the request to the Sonata Gatekeeper API
+    #sends the request to the Sonata Gatekeeper API
     response = requests.post(url, headers=headers_instantiation, data=data_instantiation)
     jsonresponse = json.loads(response.text)
 
@@ -96,6 +96,9 @@ def getNetServInstances(service_uuid, token):
 ########################################## /services ##########################################
 #GET /services to pull all Network Services information
 def getListNetServices(token):
+    #cleans the current nsInfo_list to have the information updated
+    del db.nsInfo_list[:]
+    
     # prepares the parameters for the POST request
     url = base_url + "/services"
     headers_instantiation = {"authorization": "bearer " + str(token)}

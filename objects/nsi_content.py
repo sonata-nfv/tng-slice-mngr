@@ -2,7 +2,7 @@
 
 class nsi_content:
     def __init__(self):
-        self.id=""
+        self.nsiId=""
         self.nsiName=""
         self.nsiDescription=""
         self.nstId=""
@@ -14,10 +14,11 @@ class nsi_content:
         self.terminateTime=""
         self.scaleTime=""
         self.updateTime=""
+        self.uuidService=""
         
         
     def getID(self):
-        return self.id
+        return self.nsiId
 
     def getName(self):
         return self.nsiName
@@ -51,3 +52,6 @@ class nsi_content:
     
     def getUpdateTime(self):
         return self.updateTime
+        
+    def getUuidService(self):
+        return self.uuidService
