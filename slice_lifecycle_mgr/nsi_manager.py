@@ -44,10 +44,17 @@ def instantiateNSI(nsiId):
     #requests session token for sonata
     token = mapper.create_sonata_session()
     
-    #sends NetServices requests to SonataSP
+    #sends requests to SonataSP to instantiete the required NetServices
     NST = db.nst_dict.get(NSI.nstId)
     for uuidNetServ_item in NST.nstNsdIds:
-      instantiation = mapper.net_serv_instantiate(token, uuidNetServ_item)
+      instantiation_response = mapper.net_serv_instantiate(token, uuidNetServ_item)
+      
+      print (instantiation_response)
+      
+      #TODO: obtain service_instance_uuid from json abd keepf it into the NSI.ServiceInstancesUuid
+      #while(instantiation_response = null):    #if service_instance_uuid = NULL, while GET /requests/<service_uuid> until there's a uuid
+        #answer = GET /requests/<service_uuid>
+        #NSI.ServiceInstancesUuid.append(answer)
     
     #updates nstUsageState parameter
     if NST.nstUsageState == "NOT_USED":
@@ -69,17 +76,18 @@ def terminateNSI(nsiId, TerminOrder):
         NSI.terminateTime = TerminOrder['terminateTime']
         if NSI.nsiState == "INSTANTIATED":
           #requests session token for sonata
-          #token = mapper.create_sonata_session()
-        
-          #sends the requests to terminate a NetServiceInstance in sonata
-          #termination = mapper.net_serv_terminate(token, nsiId)     
+          token = mapper.create_sonata_session()
+          
+          #sends the requests to terminate all NetServiceInstances belonging to the NetSlice we are terminating
+          for ServInstanceUuid_item in NSI.ServiceInstancesUuid:
+            termination = mapper.net_serv_terminate(token, ServInstanceUuid_item)
           
           #updates the NetSliceInstantiation information
           NSI.nsiState = "TERMINATE"
             
           return (vars(NSI))
         else:
-          return "NSI is still instantiated: it was not possible to change the state."
+          return "NSI is still instantiated: it was not possible to change its state."
     else:
       return ("Please specify a correct termination time bigger than: " + NSI.instantiateTime)
 

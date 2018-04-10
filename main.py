@@ -1,16 +1,17 @@
 #!/usr/bin/python
 
 from flask import Flask, request
-import os, sys, logging, json
+import os, sys, logging, json, ConfigParser, argparse
 
 import slice_lifecycle_mgr.nst_manager as nst_manager
 import slice_lifecycle_mgr.nsi_manager as nsi_manager
 import slice2ns_mapper.mapper as sonata_mapper
-
+import database.database as db
 
 app = Flask(__name__)
 
 ########################################## NETWORK SERVICES Actions #########################################
+#asks all the available NetService Descriptors to the Sonata SP
 @app.route('/api/services', methods=['GET'])
 def getAllNetServ():
     token  = sonata_mapper.create_sonata_session()                #requests session token for sonata
@@ -22,6 +23,7 @@ def getAllNetServ():
 
 
 ######################################### NETSLICE TEMPLATE Actions #########################################
+#creates a NetSlice template(NST)
 @app.route('/api/nst/v1/descriptors', methods=['POST'])
 def postNST():
     receivedNSTd = request.json
@@ -30,6 +32,7 @@ def postNST():
     
     return (jsonNST),201
 
+#asks for all the NetSlice Templates (NST) information
 @app.route('/api/nst/v1/descriptors', methods=['GET'])
 def getAllNST():
     allNST = nst_manager.getAllNst()
@@ -38,6 +41,7 @@ def getAllNST():
     
     return (jsonNSTList),200
 
+#asks for a specific NetSlice Template (NST) information
 @app.route('/api/nst/v1/descriptors/<nstId>', methods=['GET'])
 def getNST(nstId):
     returnedNST = nst_manager.getNST(nstId)
@@ -46,6 +50,7 @@ def getNST(nstId):
     
     return jsonNST,200
 
+#deletes a NetSlice Template
 @app.route('/api/nst/v1/descriptors/<nstId>', methods=['DELETE'])
 def deleteNST(nstId):
     deleted_NSTid = nst_manager.deleteNST(nstId)
@@ -61,6 +66,7 @@ def deleteNST(nstId):
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
+#creates and instantiates a NetSlice instance (NSI)
 @app.route('/api/nsilcm/v1/nsi', methods=['POST'])
 def postNSIinstantiation():
   receivedNSI = request.json
@@ -70,6 +76,7 @@ def postNSIinstantiation():
   
   return (jsonNSI),201
 
+#terminates a NetSlice instance (NSI)
 @app.route('/api/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
 def postNSItermination(nsiId):
   receivedTerminOrder = request.json    #this json contains only the terminationTime to apply
@@ -78,6 +85,7 @@ def postNSItermination(nsiId):
   
   return (jsonNSI),201
 
+#asks for all the NetSlice instances (NSI) information
 @app.route('/api/nsilcm/v1/nsi', methods=['GET'])
 def getALLNSI():
   allNSI = nsi_manager.getAllNsi()
@@ -86,6 +94,7 @@ def getALLNSI():
   
   return (jsonNSIList),200
 
+#asks for a specific NetSlice instances (NSI) information
 @app.route('/api/nsilcm/v1/nsi/<nsiId>', methods=['GET'])
 def getNSI(nsiId):
   logging.info('Returning the desired NSI')
@@ -104,4 +113,14 @@ def getNSI(nsiId):
 
 #MAIN FUNCTION OF THE SERVER
 if __name__ == '__main__':
-  app.run(debug=True, host='0.0.0.0', port=5998)
+    #READ CONFIG
+    conf_parser = argparse.ArgumentParser( description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=True )
+    conf_parser.add_argument("-c", "--conf_file",
+                             help="Specify config file", metavar="FILE", default='config.cfg')
+    args, remaining_argv = conf_parser.parse_known_args()
+    config = ConfigParser.ConfigParser()
+    config.read(args.conf_file)
+    db.settings = config
+    
+    #RUN SERVER
+    app.run(debug=True, host='0.0.0.0', port=5998)
