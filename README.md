@@ -1,7 +1,8 @@
-
 # tng-slicemgr
 Description: 5GTANGO Service Platform Slice Manager
+
 Version: 0.3
+
 Features:
 - NST, NSI management (creation, instantiation, get, termination).
 - Two possible work modes:
@@ -20,7 +21,7 @@ Flask, flask-restful, python-dateutil, python-uuid
     SONATA_SP_PWD=1234
 
 ## HOW TO START THE SLICE MANAGER:
-To configure on which mode to work, write "True" (mode 1) or "False" (mdoe 2) on the "USE_SONATA" parameter inside the "config.cfg" file. Once the mode is configured, use "screen" to open two terminal sessions:
+To configure on which mode to work, write "True" (mode 1) or "False" (mode 2) on the "USE_SONATA" parameter inside the "config.cfg" file. Once the mode is configured, use "screen" to open two terminal sessions:
 
 1) First session: python main.py ./config.cfg (it also works with python3)
 2) Second Session: use the following commands (use the right id any time you create/delete a NST or instantiate/terminate a NSI):
@@ -28,6 +29,7 @@ To configure on which mode to work, write "True" (mode 1) or "False" (mdoe 2) on
 ## HOW TO "play"...
 - STEP 1: Check the available services in Sonata SP
 Before working with NS Templates and Instances, user should know the available services to create NST.
+
    *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/services*
 
 - STEP2: Manage netSlice Templates
@@ -56,16 +58,19 @@ Create/Delete and check all the NST you want/need.
 			      "userDefinedData": ""
 		      }
 
-  2) GET AVAILABLE NSTemplates	
+  2) GET AVAILABLE NSTemplates
+  	
     *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors*
     
   3) GET SPECIFIC NSTemplate
-	   * curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors/<nstId>*
+  
+	   *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors/<nstId>*
     
 		    REQUEST EXAMPLE: 
 		    curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors/185c00c8-fe09-4fc5-9175-ebbcd757e0f5
 
   4) DELETE NSTemplate --> it will only delete the NST when no related NSI will be used.
+  
 		*curl -X DELETE http://127.0.0.1:5998/api/nst/v1/descriptors/{uuid}*
 	    
 		    REQUEST EXAMPLE:
@@ -76,6 +81,7 @@ Create/Delete and check all the NST you want/need.
 Once the NST is created, it is possible to create/delete and check NSIs based on the selected NST.
 
   1) CREATE NetSlice Intance --> select the NST uuid by looking the nst_catalogue (NST GET actions 3 or 4)
+  
 	  *curl -i -H "Content-Type:application/json" -X POST -d'{"nsiName": "<NetSlice_Instantiation_name>", "nsiDescription": "NetSlice_description", "nstId": "<nstID_uuid>"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi*
     
 		    REQUEST EXAMPLE: curl -i -H "Content-Type:application/json" -X POST -d'{"nsiName": "<Rubik_NSI>", "nsiDescription": "Rubik_NSI_description", "nstId": "185c00c8-fe09-4fc5-9175-ebbcd757e0f5"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi
@@ -103,14 +109,17 @@ Once the NST is created, it is possible to create/delete and check NSIs based on
 			SONATA EMULATED INSTANTIATION NSI --> URL: http://10.1.7.21:32001/api/v2/requests,HEADERS: {'authorization': 'bearer None'},DATA: {"service_uuid":"40920a3c-9cc3-43f3-9f78-3fae65e29bad", "ingresses":[], "egresses":[]}
 
   2) GET ALL NetSlice Instances
+  
 		*curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi*
 
   3) GET SPECIFIC NetSlice Instance
+  
 	    *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/<nsiId>*
     
 		    REQUEST EXAMPLE: curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/77fabee0-1b40-4327-b298-7fc3167c66c2
 
   4) TERMINATE a NetSlice Instance
+  
 		*curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/<nsiId>/terminate*
     
 		    REQUEST EXAMPLE: curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/77fabee0-1b40-4327-b298-7fc3167c66c2/terminate
