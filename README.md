@@ -127,3 +127,8 @@ Once the NST is created, it is possible to create/delete and check NSIs based on
 		    NOTE: On the server side, it is possible to see the emulated request sent to SONATA SP ...
 		    SONATA EMULATED TOKEN REQUEST --> URL: http://10.1.7.21:32001/api/v2/sessions,DATA: {"username":"sonata","password":"1234"}
 		    SONATA EMULATED TERMINATE NSI --> URL: http://10.1.7.21:32001/api/v2/requests,HEADERS: {'authorization': 'bearer None'},DATA: {"service_instance_uuid":"59cf2b1f-2a4d-4ab7-b160-9ed88d3b9dc2", "request_type":"TERMINATE"}
+
+
+## Authors contact
+  * Ricard Vilalta (ricard.vilalta@cttc.es)
+  * Pol Alemany (pol.alemany@cttc.cat)
