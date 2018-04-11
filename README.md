@@ -17,21 +17,21 @@ Flask, flask-restful, python-dateutil, python-uuid
 ## HOW TO START THE SLICE MANAGER:
 To configure on which mode to work, write "True" (mode 1) or "False" (mdoe 2) on the "USE_SONATA" parameter inside the "config.cfg" file. Once the mode is configured, use "screen" to open two terminal sessions:
 
-    1) First session: python main.py ./config.cfg
-    2) Second Session: use the following commands (change the id any time you create a NST or instantiate a NSI):
+1) First session: python main.py ./config.cfg
+2) Second Session: use the following commands (use the right id any time you create/delete a NST or instantiate/terminate a NSI):
 
 
-- CURL DEMO COMMANDS
+- STEP 1: Check the available services in Sonata SP
 
-Before working with NS Templates and Instance, user must know the available services...
-
-  1) GET AVAILABLE SERVICES from Sonata SP
+Before working with NS Templates and Instances, user should know the available services to create NST.
 
     curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/services
 
-Once the services are known, the slice user can start creating NSTs and NSIs...
 
-#NST CURL COMMANDS
+- STEP2: Manage netSlice Templates
+
+Create/Delete and check all the NST you want/need.
+
   1) CREATE NetSlice Template: To add more NetServices to compose a NetSlice Template, use this json structure in "nstNsdIds":[{"nstNsdId":"<NSuuid>"},{"nstNsdId":"<NSuuid>"}]
 
     curl -i -H "Content-Type:application/json" -X POST -d'{"nstName":"<NetSlice_Template_name>", "nstVersion":<version_number>, "nstDesigner":"<designer_name>", "nstNsdIds":[{"nstNsdId":"<NetService_uuid>"}]}' http://127.0.0.1:5998/api/nst/v1/descriptors
@@ -48,8 +48,9 @@ Once the services are known, the slice user can start creating NSTs and NSIs...
 
     curl -X DELETE http://127.0.0.1:5998/api/nst/v1/descriptors/{uuid}
 
------------------------------------------------------------------------------------------------
-- NSI CURL COMMANDS
+- STEP 3: Manage NetSlice Instances
+
+Once the NST is created, it is possible to create/delete and check NSIs based on the selected NST.
 
   1) CREATE NetSlice Intance --> select the NST uuid by looking the nst_catalogue (NST GET actions 3 or 4)
 
