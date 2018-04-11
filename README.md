@@ -1,44 +1,57 @@
 # tng-slicemgr
-The 5GTANGO Service Platform Slice Manager
+Description: The 5GTANGO Service Platform Slice Manager
+Version: 0.2
+Features:
+--> NST, NSI management (creation, instantiation, get).
+--> Two modes to work with:
+1) Connection to Sonata SP; simply write the right IP@ and the users/pwd into the "config.cfg" folder inside the root folder.
+2) Sonata Sp emulation; it doesn't connect to any Sonata SP, instead prints the URL information to the SP. To check if the requests on the SliceManager are well done.
 
-Version 0.1 --> NST and NSI defined, no relationship between them programmed yet.
 
-## Pre-requisits
-
+## Pre-requisits before using it
 Used libraries --> Flask, flask-restful, python-dateutil, python-uuid
 
-## DEMO INSTRUCTIONS:
 
-To start the slice manager, use "screen" to open two terminal sessions:
+## HOW TO START THE SLICE MANAGER:
+To configure on which mode to work, write "True" (mode 1) or "False" (mdoe 2) on the "USE_SONATA" parameter inside the "config.cfg" file. 
 
-    1) First session: python main.py
+Once the mode is configured, use "screen" to open two terminal sessions:
+
+    1) First session: python main.py ./config.cfg
     2) Second Session: use the following commands (change the id any time you create a NST or instantiate a NSI):
 
+
+##CURL DEMO COMMANDS
+Before working with NS Templates and Instance, user must know available services...
+1) GET AVAILABLE SERVICES from Sonata SP
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/services
+
+Once the services are known, the slice user can start creating NSTs and NSIs...
+
 #NST CURL COMMANDS
+1) CREATE NetSlice Template --> if you want to add mroe NetServices to compose a NetSlice Template, use this json structure in "nstNsdIds":[{"nstNsdId":"<NSuuid>"},{"nstNsdId":"<NSuuid>"}]
+curl -i -H "Content-Type:application/json" -X POST -d'{"nstName":"<NetSlice_Template_name>", "nstVersion":<version_number>, "nstDesigner":"<designer_name>", "nstNsdIds":[{"nstNsdId":"<NetService_uuid>"}]}' http://127.0.0.1:5998/api/nst/v1/descriptors
 
-POST CREATE NST:
-curl -i -H "Content-Type:application/json" -X POST -d'{"nstId":1, "nstName":"tango_NST", "nstVersion":2, "nstDesigner":"5gtango", "nstInvariantId":"1", "nstNsdIds":[{"nstNsdId":1},{"nstNsdId":2}], "nstOnboardingState":"ENABLED", "nstOperationalState":"ENABLED", "nstUsageState":"IN_USE", "notificationTypes":"Notification of tango_NST", "userDefinedData":"Data"}' http://127.0.0.1:5998/api/nst/v1/descriptors
-
-GET ALL NST:
+2) GET AVAILABLE NSTemplates
 curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors
 
-GET SPECIFIC NST:
-curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors/{uuid}
+3) GET SPECIFIC NSTemplate
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors/<nstId>
 
-DELETE SPECIFIC NST:
+4) DELETE NSTemplate --> it will only delete the NST when no related NSI will be used.
 curl -X DELETE http://127.0.0.1:5998/api/nst/v1/descriptors/{uuid}
 
 -----------------------------------------------------------------------------------------------
 #NSI CURL COMMANDS
 
-POST INSTANTIATE NSI:
-curl -i -H "Content-Type:application/json" -X POST -d'{"nsiName": "tango_NSI", "nsiDescription": "string", "nstId": 1, "nstInfoId": "string", "flavorId": "string", "sapInfo": "string", "nsiState": "NOT_INSTANTIATED", "instantiateTime": "2018-03-15T08:45:43.502"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/instantiate
+1) CREATE NetSlice Intance --> select the NST uuid by looking the nst_catalogue (NST GET actions 3 or 4)
+curl -i -H "Content-Type:application/json" -X POST -d'{"nsiName": "<NetSlice_Instantiation_name>", "nsiDescription": "NetSlice_description", "nstId": "<nstID_uuid>"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi
 
-POST TERMINATE NSI:
-curl -i -H "Content-Type:application/json" -X POST -d'{"terminateTime":"2019-03-15T10:47:42.174"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/{service_instance_uuid}/terminate
-
-GET ALL NSI:
+2) GET ALL NetSlice Instances
 curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi
 
-GET SPECIFIC NSI:
-curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/{uuid}
+3) GET SPECIFIC NetSlice Instance
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/<nsiId>
+
+4) TERMINATE a NetSlice Instance
+curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/<nsiId>/terminate

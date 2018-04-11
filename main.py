@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from flask import Flask, request
-import os, sys, logging, json, ConfigParser, argparse
+import os, sys, logging, json, ConfigParser, argparse  #To work with python3, adapt ConfigParser to configparser
 
 import slice_lifecycle_mgr.nst_manager as nst_manager
 import slice_lifecycle_mgr.nsi_manager as nsi_manager
@@ -82,8 +82,8 @@ def postNSItermination(nsiId):
   receivedTerminOrder = request.json    #this json contains only the terminationTime to apply
   terminateNSI = nsi_manager.terminateNSI(nsiId, receivedTerminOrder)
   jsonNSI = json.dumps(terminateNSI, indent=4, sort_keys=True)
-  
-  return (jsonNSI),201
+
+  return (jsonNSI),202
 
 #asks for all the NetSlice instances (NSI) information
 @app.route('/api/nsilcm/v1/nsi', methods=['GET'])
@@ -102,12 +102,6 @@ def getNSI(nsiId):
   jsonNSI = json.dumps(returnedNSI, indent=4, sort_keys=True)
     
   return (jsonNSI),200
-
-#@app.route('/nsi/<int:nsiId>', methods=['DELETE'])
-#def deleteNSI(nsiId):
-#  #db.nsi_list.del[nsiId]
-
-#  return 'Deletes the specific NSI'
 
 
 

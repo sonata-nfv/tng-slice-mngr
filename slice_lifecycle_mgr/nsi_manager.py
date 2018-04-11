@@ -30,7 +30,6 @@ def createNSI(jsondata):
     db.nsi_dict[NSI.nsiId] = NSI
     return NSI.nsiId
 
-
 def instantiateNSI(nsiId):
     logging.info("INSTANTIATING A NSI")  
 
@@ -49,12 +48,12 @@ def instantiateNSI(nsiId):
     for uuidNetServ_item in NST.nstNsdIds:
       instantiation_response = mapper.net_serv_instantiate(token, uuidNetServ_item)
       
-      print (instantiation_response)
+      #TODO: obtain service_instance_uuid from json to keep it into the NSI.ServiceInstancesUuid
+      while(instantiation_response['service_instance_uuid'] == None):
+        request_uuid = instantiation_response['id']
+        instantiation_response = mapper.getNetServInstance(request_uuid, token)
       
-      #TODO: obtain service_instance_uuid from json abd keepf it into the NSI.ServiceInstancesUuid
-      #while(instantiation_response = null):    #if service_instance_uuid = NULL, while GET /requests/<service_uuid> until there's a uuid
-        #answer = GET /requests/<service_uuid>
-        #NSI.ServiceInstancesUuid.append(answer)
+      NSI.ServiceInstancesUuid.append(instantiation_response['service_instance_uuid'])
     
     #updates nstUsageState parameter
     if NST.nstUsageState == "NOT_USED":
@@ -62,8 +61,7 @@ def instantiateNSI(nsiId):
       db.nst_dict[NST.nstId] = NST
       
     return vars(NSI)
-    
-      
+       
 def terminateNSI(nsiId, TerminOrder):
     logging.info("TERMINATING A NSI")
     NSI = db.nsi_dict.get(nsiId)
@@ -71,9 +69,10 @@ def terminateNSI(nsiId, TerminOrder):
     #Parsing from string ISO to datetime format to compare values
     instan_time = dateutil.parser.parse(NSI.instantiateTime)
     termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
-
+    
     if instan_time < termin_time:
         NSI.terminateTime = TerminOrder['terminateTime']
+        
         if NSI.nsiState == "INSTANTIATED":
           #requests session token for sonata
           token = mapper.create_sonata_session()
@@ -84,7 +83,9 @@ def terminateNSI(nsiId, TerminOrder):
           
           #updates the NetSliceInstantiation information
           NSI.nsiState = "TERMINATE"
-            
+          
+          #TODO: improve delete process to be done when the time defined in 'terminateTime' comes
+          del db.nsi_dict[nsiId]
           return (vars(NSI))
         else:
           return "NSI is still instantiated: it was not possible to change its state."
@@ -97,7 +98,6 @@ def getNSI(nsiId):
 
     return (vars(NSI))
 
-
 def getAllNsi():
     logging.info("RETRIEVING ALL EXISTING NSIs")
     nsi_list = []
@@ -107,11 +107,3 @@ def getAllNsi():
         nsi_list.append(nsi_string)
     
     return (nsi_list)
-
-
-def deleteNSI(nsiId):
-    logging.info("DELETING A NSI")
-    logging.info("Deleting Network Slice Instantiation")
-    del db.nst_dict[nsiId]
-    
-    return (nsiId)
