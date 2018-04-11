@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 from flask import Flask, request
-import os, sys, logging, json, ConfigParser, argparse  #To work with python3, adapt ConfigParser to configparser
+import os, sys, logging, json, argparse 
+from configparser import ConfigParser
 
 import slice_lifecycle_mgr.nst_manager as nst_manager
 import slice_lifecycle_mgr.nsi_manager as nsi_manager
@@ -112,7 +113,7 @@ if __name__ == '__main__':
     conf_parser.add_argument("-c", "--conf_file",
                              help="Specify config file", metavar="FILE", default='config.cfg')
     args, remaining_argv = conf_parser.parse_known_args()
-    config = ConfigParser.ConfigParser()
+    config = ConfigParser()
     config.read(args.conf_file)
     db.settings = config
     
