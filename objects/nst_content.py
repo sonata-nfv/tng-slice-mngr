@@ -1,10 +1,9 @@
 #!/usr/bin/python
 
-import database.database as db
 
 class nst_content:
     def __init__(self):
-        self.id = ""                     #id given by the slice manager when creating the NST
+        #self.id = ""                     #id given by the slice manager when creating the NST
         self.nstId = ""                  #id given by the creator of the slice
         self.nstName = ""
         self.nstVersion = ""
