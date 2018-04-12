@@ -57,10 +57,12 @@ def deleteNST(nstId):
     deleted_NSTid = nst_manager.deleteNST(nstId)
     
     if deleted_NSTid == 403:
+      logging.info("Not possible to delete, there are NSInstances using this NSTemplate")
       returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
       jsonReturn = json.dumps(returnMessage, indent=4, sort_keys=True)
       return (jsonReturn),403
     else:
+      logging.info("The NST was deleted successfully.")
       returnMessage = "The NST was deleted successfully."
       jsonReturn = json.dumps(returnMessage, indent=4, sort_keys=True)
       return (jsonReturn),204
