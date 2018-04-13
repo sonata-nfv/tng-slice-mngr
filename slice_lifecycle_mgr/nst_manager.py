@@ -15,7 +15,6 @@ def createNST(jsondata):
     #Assigns the received information to the right parameter
     NST = nst.nst_content()
     NST.nstId = nst_uuid
-    #NST.nstId = jsondata['nstId']                                #given by the slice creator
     NST.nstName = jsondata['nstName']
     NST.nstVersion = jsondata['nstVersion']
     NST.nstDesigner = jsondata['nstDesigner']
@@ -34,11 +33,9 @@ def createNST(jsondata):
     db.nst_dict[NST.nstId] = NST  
     return vars(NST)
 
-
 def getNST(nstId):
     NST = db.nst_dict.get(nstId)
     return (vars(NST))
-  
   
 def getAllNst():
     nst_list = []

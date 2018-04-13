@@ -64,14 +64,14 @@ Create/Delete and check all the NST you want/need.
     
   3) GET SPECIFIC NSTemplate
   
-	   *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors/<nstId>*
+	   *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors/{nstId}*
     
 		    REQUEST EXAMPLE: 
 		    curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nst/v1/descriptors/185c00c8-fe09-4fc5-9175-ebbcd757e0f5
 
   4) DELETE NSTemplate --> it will only delete the NST when no related NSI will be used.
   
-		*curl -X DELETE http://127.0.0.1:5998/api/nst/v1/descriptors/{uuid}*
+		*curl -X DELETE http://127.0.0.1:5998/api/nst/v1/descriptors/{nstId}*
 	    
 		    REQUEST EXAMPLE:
 		    curl -X DELETE http://127.0.0.1:5998/api/nst/v1/descriptors/185c00c8-fe09-4fc5-9175-ebbcd757e0f5
@@ -114,13 +114,13 @@ Once the NST is created, it is possible to create/delete and check NSIs based on
 
   3) GET SPECIFIC NetSlice Instance
   
-	    *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/<nsiId>*
+	    *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/{nsiId}*
     
 		    REQUEST EXAMPLE: curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/77fabee0-1b40-4327-b298-7fc3167c66c2
 
   4) TERMINATE a NetSlice Instance
   
-		*curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/<nsiId>/terminate*
+		*curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/{nsiId}/terminate*
     
 		    REQUEST EXAMPLE: curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/77fabee0-1b40-4327-b298-7fc3167c66c2/terminate
 
