@@ -71,7 +71,7 @@ Create/Delete and check all the NST you want/need.
 
   4) DELETE NSTemplate --> it will only delete the NST when no related NSI will be used.
   
-		*curl -X DELETE http://127.0.0.1:5998/api/nst/v1/descriptors/{uuid}*
+		*curl -X DELETE http://127.0.0.1:5998/api/nst/v1/descriptors/{nstId}*
 	    
 		    REQUEST EXAMPLE:
 		    curl -X DELETE http://127.0.0.1:5998/api/nst/v1/descriptors/185c00c8-fe09-4fc5-9175-ebbcd757e0f5
