@@ -120,7 +120,7 @@ Once the NST is created, it is possible to create/delete and check NSIs based on
 
   4) TERMINATE a NetSlice Instance
   
-		*curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/<nsiId>/terminate*
+		*curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/{nsiId}/terminate*
     
 		    REQUEST EXAMPLE: curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/77fabee0-1b40-4327-b298-7fc3167c66c2/terminate
 
