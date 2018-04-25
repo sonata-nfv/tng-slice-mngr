@@ -47,16 +47,25 @@ def instantiateNSI(nsiId):
     NST = db.nst_dict.get(NSI.nstId)
     for uuidNetServ_item in NST.nstNsdIds:
       instantiation_response = mapper.net_serv_instantiate(token, uuidNetServ_item)
+      #TODO: is it better to wait Xs before sending another request?
       
-      #TODO: obtain service_instance_uuid from json to keep it into the NSI.ServiceInstancesUuid
-      while(instantiation_response['service_instance_uuid'] == None):
-        request_uuid = instantiation_response['id']
-        instantiation_response = mapper.getNetServInstance(request_uuid, token)
-      
-      NSI.ServiceInstancesUuid.append(instantiation_response['service_instance_uuid'])
+#      print ("___________________________________________________")
+#      print (instantiation_response)                                    #Currently returns this: {u'error': {u'message': u'nil', u'code': 500}}
+#      print ("___________________________________________________")
+#      
+#      while(instantiation_response['service_instance_uuid'] == None):
+#        print ("NSI_MAnager: dins del while_1")
+#        request_uuid = instantiation_response['id']
+#        print ("NSI_MAnager: dins del while_2")
+#        instantiation_response = mapper.getNetServInstance_Uuid(request_uuid, token)
+#        print ("NSI_MAnager: dins del while_3")
+#      
+#      print("NSI_MAnager: after while")
+#      NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
     
+    print ("NSI_MAnager: after del for")
     #updates nstUsageState parameter
-    if NST.nstUsageState == "NOT_USED":
+    if NST.nstUsageState == "NOT_IN_USE":
       NST.nstUsageState = "IN_USE"
       db.nst_dict[NST.nstId] = NST
       
@@ -78,7 +87,7 @@ def terminateNSI(nsiId, TerminOrder):
           token = mapper.create_sonata_session()
           
           #sends the requests to terminate all NetServiceInstances belonging to the NetSlice we are terminating
-          for ServInstanceUuid_item in NSI.ServiceInstancesUuid:
+          for ServInstanceUuid_item in NSI.netServInstance_Uuid:
             termination = mapper.net_serv_terminate(token, ServInstanceUuid_item)
           
           #updates the NetSliceInstantiation information

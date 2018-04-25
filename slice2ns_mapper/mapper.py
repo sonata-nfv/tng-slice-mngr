@@ -61,7 +61,7 @@ def net_serv_instantiate(token, service_uuid):
     # prepares the parameters for the POST request
     url = get_base_url() + '/requests'
     headers_instantiation = {"authorization":"bearer " + str(token)}
-    data_instantiation = '{"service_uuid":"'+ service_uuid + '", "ingresses":[], "egresses":[]}'
+    data_instantiation = '{"service_uuid":"' + service_uuid + '", "ingresses":[], "egresses":[]}'
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
@@ -83,7 +83,7 @@ def net_serv_terminate(token, servInstance_uuid):
     # prepares the parameters for the POST request
     url = get_base_url() + "/requests"
     headers_termination = {"authorization":"bearer " + str(token)}
-    data_termination = '{"service_instance_uuid":"'+ servInstance_uuid + '", "request_type":"TERMINATE"}'
+    data_termination = '{"service_instance_uuid":'+ servInstance_uuid + ', "request_type":"TERMINATE"}'
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
@@ -168,4 +168,5 @@ def getListNetServices(token):
       
     else:
       print ("SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(headers_NetServices))
-    
+
+################################ /records/nsir/ns-instances #####################################

@@ -26,7 +26,7 @@ def createNST(jsondata):
     
     NST.nstOnboardingState = "ENABLED"
     NST.nstOperationalState = "ENABLED"
-    NST.nstUsageState = "NOT_USED"
+    NST.nstUsageState = "NOT_IN_USE"
     #NST.notificationTypes = jsondata['notificationTypes']
     #NST.userDefinedData = jsondata['userDefinedData']      
     

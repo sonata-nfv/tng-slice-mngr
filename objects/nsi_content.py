@@ -14,7 +14,7 @@ class nsi_content:
         self.terminateTime=""
         self.scaleTime=""
         self.updateTime=""
-        self.ServiceInstancesUuid = []
+        self.netServInstance_Uuid = []
         
         
     def getID(self):
@@ -53,5 +53,5 @@ class nsi_content:
     def getUpdateTime(self):
         return self.updateTime
         
-    def getServiceInstancesUuid(self):
-        return self.ServiceInstancesUuid
+    def getNetServInstance_Uuid(self):
+        return self.netServInstance_Uuid
