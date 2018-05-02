@@ -35,10 +35,10 @@ def postNST():
 #asks for all the NetSlice Templates (NST) information
 @app.route('/api/nst/v1/descriptors', methods=['GET'])
 def getAllNST():
-    allNST = nst_manager.getAllNst()    
+    listNST = nst_manager.getAllNst()    
     logging.info('Returning all NST')
     
-    return jsonify(jsonNSTList), 200
+    return jsonify(listNST), 200
 
 #asks for a specific NetSlice Template (NST) information
 @app.route('/api/nst/v1/descriptors/<nstId>', methods=['GET'])

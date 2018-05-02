@@ -7,8 +7,21 @@ import objects.nsi_content as nsi
 import slice2ns_mapper.mapper as mapper
 import database.database as db
 
+##OTHER functions
+def check_requests_status(token, requestsID_list)
+    counter=0
+    for resquestID_item in requestsID_list:
+      getRequest_response = mapper.getNetServInstance(token, request_uuid)
+      if(getRequest_response['status'] = "READY")
+        counter=coutner+1
+    
+    if (counter == len(requestsID_list)):
+      return True
+    else:
+      return False
 
 
+##NSI functions
 def createNSI(jsondata):
     logging.info("CREATING A NEW NSI")
     
@@ -40,30 +53,29 @@ def instantiateNSI(nsiId):
     if NSI.nsiState == "NOT_INSTANTIATED":
       NSI.nsiState = "INSTANTIATED"
     
-    #requests session token for sonata
-    token = mapper.create_sonata_session()
+    if NSI.instantianteTime == 0:
+      #requests session token for sonata
+      token = mapper.create_sonata_session()
     
-    #sends requests to SonataSP to instantiete the required NetServices
-    NST = db.nst_dict.get(NSI.nstId)
-    for uuidNetServ_item in NST.nstNsdIds:
-      instantiation_response = mapper.net_serv_instantiate(token, uuidNetServ_item)
-      #TODO: is it better to wait Xs before sending another request?
+      #sends requests to SonataSP to instantiate the required NetServices
+      NST = db.nst_dict.get(NSI.nstId)
+      requestsID_list = []
+      for uuidNetServ_item in NST.nstNsdIds:
+        instantiation_response = mapper.net_serv_instantiate(token, uuidNetServ_item)
+        requestsID_list.append(instantiation_response['id'])
       
-#      print ("___________________________________________________")
-#      print (instantiation_response)                                    #Currently returns this: {u'error': {u'message': u'nil', u'code': 500}}
-#      print ("___________________________________________________")
-#      
-#      while(instantiation_response['service_instance_uuid'] == None):
-#        print ("NSI_MAnager: dins del while_1")
-#        request_uuid = instantiation_response['id']
-#        print ("NSI_MAnager: dins del while_2")
-#        instantiation_response = mapper.getNetServInstance_Uuid(request_uuid, token)
-#        print ("NSI_MAnager: dins del while_3")
-#      
-#      print("NSI_MAnager: after while")
-#      NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
-    
-    print ("NSI_MAnager: after del for")
+      #checks if the requestes instantiations are READY so, the informatiotion can be stored     
+      while (allInstantiationsReady = False):
+        allInstantiationsReady = check_requests_status(token, requestsID_list)
+      
+      for request_uuid_item in requestsID_list:
+        instantiation_response = mapper.getNetServInstance(token, request_uuid_item)
+        NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
+      
+    else:
+      #TODO: manage future instantiation actions
+      print ("The NSI with ID: "+NSI.nsiId+ ", will be instantiated the following date: " +NSI.instantianteTime)
+
     #updates nstUsageState parameter
     if NST.nstUsageState == "NOT_IN_USE":
       NST.nstUsageState = "IN_USE"

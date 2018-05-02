@@ -11,7 +11,6 @@ def get_base_url():
     
     return base_url
 
-
 def use_sonata():    
     return db.settings.get('SLICE_MGR','USE_SONATA')
 
@@ -56,7 +55,7 @@ def delete_sonata_session(token):
 
 
 ########################################## /requests ##########################################
-#POST /requests to INSTANTIATE Network Service
+#POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(token, service_uuid):
     # prepares the parameters for the POST request
     url = get_base_url() + '/requests'
@@ -78,7 +77,7 @@ def net_serv_instantiate(token, service_uuid):
       jsonresponse = json.loads('{"service_instance_uuid":"'+str(uuident)+'"}')
       return jsonresponse
 
-#POST /requests to TERMINATE Network Service
+#POST /requests to TERMINATE Network Service instance
 def net_serv_terminate(token, servInstance_uuid):
     # prepares the parameters for the POST request
     url = get_base_url() + "/requests"
@@ -113,10 +112,10 @@ def getAllNetServInstances(token):
     else:
       print ("SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(headers_getAll))
 
-#GET /requests/<service_uuid> to pull the information of a single Network Service INSTANCES
-def getNetServInstance(service_uuid, token):
+#GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
+def getNetServInstance(token, request_uuid):
     # prepares the parameters for the POST request
-    url = get_base_url() + "/requests/" + str(service_uuid)
+    url = get_base_url() + "/requests/" + str(request_uuid)
     headers_get = {"authorization":"bearer " + str(token)}
 
     #SONATA SP or EMULATED Connection 
