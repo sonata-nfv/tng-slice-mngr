@@ -74,7 +74,7 @@ def net_serv_instantiate(token, service_uuid):
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ",HEADERS: " +str(headers_instantiation)+ ",DATA: " +str(data_instantiation))
       #Generates a RANDOM (uuid4) UUID for this emulated NSI
       uuident = uuid.uuid4()
-      jsonresponse = json.loads('{"service_instance_uuid":"'+str(uuident)+'"}')
+      jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
       return jsonresponse
 
 #POST /requests to TERMINATE Network Service instance
@@ -105,7 +105,7 @@ def getAllNetServInstances(token):
     if use_sonata() == "True":
       # sends the request to the Sonata Gatekeeper API
       response = requests.get(url, headers=headers_getAll)
-      jsonresponse = json.dumps(response, indent=4, sort_keys=True)
+      jsonresponse = json.loads(response.text)
 
       return jsonresponse
     
@@ -113,7 +113,7 @@ def getAllNetServInstances(token):
       print ("SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(headers_getAll))
 
 #GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
-def getNetServInstance(token, request_uuid):
+def getRequestedNetServInstance(token, request_uuid):
     # prepares the parameters for the POST request
     url = get_base_url() + "/requests/" + str(request_uuid)
     headers_get = {"authorization":"bearer " + str(token)}
@@ -122,13 +122,14 @@ def getNetServInstance(token, request_uuid):
     if use_sonata() == "True":
       # sends the request to the Sonata Gatekeeper API
       response = requests.get(url, headers=headers_get)
-      jsonresponse = json.dumps(response, indent=4, sort_keys=True)
+      jsonresponse = json.loads(response.text)
 
-      return jsonresponse.text
+      return jsonresponse
     
     else:
       print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(headers_get))
-
+      return '{"status":"READY"}'
+      
    
 ########################################## /services ##########################################
 #GET /services to pull all Network Services information
