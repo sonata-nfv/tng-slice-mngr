@@ -81,11 +81,14 @@ def instantiateNSI(nsiId):
     for request_uuid_item in requestsID_list:
       instantiation_response = mapper.getNetServInstance(token, request_uuid_item)
       NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
-
-    #updates nstUsageState parameter
+      
+    #TODO: send the NSI information to the repositories --> POST /records/nsir/ns-instances
+    
+    #update nstUsageState parameter
     if NST.nstUsageState == "NOT_IN_USE":
       NST.nstUsageState = "IN_USE"
       db.nst_dict[NST.nstId] = NST
+      #TODO (when NSI-repo is deon): send the NST information to the catalogues --> POST /???
       
     return vars(NSI)
        
