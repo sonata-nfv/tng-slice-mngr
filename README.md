@@ -17,7 +17,7 @@ Flask, flask-restful, python-dateutil, python-uuid
 
     [SLICE_MGR]
     USE_SONATA=False
-    SONATA_SP_IP=10.1.7.21    
+    SONATA_SP_IP=127.0.0.1    
     SONATA_SP_USER=sonata
     SONATA_SP_PWD=1234
 
