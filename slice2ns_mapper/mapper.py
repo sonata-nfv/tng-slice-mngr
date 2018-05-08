@@ -7,6 +7,7 @@ import database.database as db
 #################################### Sonata SP information #####################################
 def get_base_url():
     ip_address=db.settings.get('SLICE_MGR','SONATA_SP_IP')
+    #ip_address=db.settings.get('SLICE_MGR','SONATA_GTK')
     base_url = 'http://'+ip_address+':32001/api/v2'
     
     return base_url
@@ -128,7 +129,9 @@ def getRequestedNetServInstance(token, request_uuid):
     
     else:
       print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(headers_get))
-      return '{"status":"READY"}'
+      uuident = uuid.uuid4()
+      jsonresponse = json.loads('{"began_at": "2017-09-15","callback": "http://localhost:5400/serv-instan-time","created_at": "2017-09-15","id": "de0d4c7e-9450-4c3f-8add-5f9531303c65","request_type": "CREATE","service_instance_uuid": "'+str(uuident)+'","service_uuid": "233cb9b2-5575-4ddd-8bd6-6c32396afe02","status": "READY","updated_at": "2017-09-15"}')
+      return jsonresponse 
       
    
 ########################################## /services ##########################################
@@ -168,5 +171,3 @@ def getListNetServices(token):
       
     else:
       print ("SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(headers_NetServices))
-
-################################ /records/nsir/ns-instances #####################################

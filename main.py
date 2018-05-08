@@ -69,8 +69,7 @@ def deleteNST(nstId):
 #creates and instantiates a NetSlice instance (NSI)
 @app.route('/api/nsilcm/v1/nsi', methods=['POST'])
 def postNSIinstantiation():
-  receivedNSI = request.json
-  new_NSI = nsi_manager.createNSI(receivedNSI)
+  new_NSI = request.json
   instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
   
   return jsonify(instantiatedNSI), 201

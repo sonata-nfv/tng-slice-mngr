@@ -6,8 +6,9 @@ Version: 0.3
 Features:
 - NST, NSI management (creation, instantiation, get, termination).
 - Two possible work modes:
-  1) Connection to Sonata SP; simply write the right IP@ and the users/pwd into the "config.cfg" file inside the root folder.
-  2) Sonata SP Emulation; it doesn't connect to any Sonata SP, instead prints the URL information to the SP. To check if the requests on the SliceManager are well done.
+  1) Sonata SP Emulation; it doesn't connect to any Sonata SP, instead prints the URL information to the SP. To check if the requests on the SliceManager are well done.
+  2) Real Sonata SP environment; simply write the right users/pwd into the "config.cfg" file inside the root folder.
+      Condition: Install Sonata SP into the same device and configure a WIM/VIM (read "son-install" information) with and Openstack node (check RDO packstack project). 
 
 ## Required libraries
 Flask, flask-restful, python-dateutil, python-uuid
@@ -20,11 +21,13 @@ Flask, flask-restful, python-dateutil, python-uuid
     SONATA_SP_USER=sonata
     SONATA_SP_PWD=1234
 
-## HOW TO START THE SLICE MANAGER:
-To configure on which mode to work, write "True" (mode 1) or "False" (mode 2) on the "USE_SONATA" parameter inside the "config.cfg" file. Once the mode is configured, use "screen" to open two terminal sessions:
+## HOW TO USE THE SLICE MANAGER:
+The slice manager, has two possible work modes depending on the value given to the "USE_SONATA" parameter inside the "config.cfg" file. If the value is "True", you will work with your real SONATA SP/Openstack environement. If the value is "False", then you will work with the emulated environment (programmed inside the slice-mngr code).
 
-1) First session: python main.py ./config.cfg (it also works with python3)
-2) Second Session: use the following commands (use the right id any time you create/delete a NST or instantiate/terminate a NSI):
+Either one or the other mode is selected, you will need to open two terminal sessions (the use of "screen" might help):
+
+1) First terminal/session: python main.py ./config.cfg (it also works with python3)
+2) Second terminal/Session: use the commands described into the follwoing section 'HOW TO "play"...' (use the right id any time you create/delete a NST or instantiate/terminate a NSI)
 
 ## HOW TO "play"...
 - STEP 1: Check the available services in Sonata SP
