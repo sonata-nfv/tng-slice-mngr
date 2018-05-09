@@ -7,10 +7,10 @@ import database.database as db
 #################################### Sonata SP information #####################################
 def get_base_url():
     ip_address=db.settings.get('SLICE_MGR','SONATA_SP_IP')
+    #ip_address=db.settings.get('SLICE_MGR','SONATA_GTK')
     base_url = 'http://'+ip_address+':32001/api/v2'
     
     return base_url
-
 
 def use_sonata():    
     return db.settings.get('SLICE_MGR','USE_SONATA')
@@ -56,12 +56,12 @@ def delete_sonata_session(token):
 
 
 ########################################## /requests ##########################################
-#POST /requests to INSTANTIATE Network Service
+#POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(token, service_uuid):
     # prepares the parameters for the POST request
     url = get_base_url() + '/requests'
     headers_instantiation = {"authorization":"bearer " + str(token)}
-    data_instantiation = '{"service_uuid":"'+ service_uuid + '", "ingresses":[], "egresses":[]}'
+    data_instantiation = '{"service_uuid":"' + service_uuid + '", "ingresses":[], "egresses":[]}'
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
@@ -75,15 +75,15 @@ def net_serv_instantiate(token, service_uuid):
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ",HEADERS: " +str(headers_instantiation)+ ",DATA: " +str(data_instantiation))
       #Generates a RANDOM (uuid4) UUID for this emulated NSI
       uuident = uuid.uuid4()
-      jsonresponse = json.loads('{"service_instance_uuid":"'+str(uuident)+'"}')
+      jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
       return jsonresponse
 
-#POST /requests to TERMINATE Network Service
+#POST /requests to TERMINATE Network Service instance
 def net_serv_terminate(token, servInstance_uuid):
     # prepares the parameters for the POST request
     url = get_base_url() + "/requests"
     headers_termination = {"authorization":"bearer " + str(token)}
-    data_termination = '{"service_instance_uuid":"'+ servInstance_uuid + '", "request_type":"TERMINATE"}'
+    data_termination = '{"service_instance_uuid":'+ servInstance_uuid + ', "request_type":"TERMINATE"}'
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
@@ -106,30 +106,33 @@ def getAllNetServInstances(token):
     if use_sonata() == "True":
       # sends the request to the Sonata Gatekeeper API
       response = requests.get(url, headers=headers_getAll)
-      jsonresponse = json.dumps(response, indent=4, sort_keys=True)
+      jsonresponse = json.loads(response.text)
 
       return jsonresponse
     
     else:
       print ("SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(headers_getAll))
 
-#GET /requests/<service_uuid> to pull the information of a single Network Service INSTANCES
-def getNetServInstance(service_uuid, token):
+#GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
+def getRequestedNetServInstance(token, request_uuid):
     # prepares the parameters for the POST request
-    url = get_base_url() + "/requests/" + str(service_uuid)
+    url = get_base_url() + "/requests/" + str(request_uuid)
     headers_get = {"authorization":"bearer " + str(token)}
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
       # sends the request to the Sonata Gatekeeper API
       response = requests.get(url, headers=headers_get)
-      jsonresponse = json.dumps(response, indent=4, sort_keys=True)
+      jsonresponse = json.loads(response.text)
 
-      return jsonresponse.text
+      return jsonresponse
     
     else:
       print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(headers_get))
-
+      uuident = uuid.uuid4()
+      jsonresponse = json.loads('{"began_at": "2017-09-15","callback": "http://localhost:5400/serv-instan-time","created_at": "2017-09-15","id": "de0d4c7e-9450-4c3f-8add-5f9531303c65","request_type": "CREATE","service_instance_uuid": "'+str(uuident)+'","service_uuid": "233cb9b2-5575-4ddd-8bd6-6c32396afe02","status": "READY","updated_at": "2017-09-15"}')
+      return jsonresponse 
+      
    
 ########################################## /services ##########################################
 #GET /services to pull all Network Services information
@@ -168,4 +171,3 @@ def getListNetServices(token):
       
     else:
       print ("SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(headers_NetServices))
-    

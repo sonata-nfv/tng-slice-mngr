@@ -9,4 +9,4 @@ ADD . /tng-slice-mngr
 WORKDIR /tng-slice-mngr
 RUN python setup.py install
 
-CMD ["python", "main.py"]
+CMD ["python", "main.py", "config.cfg"]
