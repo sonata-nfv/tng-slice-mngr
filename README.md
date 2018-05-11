@@ -39,27 +39,28 @@ Before working with NS Templates and Instances, user should know the available s
 Create/Delete and check all the NST you want/need.
 	 1) CREATE NetSlice Template: To add more NetServices to compose a NetSlice Template, use this json structure in "nstNsdIds":[{"nstNsdId":"<NSuuid>"},{"nstNsdId":"<NSuuid>"}]
 
-	*curl -i -H "Content-Type:application/json" -X POST -d'{"nstName":"<NetSlice_Template_name>", "nstVersion":<version_number>, "nstDesigner":"<designer_name>", "nstNsdIds":[{"nstNsdId":"<NetService_uuid>"}]}' http://127.0.0.1:5998/api/nst/v1/descriptors*
+	*curl -i -H "Content-Type:application/json" -X POST -d'{"name":"tango_NST", "version":2, "author":"5gtango", "vendor":"5gTango", "nstNsdIds":[{"NsdId":"<NSuuid>"},{"nstNsdId":"<NSuuid>"}]}' http://127.0.0.1:5998/api/nst/v1/descriptors*
 
 		    REQUEST EXAMPLE:
-		    ccurl -i -H "Content-Type:application/json" -X POST -d'{"nstName":"Rubik_NST", "nstVersion":1, "nstDesigner":"Rubik_designer", "nstNsdIds":[{"nstNsdId":"40920a3c-9cc3-43f3-9f78-3fae65e29bad"}]}' http://127.0.0.1:5998/api/nst/v1/descriptors
+		    curl -i -H "Content-Type:application/json" -X POST -d'{"name":"Rubik_NST", "version":"1.0", "author":"5GTANGO", "vendor":"5gTango", "nstNsdIds":[{"NsdId":"6a01afdc-9d42-4bc9-866c-a8a3868fdf5e"}]}' http://127.0.0.1:5998/api/nst/v1/descriptors
     
 		    RESPONSE EXAMPLE:
 		     {
-			      "notificationTypes": "",
-			      "nstDesigner": "Rubik_designer",
-			      "nstId": "185c00c8-fe09-4fc5-9175-ebbcd757e0f5",
-			      "nstInvariantId": "",
-			      "nstName": "Rubik_NST",
-			      "nstNsdIds": [
-			          "40920a3c-9cc3-43f3-9f78-3fae65e29bad"
-			      ],
-			      "nstOnboardingState": "ENABLED",
-			      "nstOperationalState": "ENABLED",
-			      "nstUsageState": "NOT_USED",
-			      "nstVersion": 3,
-			      "userDefinedData": ""
-		      }
+            "author": "",
+            "designer": "5GTANGO",
+            "id": "26c540a8-1e70-4242-beef-5e77dfa05a41",
+            "name": "Rubik_NST",
+            "notificationTypes": "",
+            "nstNsdIds": [
+              "6a01afdc-9d42-4bc9-866c-a8a3868fdf5e"
+            ],
+            "onboardingState": "ENABLED",
+            "operationalState": "ENABLED",
+            "usageState": "NOT_IN_USE",
+            "userDefinedData": "",
+            "vendor": "5gTango",
+            "version": "1.0"
+         }
 
   2) GET AVAILABLE NSTemplates
   	
@@ -83,29 +84,31 @@ Create/Delete and check all the NST you want/need.
 
 Once the NST is created, it is possible to create/delete and check NSIs based on the selected NST.
 
-  1) CREATE NetSlice Intance --> select the NST uuid by looking the nst_catalogue (NST GET actions 3 or 4)
+  1) CREATE NetSlice Intance --> select the NST uuid by looking the nst_catalogue (NST GET actions 3 or 4) and copy the "id" you need
   
-	  *curl -i -H "Content-Type:application/json" -X POST -d'{"nsiName": "<NetSlice_Instantiation_name>", "nsiDescription": "NetSlice_description", "nstId": "<nstID_uuid>"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi*
+	  *curl -i -H "Content-Type:application/json" -X POST -d'{"name": "<nsiName>", "description": "<nsiDescription>", "nstId": "<nstID_uuid>"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi*
     
-		    REQUEST EXAMPLE: curl -i -H "Content-Type:application/json" -X POST -d'{"nsiName": "<Rubik_NSI>", "nsiDescription": "Rubik_NSI_description", "nstId": "185c00c8-fe09-4fc5-9175-ebbcd757e0f5"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi
+		    REQUEST EXAMPLE: curl -i -H "Content-Type:application/json" -X POST -d'{"name": "Rubik_name", "description": "Rubik_descriptor", "nstId": "f034e795-6c93-474b-8ebc-aff6cc8a1002"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi
+
 		    RESPONSE EXAMPLE:
-		    {
-				    "ServiceInstancesUuid": [
-						    "59cf2b1f-2a4d-4ab7-b160-9ed88d3b9dc2"
-					],
-					"flavorId": "",
-					"instantiateTime": "2018-04-11T15:48:34.736264",
-					"nsiDescription": "Rubik_NSI_description",
-					"nsiId": "77fabee0-1b40-4327-b298-7fc3167c66c2",
-					"nsiName": "<Rubik_NSI>",
-					"nsiState": "INSTANTIATED",
-					"nstId": "185c00c8-fe09-4fc5-9175-ebbcd757e0f5",
-					"nstInfoId": "",
-					"sapInfo": "",
-					"scaleTime": "",
-					"terminateTime": "",
-					"updateTime": ""
-			}
+         {
+           "description": "Rubik_descriptor",
+           "flavorId": "",
+           "id": "deb3a1fc-2493-4d76-a65d-9ac129a213fb",
+           "instantiateTime": "2018-05-11T14:16:10.773473",
+           "name": "Rubik_name",
+           "netServInstance_Uuid": [
+             "dc8fafaf-6fab-4b4c-a6c7-a1fb5d4c2ce8"
+           ],
+           "nsiState": "INSTANTIATED",
+           "nstId": "26c540a8-1e70-4242-beef-5e77dfa05a41",
+           "nstInfoId": "",
+           "sapInfo": "",
+           "scaleTime": "",
+           "terminateTime": "",
+           "updateTime": "",
+           "vendor": "5gTango"
+         }
 			
 			NOTE: On the server side, it is possible to see the emulated request sent to SONATA SP ...
 			SONATA EMULATED TOKEN REQUEST --> URL: http://10.1.7.21:32001/api/v2/sessions,DATA: {"username":"sonata","password":"1234"}

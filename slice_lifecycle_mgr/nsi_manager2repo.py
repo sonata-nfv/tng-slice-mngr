@@ -13,7 +13,7 @@ def get_base_url():
 
 
 ####################################### /records/nsir/ns-instances #######################################
-#POST /sessions to create a session and get the token
+#POST to send the NSI information to the repositories
 def safe_nsi(NSI_string):
     #curl -X POST -H "Content-type:application/json" --data-binary @spec/fixtures/nsir-example.json <base URL>/records/nsir/ns-instances
     # prepares the parameters for the POST request
@@ -26,8 +26,8 @@ def safe_nsi(NSI_string):
     
     return jsonresponse
 
-#POST /sessions to create a session and get the token
-def request_saved_nsis():
+#GET to get the NSI information from the repositories
+def request_saved_nsi():
     #curl -X GET -H "Content-type:application/json" <base URL>/records/nsir/ns-instances
     # prepares the parameters for the POST request
     url = get_base_url() + '/records/nsir/ns-instances'

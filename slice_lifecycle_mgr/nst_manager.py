@@ -14,23 +14,23 @@ def createNST(jsondata):
     
     #Assigns the received information to the right parameter
     NST = nst.nst_content()
-    NST.nstId = nst_uuid
-    NST.nstName = jsondata['nstName']
-    NST.nstVersion = jsondata['nstVersion']
-    NST.nstDesigner = jsondata['nstDesigner']
-    #NST.nstInvariantId = jsondata['nstInvariantId']
+    NST.id = nst_uuid
+    NST.name = jsondata['name']
+    NST.version = jsondata['version']
+    NST.designer = jsondata['author']
+    NST.vendor = jsondata ['vendor']
     
     nstNsdIds_array = jsondata['nstNsdIds']
     for nsiId_item in nstNsdIds_array:
-        NST.nstNsdIds.append(nsiId_item['nstNsdId'])
+        NST.nstNsdIds.append(nsiId_item['NsdId'])
     
-    NST.nstOnboardingState = "ENABLED"
-    NST.nstOperationalState = "ENABLED"
-    NST.nstUsageState = "NOT_IN_USE"
-    #NST.notificationTypes = jsondata['notificationTypes']
-    #NST.userDefinedData = jsondata['userDefinedData']      
-    
-    db.nst_dict[NST.nstId] = NST  
+    NST.onboardingState = "ENABLED"
+    NST.operationalState = "ENABLED"
+    NST.usageState = "NOT_IN_USE"
+    #NST.notificationTypes = jsondata['notificationTypes']          #TODO: where does it come from??
+    #NST.userDefinedData = jsondata['userDefinedData']              #TODO: where does it come from??
+        
+    db.nst_dict[NST.id] = NST  
     return vars(NST)
 
 def getNST(nstId):
@@ -47,7 +47,7 @@ def getAllNst():
     
 def deleteNST(nstId):
     NST = db.nst_dict.get(nstId)
-    if NST.nstUsageState == "NOT_USED":
+    if NST.usageState == "NOT_USED":
       logging.info("Deleting Network Slice Template")
       del db.nst_dict[nstId]
       return nstId

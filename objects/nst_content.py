@@ -1,50 +1,45 @@
 #!/usr/bin/python
 
-
 class nst_content:
     def __init__(self):
-        #self.id = ""                     #id given by the slice manager when creating the NST
-        self.nstId = ""                  #id given by the creator of the slice
-        self.nstName = ""
-        self.nstVersion = ""
-        self.nstDesigner = ""
-        self.nstInvariantId = ""
+        self.id = ""                      #id given by the creator of the slice
+        self.name = ""
+        self.version = ""
+        self.author = ""
+        self.vendor = ""
         self.nstNsdIds = []
-        self.nstOnboardingState = ""     #values are ENABLED/DISABLED in string format
-        self.nstOperationalState = ""    #values are ENABLED/DISABLED in string format
-        self.nstUsageState = ""          #values are IN_USE/OUT_USE (??) in string format
-        self.notificationTypes = ""      #containts a Nst_Onboarding_Notification
+        self.onboardingState = ""         #values are ENABLED/DISABLED in string format
+        self.operationalState = ""        #values are ENABLED/DISABLED in string format
+        self.usageState = ""              #values are IN_USE/NOT_IN_USE in string format
+        self.notificationTypes = ""       #containts a Nst_Onboarding_Notification
         self.userDefinedData = ""
 
     def getID(self):
         return self.id
 
-    def getnstID(self):
-        return self.nstId
-
     def getName(self):
-        return self.nstName
+        return self.name
 
     def getVersion(self):
-        return self.nstVersion
+        return self.version
 
-    def getDesigner(self):
-        return self.nstDesigner
-
-    def getInvariantId(self):
-        return self.nstInvariantId
+    def getAuthor(self):
+        return self.author
+    
+    def getVendor(self):
+        return self.vendor
 
     def getNsdIds(self):
         return self.nstNsdIds
 
     def getOnboardingState(self):
-        return self.nstOnboardingState
+        return self.onboardingState
 
     def getOperationalStat(self):
-        return self.nstOperationalState
+        return self.operationalState
 
     def getUsageState(self):
-        return self.nstUsageState
+        return self.usageState
 
     def getNorificationTypes(self):
         return self.notificationTypes
