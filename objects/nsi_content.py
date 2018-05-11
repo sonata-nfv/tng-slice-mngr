@@ -2,10 +2,11 @@
 
 class nsi_content:
     def __init__(self):
-        self.nsiId=""
-        self.nsiName=""
-        self.nsiDescription=""
+        self.id=""
+        self.name=""
+        self.description=""
         self.nstId=""
+        self.vendor=""
         self.nstInfoId=""
         self.flavorId=""
         self.sapInfo=""
@@ -15,19 +16,21 @@ class nsi_content:
         self.scaleTime=""
         self.updateTime=""
         self.netServInstance_Uuid = []
-        
-        
+               
     def getID(self):
-        return self.nsiId
+        return self.id
 
     def getName(self):
-        return self.nsiName
+        return self.name
 
     def getDescription(self):
-        return self.nsiDescription
+        return self.description
 
     def getNSTId(self):
         return self.nstId
+    
+    def getVendor(self):
+        return self.vendor
 
     def getInfoId(self):
         return self.nstInfoId

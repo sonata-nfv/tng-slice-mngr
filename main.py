@@ -17,6 +17,7 @@ app = Flask(__name__)
 def getAllNetServ():
     token  = sonata_mapper.create_sonata_session()                #requests session token for sonata
     ServDict = sonata_mapper.getListNetServices(token)
+    #ServDict = sonata_mapper.getListNetServices()
     
     logging.info('Returning all network Services')
     return jsonify(ServDict), 200
