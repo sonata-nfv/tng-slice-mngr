@@ -17,7 +17,7 @@ def createNST(jsondata):
     NST.id = nst_uuid
     NST.name = jsondata['name']
     NST.version = jsondata['version']
-    NST.designer = jsondata['author']
+    NST.author = jsondata['author']
     NST.vendor = jsondata ['vendor']
     
     nstNsdIds_array = jsondata['nstNsdIds']
@@ -47,7 +47,7 @@ def getAllNst():
     
 def deleteNST(nstId):
     NST = db.nst_dict.get(nstId)
-    if NST.usageState == "NOT_USED":
+    if NST.usageState == "NOT_IN_USE":
       logging.info("Deleting Network Slice Template")
       del db.nst_dict[nstId]
       return nstId
