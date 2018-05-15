@@ -73,7 +73,8 @@ def postNSIinstantiation():
   new_NSI = request.json
   instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
   
-  return jsonify(instantiatedNSI), 201
+  #return jsonify(instantiatedNSI), 201
+  return instantiatedNSI, 201
 
 #terminates a NetSlice instance (NSI)
 @app.route('/api/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
@@ -89,7 +90,8 @@ def getALLNSI():
   allNSI = nsi_manager.getAllNsi()
   logging.info('Returning all existing NSIs (instantiated/terminated/etc.)')
   
-  return jsonify(allNSI), 202
+  #return jsonify(allNSI), 202
+  return allNSI, 202
 
 #asks for a specific NetSlice instances (NSI) information
 @app.route('/api/nsilcm/v1/nsi/<nsiId>', methods=['GET'])
@@ -97,7 +99,8 @@ def getNSI(nsiId):
   logging.info('Returning the desired NSI')
   returnedNSI = nsi_manager.getNSI(nsiId)
     
-  return jsonify(returnedNSI), 202
+  #return jsonify(returnedNSI), 202
+  return returnedNSI, 202
 
 
 

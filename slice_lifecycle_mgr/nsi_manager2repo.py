@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import os, sys, requests, json, logging
 
 
@@ -15,7 +14,6 @@ def get_base_url():
 ####################################### /records/nsir/ns-instances #######################################
 #POST to send the NSI information to the repositories
 def safe_nsi(NSI_string):
-    #curl -X POST -H "Content-type:application/json" --data-binary @spec/fixtures/nsir-example.json <base URL>/records/nsir/ns-instances
     # prepares the parameters for the POST request
     url = get_base_url() + '/records/nsir/ns-instances'
     headers = {"content-type":"application/json"}
@@ -26,9 +24,8 @@ def safe_nsi(NSI_string):
     
     return jsonresponse
 
-#GET to get the NSI information from the repositories
-def request_saved_nsi():
-    #curl -X GET -H "Content-type:application/json" <base URL>/records/nsir/ns-instances
+#GET all NSI information from the repositories
+def getAll_saved_nsi():
     # prepares the parameters for the POST request
     url = get_base_url() + '/records/nsir/ns-instances'
     headers = {"content-type":"application/json"}
@@ -40,10 +37,33 @@ def request_saved_nsi():
 
   
 ######################## /records/nsir/ns-instances/<service_instance_uuid> #############################
-#curl -X GET -H "Content-type:application/json" <base URL>/records/nsir/ns-instances/<service_instance_uuid>
+#GET specific NSI information from the repositories
+def get_saved_nsi(nsiId):
+    # prepares the parameters for the GET request
+    url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
+    headers = {"content-type":"application/json"}
+    
+    response = requests.get(url, headers)
+    #jsonresponse = json.loads(response.text)
+    #return jsonresponse
+    return response
 
-
-#curl -X PUT -H "Content-type:application/json" <base URL>/records/nsir/ns-instances/<service_instance_uuid> -d '{"id":<service uuid>,"descriptor_version":<latest service descriptor version>,"version":<version>,"vendor":<vendor>,"name":<name>,"<field_to_be_updated>":<value>}'
-
+#curl -X PUT -d '{"id":<service uuid>,"descriptor_version":<latest service descriptor version>,"version":<version>,"vendor":<vendor>,"name":<name>,"<field_to_be_updated>":<value>}'
+def update_nsi(updatedata):
+    url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
+    headers = {"content-type":"application/json"}
+    data = updatedata
+    
+    response = requests.put(url, headers, data)
+    
+    return response
 
 #curl -X DELETE <base URL>/records/nsir/ns-instances/<service_instance_uuid>
+def delete_saved_nsi():
+    # prepares the parameters for the GET request
+    url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
+    
+    response = requests.delete(url)
+    #jsonresponse = json.loads(response.text)
+    #return jsonresponse
+    return response
