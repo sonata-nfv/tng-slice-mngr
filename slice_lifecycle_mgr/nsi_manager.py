@@ -63,16 +63,17 @@ def instantiateNSI(nsi_jsondata):
       #instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
       
-    db.nsi_dict[NSI.id] = NSI                                          #TODO: sends the NSI object information to the repository
-    #NSI_string = vars(NSI)
-    #repo_response = nsi_repo.safe_nsi(NSI_string)
+    #db.nsi_dict[NSI.id] = NSI                                          ########TODO: sends the NSI object information to the repository
+    NSI_string = vars(NSI)
+    nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
 
     #update nstUsageState parameter
     if NST.usageState == "NOT_IN_USE":
       NST.usageState = "IN_USE"
       db.nst_dict[NST.id] = NST                                        #TODO: substitute this db for the catalogue connection (PUT)
       
-    return vars(NSI)
+    #return vars(NSI)
+    return nsirepo_jsonresponse
 
 def terminateNSI(nsiId, TerminOrder):
     logging.info("TERMINATING A NSI")
@@ -107,16 +108,20 @@ def terminateNSI(nsiId, TerminOrder):
 
 def getNSI(nsiId):
     logging.info("RETRIEVING A NSI")
-    NSI = db.nsi_dict.get(nsiId)                                        #TODO: substitute with the repositories command (GET)
+    #NSI = db.nsi_dict.get(nsiId)                                        ######TODO: substitute with the repositories command (GET)
+    repo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
 
-    return (vars(NSI))
+    #return (vars(NSI))
+    return repo_jsonresponse
 
 def getAllNsi():
     logging.info("RETRIEVING ALL EXISTING NSIs")
-    nsi_list = []
-    for nsi_item in db.nsi_dict:
-        NSI = db.nsi_dict.get(nsi_item)                                 #TODO: substitute with the repositories command (GET)
-        nsi_string = vars(NSI)
-        nsi_list.append(nsi_string)
+#    nsi_list = []
+#    for nsi_item in db.nsi_dict:
+#        NSI = db.nsi_dict.get(nsi_item)                                 #TODO: substitute with the repositories command (GET)
+#        nsi_string = vars(NSI)
+#        nsi_list.append(nsi_string)
+    repo_jsonresponse = nsi_repo.getAll_saved_nsi()
     
-    return (nsi_list)
+    #return (nsi_list)
+    return repo_jsonresponse

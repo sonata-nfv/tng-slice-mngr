@@ -34,8 +34,7 @@ def create_sonata_session():
       for item_token in token_array:
           token = token_array['access_token']
           
-      return token
-           
+      return token    
     else:
       print ("SONATA EMULATED TOKEN REQUEST --> URL: " +url+ ",DATA: " +data)
 
@@ -62,6 +61,7 @@ def net_serv_instantiate(token, service_uuid):
       #Generates a RANDOM (uuid4) UUID for this emulated NSI
       uuident = uuid.uuid4()
       jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
+      
       return jsonresponse
 
 #POST /requests to TERMINATE Network Service instance
