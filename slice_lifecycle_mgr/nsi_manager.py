@@ -8,12 +8,12 @@ import slice2ns_mapper.mapper as mapper
 import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo
 import database.database as db
 
-def check_requests_status(token, requestsID_list):
-#def check_requests_status(requestsID_list):
+#def check_requests_status(token, requestsID_list):
+def check_requests_status(requestsID_list):
     counter=0
     for resquestID_item in requestsID_list:
-      getRequest_response = mapper.getRequestedNetServInstance(token, resquestID_item)
-      #getRequest_response = mapper.getRequestedNetServInstance(resquestID_item)  
+      #getRequest_response = mapper.getRequestedNetServInstance(token, resquestID_item)
+      getRequest_response = mapper.getRequestedNetServInstance(resquestID_item)  
       if(getRequest_response['status'] == 'READY'):
         counter=counter+1
     
@@ -44,23 +44,23 @@ def instantiateNSI(nsi_jsondata):
     NSI.instantiateTime = str(datetime.datetime.now().isoformat())
       
     #instantiates required NetServices by sending requests to Sonata SP
-    token = mapper.create_sonata_session()
+    #token = mapper.create_sonata_session()
     requestsID_list = []   
     for uuidNetServ_item in NST.nstNsdIds:
-      instantiation_response = mapper.net_serv_instantiate(token, uuidNetServ_item)
-      #instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
+      #instantiation_response = mapper.net_serv_instantiate(token, uuidNetServ_item)
+      instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
       requestsID_list.append(instantiation_response['id'])
     
     #checks if all instantiations in Sonata SP are READY to store NSI object
     allInstantiationsReady = False
     while (allInstantiationsReady == False):
-      allInstantiationsReady = check_requests_status(token, requestsID_list)
-      #allInstantiationsReady = check_requests_status(requestsID_list)
+      #allInstantiationsReady = check_requests_status(token, requestsID_list)
+      allInstantiationsReady = check_requests_status(requestsID_list)
       time.sleep(5)
     
     for request_uuid_item in requestsID_list:
-      instantiation_response = mapper.getRequestedNetServInstance(token, request_uuid_item)
-      #instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
+      #instantiation_response = mapper.getRequestedNetServInstance(token, request_uuid_item)
+      instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
       
     #db.nsi_dict[NSI.id] = NSI                                          ########TODO: sends the NSI object information to the repository
@@ -91,12 +91,12 @@ def terminateNSI(nsiId, TerminOrder):
       NSI.terminateTime = str(datetime.datetime.now().isoformat())
       if NSI.nsiState == "INSTANTIATED":
         #requests session token for sonata
-        token = mapper.create_sonata_session()
+        #token = mapper.create_sonata_session()
         
         #sends the requests to terminate all NetServiceInstances belonging to the NetSlice we are terminating
         for ServInstanceUuid_item in NSI.netServInstance_Uuid:
-          #termination = mapper.net_serv_terminate(ServInstanceUuid_item)
-          termination = mapper.net_serv_terminate(token, ServInstanceUuid_item)
+          termination = mapper.net_serv_terminate(ServInstanceUuid_item)
+          #termination = mapper.net_serv_terminate(token, ServInstanceUuid_item)
          
       NSI.nsiState = "TERMINATE"                                        #TODO: validate all related NetService instances are terminated
       return (vars(NSI))
