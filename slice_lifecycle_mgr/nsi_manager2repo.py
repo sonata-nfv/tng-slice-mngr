@@ -27,6 +27,7 @@ def safe_nsi(NSI_string):
     print ("________________________________________________________")
     
     response = requests.post(url, headers, data)
+    logger.debug('Response coming from repositories: %s', response)
     jsonresponse = json.loads(response.text)
     
     return jsonresponse
