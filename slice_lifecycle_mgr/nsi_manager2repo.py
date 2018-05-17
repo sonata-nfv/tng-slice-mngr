@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os, sys, requests, json, logging
+import database.database as db
 
 
 #################################### Sonata Repositories information #####################################
