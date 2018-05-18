@@ -2,6 +2,10 @@
 import os, sys, requests, json, logging
 import database.database as db
 
+logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger("slicemngr:repo")
+LOG.setLevel(logging.INFO)
+
 
 #################################### Sonata Repositories information #####################################
 def get_base_url():
@@ -18,11 +22,10 @@ def safe_nsi(NSI_string):
     # prepares the parameters for the POST request
     url = get_base_url() + '/records/nsir/ns-instances'
     headers = {'Content-Type': 'application/json'}
-    data = jsonify(vars(NSI_string))
-    
+    data = json.dumps(vars(NSI_string))
+    LOG.info(data)
     response = requests.post(url, headers, data)
     jsonresponse = json.loads(response.text)
-    
     return jsonresponse
 
 #GET all NSI information from the repositories
