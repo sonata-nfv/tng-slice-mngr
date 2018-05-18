@@ -20,14 +20,16 @@ def safe_nsi(NSI_string):
     headers = "Content-type:application/json"
     data = json.dumps(NSI_string, sort_keys=True, indent=4, separators=(',', ': '))
     
-    print ("________________________________________________________")
-    print (url)
-    print (headers)
-    print (data)
-    print ("________________________________________________________")
+    logging.debug('Sending URL: %s', url)
+    logging.debug('Sending headers: %s', headers)
+    logging.debug('Sending data: %s', data)
+    logging.info('Sending URL: %s', url)
+    logging.info('Sending headers: %s', headers)
+    logging.info('Sending data: %s', data)
     
     response = requests.post(url, headers, data)
-    logger.debug('Response coming from repositories: %s', response)
+    logging.debug('Response coming from repositories: %s', response)
+    
     jsonresponse = json.loads(response.text)
     
     return jsonresponse
