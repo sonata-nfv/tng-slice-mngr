@@ -22,7 +22,7 @@ def safe_nsi(NSI_string):
     # prepares the parameters for the POST request
     url = get_base_url() + '/records/nsir/ns-instances'
     headers = {'Content-Type': 'application/json'}
-    data = json.dumps(vars(NSI_string))
+    data = json.dumps(NSI_string, sort_keys=True, indent=4, separators=(',', ': '))
     LOG.info(data)
     response = requests.post(url, headers, data)
     jsonresponse = json.loads(response.text)
