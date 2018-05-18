@@ -17,7 +17,7 @@ def get_base_url():
 def safe_nsi(NSI_string):
     # prepares the parameters for the POST request
     url = get_base_url() + '/records/nsir/ns-instances'
-    headers = {"content-type":"application/json"}
+    headers = {'Content-Type': 'application/json'}
     data = jsonify(vars(NSI_string))
     
     response = requests.post(url, headers, data)
@@ -29,7 +29,7 @@ def safe_nsi(NSI_string):
 def getAll_saved_nsi():
     # prepares the parameters for the POST request
     url = get_base_url() + '/records/nsir/ns-instances'
-    headers = {"content-type":"application/json"}
+    headers = {'Content-Type': 'application/json'}
     
     response = requests.get(url, headers)
     jsonresponse = json.loads(response.text)
@@ -42,7 +42,7 @@ def getAll_saved_nsi():
 def get_saved_nsi(nsiId):
     # prepares the parameters for the GET request
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
-    headers = {"content-type":"application/json"}
+    headers = {'Content-Type': 'application/json'}
     
     response = requests.get(url, headers)
     #jsonresponse = json.loads(response.text)
@@ -52,7 +52,7 @@ def get_saved_nsi(nsiId):
 #curl -X PUT -d '{"id":<service uuid>,"descriptor_version":<latest service descriptor version>,"version":<version>,"vendor":<vendor>,"name":<name>,"<field_to_be_updated>":<value>}'
 def update_nsi(updatedata):
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
-    headers = {"content-type":"application/json"}
+    headers = {'Content-Type': 'application/json'}
     data = updatedata
     
     response = requests.put(url, headers, data)
