@@ -21,11 +21,18 @@ def get_base_url():
 def safe_nsi(NSI_string):
     # prepares the parameters for the POST request
     url = get_base_url() + '/records/nsir/ns-instances'
-    headers = {'Content-Type': 'application/json'}
-    data = json.dumps(NSI_string, sort_keys=True, indent=4, separators=(',', ': '))
+    header = {'Content-Type': 'application/json'}
+    data = json.dumps(NSI_string)
     LOG.info(data)
-    response = requests.post(url, data, headers, timeout=1.0)
+    response = requests.post(url, data, headers=header, timeout=1.0, )
     jsonresponse = json.loads(response.text)
+    if (response.status_code == 200):
+        LOG.info("NSIR storage accepted.")
+    else:
+        error = {'http_code': response.status_code,
+                 'message': response.json()}
+        jsonresponse = error
+        LOG.info('nsir to repo failed: ' + str(error))
     return jsonresponse
 
 #GET all NSI information from the repositories
