@@ -24,9 +24,10 @@ def safe_nsi(NSI_string):
     data = json.dumps(NSI_string, sort_keys=True, indent=4, separators=(',', ': '))
      
     response = requests.post(url, headers, data)
-    jsonresponse = json.loads(response.text)
+    #jsonresponse = json.loads(response.text)
     
-    return jsonresponse
+    #return jsonresponse
+    return response.text
 
 #GET all NSI information from the repositories
 def getAll_saved_nsi():
