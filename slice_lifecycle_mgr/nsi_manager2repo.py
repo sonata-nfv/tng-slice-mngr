@@ -24,7 +24,7 @@ def safe_nsi(NSI_string):
     headers = {'Content-Type': 'application/json'}
     data = json.dumps(NSI_string, sort_keys=True, indent=4, separators=(',', ': '))
     LOG.info(data)
-    response = requests.post(url, headers, data)
+    response = requests.post(url, data, headers, timeout=1.0)
     jsonresponse = json.loads(response.text)
     return jsonresponse
 
