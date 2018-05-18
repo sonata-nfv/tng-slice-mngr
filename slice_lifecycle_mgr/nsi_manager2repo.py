@@ -1,6 +1,9 @@
 #!/usr/bin/python
 import os, sys, requests, json, logging
+from flask import jsonify
+
 import database.database as db
+
 
 
 #################################### Sonata Repositories information #####################################
@@ -21,10 +24,9 @@ def safe_nsi(NSI_string):
     data = json.dumps(NSI_string, sort_keys=True, indent=4, separators=(',', ': '))
      
     response = requests.post(url, headers, data)
-    #jsonresponse = json.loads(response.text)
+    jsonresponse = json.loads(response.text)
     
-    #return jsonresponse
-    return response
+    return jsonresponse
 
 #GET all NSI information from the repositories
 def getAll_saved_nsi():
@@ -33,9 +35,10 @@ def getAll_saved_nsi():
     headers = "Content-Type: application/json"
     
     response = requests.get(url, headers)
-    jsonresponse = json.loads(response.text)
+    #jsonresponse = json.loads(response.text)
     
-    return jsonresponse
+    #return jsonresponse
+    return response.text
 
   
 ######################## /records/nsir/ns-instances/<service_instance_uuid> #############################
