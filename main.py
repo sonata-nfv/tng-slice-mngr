@@ -87,7 +87,7 @@ def getALLNSI():
   allNSI = nsi_manager.getAllNsi()
   
   logging.info('Returning all NSI')
-  return allNSI, 200
+  return jsonify(allNSI), 200
 
 #asks for a specific NetSlice instances (NSI) information
 @app.route('/api/nsilcm/v1/nsi/<nsiId>', methods=['GET'])
@@ -95,7 +95,7 @@ def getNSI(nsiId):
   returnedNSI = nsi_manager.getNSI(nsiId)
   
   logging.info('Returning the NSI with id:' +str(nsiId))
-  return returnedNSI, 200
+  return jsonify(returnedNSI), 200
 
 
 
