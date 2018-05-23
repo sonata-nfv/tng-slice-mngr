@@ -69,7 +69,27 @@ def instantiateNSI(nsi_jsondata):
 
 def terminateNSI(nsiId, TerminOrder):
     logging.info("NSI_MNGR: Terminate NSI with id: " +str(nsiId))
-    NSI = db.nsi_dict.get(nsiId)                                       #TODO: substitute with the repositories command (GET)
+    #NSI = db.nsi_dict.get(nsiId)                                       #TODO: substitute with the repositories command (GET)
+    repo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
+    logging.info(repo_jsonresponse)
+    
+    NSI = nsi.nsi_content()
+    NSI.id = repo_jsonresponse['uuid']
+    NSI.name = repo_jsonresponse['name']
+    NSI.description = repo_jsonresponse['description']
+    NSI.nstId = repo_jsonresponse['nstId']
+    NSI.vendor = repo_jsonresponse['vendor']
+    NSI.nstInfoId = repo_jsonresponse['nstInfoId']
+    NSI.flavorId = repo_jsonresponse['flavorId']
+    NSI.sapInfo = repo_jsonresponse['sapInfo']
+    NSI.nsiState = repo_jsonresponse['nsiState']  
+    netServInsID_array = repo_jsonresponse['netServInstance_Uuid']
+    for NetServInsID_item in netServInsID_array:
+      NSI.netServInstance_Uuid.append(NetServInsID_item)
+    NSI.instantiateTime = repo_jsonresponse['instantiateTime']
+    NSI.terminateTime = repo_jsonresponse['terminateTime']
+    NSI.scaleTime = repo_jsonresponse['scaleTime']
+    NSI.updateTime = repo_jsonresponse['updateTime']
     
     #prepares the datetime values to work with them
     instan_time = dateutil.parser.parse(NSI.instantiateTime)
@@ -82,7 +102,7 @@ def terminateNSI(nsiId, TerminOrder):
     if termin_time == 0:
       NSI.terminateTime = str(datetime.datetime.now().isoformat())
       if NSI.nsiState == "INSTANTIATED":
-        #sends the requests to terminate all NetServiceInstances belonging to the NetSlice we are terminating
+        #termination requests to all NetServiceInstances belonging to the NetSlice
         for ServInstanceUuid_item in NSI.netServInstance_Uuid:
           termination = mapper.net_serv_terminate(ServInstanceUuid_item)
          
@@ -96,20 +116,12 @@ def terminateNSI(nsiId, TerminOrder):
 
 def getNSI(nsiId):
     logging.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))
-    #NSI = db.nsi_dict.get(nsiId)                                        ######TODO: substitute with the repositories command (GET)
     repo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
 
-    #return (vars(NSI))
     return repo_jsonresponse
 
 def getAllNsi():
     logging.info("NSI_MNGR: Retrieve all existing NSIs")
-#    nsi_list = []
-#    for nsi_item in db.nsi_dict:
-#        NSI = db.nsi_dict.get(nsi_item)                                 #TODO: substitute with the repositories command (GET)
-#        nsi_string = vars(NSI)
-#        nsi_list.append(nsi_string)
     repo_jsonresponse = nsi_repo.getAll_saved_nsi()
     
-    #return (nsi_list)
     return repo_jsonresponse

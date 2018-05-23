@@ -26,7 +26,6 @@ def safe_nsi(NSI_string):
     url = get_base_url() + '/records/nsir/ns-instances'
     header = {'Content-Type': 'application/json'}
     data = json.dumps(NSI_string)
-    LOG.info(data)
     response = requests.post(url, data, headers=header, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
