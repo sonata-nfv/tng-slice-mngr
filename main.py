@@ -73,8 +73,8 @@ def postNSIinstantiation():
   new_NSI = request.json
   instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
   
-  #return jsonify(instantiatedNSI), 201
-  return instantiatedNSI, 201
+  return jsonify(instantiatedNSI), 201
+  #return instantiatedNSI, 201
 
 #terminates a NetSlice instance (NSI)
 @app.route('/api/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])

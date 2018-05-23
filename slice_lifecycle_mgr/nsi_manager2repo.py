@@ -1,10 +1,13 @@
 #!/usr/bin/python
 import os, sys, requests, json, logging
+from flask import jsonify
+
 import database.database as db
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
+
 
 
 #################################### Sonata Repositories information #####################################
@@ -35,6 +38,7 @@ def safe_nsi(NSI_string):
         LOG.info('nsir to repo failed: ' + str(error))
     return jsonresponse
 
+
 #GET all NSI information from the repositories
 def getAll_saved_nsi():
     # prepares the parameters for the POST request
@@ -42,9 +46,10 @@ def getAll_saved_nsi():
     headers = {'Content-Type': 'application/json'}
     
     response = requests.get(url, headers)
-    jsonresponse = json.loads(response.text)
+    #jsonresponse = json.loads(response.text)
     
-    return jsonresponse
+    #return jsonresponse
+    return response.text
 
   
 ######################## /records/nsir/ns-instances/<service_instance_uuid> #############################
@@ -53,6 +58,7 @@ def get_saved_nsi(nsiId):
     # prepares the parameters for the GET request
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     headers = {'Content-Type': 'application/json'}
+
     
     response = requests.get(url, headers)
     #jsonresponse = json.loads(response.text)
@@ -63,6 +69,7 @@ def get_saved_nsi(nsiId):
 def update_nsi(updatedata):
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     headers = {'Content-Type': 'application/json'}
+
     data = updatedata
     
     response = requests.put(url, headers, data)

@@ -136,6 +136,7 @@ def getListNetServices():
     # prepares the parameters for the POST request
     url = get_base_url() + "/services"
     #headers = {"authorization": "bearer " + str(token)}
+    #headers = "Content-Type: application/json"
     headers = {"Content-Type":"application/json"}
     
 
