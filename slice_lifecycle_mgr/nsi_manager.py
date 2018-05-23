@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os, sys, logging, datetime, uuid, time
+import os, sys, logging, datetime, uuid, time, json
 import dateutil.parser
 
 import objects.nsi_content as nsi
@@ -56,7 +56,7 @@ def instantiateNSI(nsi_jsondata):
     while (allInstantiationsReady == False):
       #allInstantiationsReady = check_requests_status(token, requestsID_list)
       allInstantiationsReady = check_requests_status(requestsID_list)
-      time.sleep(5)
+      #time.sleep(5)
     
     for request_uuid_item in requestsID_list:
       #instantiation_response = mapper.getRequestedNetServInstance(token, request_uuid_item)
