@@ -6,7 +6,7 @@ import database.database as db
 
 
 def createNST(jsondata):
-    logging.info("CREATING A NEW NST")
+    logging.info("NST_MNGR: Ceating a new NST")
     
     #Generate the UUID for this NSI
     uuident = uuid.uuid4()
@@ -33,11 +33,13 @@ def createNST(jsondata):
     db.nst_dict[NST.id] = NST  
     return vars(NST)
 
-def getNST(nstId):
+def getNST(nstId):                                                  #TODO: use the CATALOGUE command
+    logging.info("NST_MNGR: Return NST with id: " + str(nstId))
     NST = db.nst_dict.get(nstId)
     return (vars(NST))
   
-def getAllNst():
+def getAllNst():                                                    #TODO: use the CATALOGUE command
+    logging.info("NST_MNGR: Return all NSTs")
     nst_list = []
     for nst_item in db.nst_dict:
         NST = db.nst_dict.get(nst_item)
@@ -45,7 +47,8 @@ def getAllNst():
         nst_list.append(nst_string)
     return nst_list 
     
-def deleteNST(nstId):
+def deleteNST(nstId):                                               #TODO: use the CATALOGUE command
+    logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
     NST = db.nst_dict.get(nstId)
     if NST.usageState == "NOT_IN_USE":
       logging.info("Deleting Network Slice Template")
