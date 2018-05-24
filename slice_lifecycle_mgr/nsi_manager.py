@@ -108,7 +108,7 @@ def terminateNSI(nsiId, TerminOrder):
           termination = mapper.net_serv_terminate(ServInstanceUuid_item) #TODO: validate all related NetService instances are terminated
         
         logging.info("NSI_MNGR: All NetService Instances stopped.")
-         time.sleep(.2)
+        time.sleep(.2)
       
       repo_response = nsi_repo.delete_nsi(nsiId)
       logging.info("NSI_MNGR: NSI deleted from repositories.")
