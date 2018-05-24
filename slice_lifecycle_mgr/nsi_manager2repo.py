@@ -73,7 +73,7 @@ def get_saved_nsi(nsiId):
     
     if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR received.")
-         time.sleep(.2)
+        time.sleep(.2)
     else:
         error = {'http_code': response.status_code,
                  'message': response.json()}
