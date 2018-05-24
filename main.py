@@ -15,11 +15,9 @@ app = Flask(__name__)
 #asks all the available NetService Descriptors to the Sonata SP
 @app.route('/api/services', methods=['GET'])
 def getAllNetServ():
-    #token  = sonata_mapper.create_sonata_session()                #requests session token for sonata
-    #ServDict = sonata_mapper.getListNetServices(token)
     ServDict = sonata_mapper.getListNetServices()
     
-    logging.info('Returning all network Services')
+    logging.info('Returning all network services')
     return jsonify(ServDict), 200
 
 
@@ -29,24 +27,24 @@ def getAllNetServ():
 def postNST():
     receivedNSTd = request.json
     new_NST = nst_manager.createNST(receivedNSTd)
-    logging.info('NST created')
     
+    logging.info('NST created')
     return jsonify(new_NST), 201
 
 #asks for all the NetSlice Templates (NST) information
 @app.route('/api/nst/v1/descriptors', methods=['GET'])
 def getAllNST():
     listNST = nst_manager.getAllNst()    
-    logging.info('Returning all NST')
     
+    logging.info('Returning all NST')
     return jsonify(listNST), 200
 
 #asks for a specific NetSlice Template (NST) information
 @app.route('/api/nst/v1/descriptors/<nstId>', methods=['GET'])
 def getNST(nstId):
     returnedNST = nst_manager.getNST(nstId)   
-    logging.info('Returning the desired NST')
     
+    logging.info('Returning the desired NST')
     return jsonify(returnedNST), 200
 
 #deletes a NetSlice Template
@@ -57,12 +55,10 @@ def deleteNST(nstId):
     if deleted_NSTid == 403:
       returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
       logging.info(returnMessage)
-      
       return jsonify(returnMessage), 403
     else:
       returnMessage = "The NST was deleted successfully."
       logging.info(returnMessage)
-      
       return jsonify(returnMessage), 204
 
 
@@ -73,8 +69,8 @@ def postNSIinstantiation():
   new_NSI = request.json
   instantiatedNSI = nsi_manager.instantiateNSI(new_NSI)
   
+  logging.info('NSI Created and Instantiated')
   return jsonify(instantiatedNSI), 201
-  #return instantiatedNSI, 201
 
 #terminates a NetSlice instance (NSI)
 @app.route('/api/nsilcm/v1/nsi/<nsiId>/terminate', methods=['POST'])
@@ -82,25 +78,24 @@ def postNSItermination(nsiId):
   receivedTerminOrder = request.json
   terminateNSI = nsi_manager.terminateNSI(nsiId, receivedTerminOrder)
 
-  return jsonify(terminateNSI), 202
+  logging.info('NSI Terminated')
+  return jsonify(terminateNSI), 200
 
 #asks for all the NetSlice instances (NSI) information
 @app.route('/api/nsilcm/v1/nsi', methods=['GET'])
 def getALLNSI():
   allNSI = nsi_manager.getAllNsi()
-  logging.info('Returning all existing NSIs (instantiated/terminated/etc.)')
   
-  #return jsonify(allNSI), 202
-  return allNSI, 202
+  logging.info('Returning all NSI')
+  return jsonify(allNSI), 200
 
 #asks for a specific NetSlice instances (NSI) information
 @app.route('/api/nsilcm/v1/nsi/<nsiId>', methods=['GET'])
 def getNSI(nsiId):
-  logging.info('Returning the desired NSI')
   returnedNSI = nsi_manager.getNSI(nsiId)
-    
-  #return jsonify(returnedNSI), 202
-  return returnedNSI, 202
+  
+  logging.info('Returning the NSI with id:' +str(nsiId))
+  return jsonify(returnedNSI), 200
 
 
 
