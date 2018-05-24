@@ -73,6 +73,7 @@ def terminateNSI(nsiId, TerminOrder):
     repo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
     logging.info(repo_jsonresponse)
     
+    #prepares the NSI object to manage with the info coming from repositories
     NSI = nsi.nsi_content()
     NSI.id = repo_jsonresponse['uuid']
     NSI.name = repo_jsonresponse['name']
@@ -104,15 +105,18 @@ def terminateNSI(nsiId, TerminOrder):
       if NSI.nsiState == "INSTANTIATED":
         #termination requests to all NetServiceInstances belonging to the NetSlice
         for ServInstanceUuid_item in NSI.netServInstance_Uuid:
-          termination = mapper.net_serv_terminate(ServInstanceUuid_item)
-         
-      NSI.nsiState = "TERMINATE"                                        #TODO: validate all related NetService instances are terminated
+          termination = mapper.net_serv_terminate(ServInstanceUuid_item) #TODO: validate all related NetService instances are terminated
+      
+      repo_response = nsi_repo.delete_saved_nsi(nsiId)
+      
+      NSI.nsiState = "TERMINATE"
       return (vars(NSI))
     elif instan_time < termin_time:                                     #TODO: manage future termination orders
       NSI.terminateTime = termin_time
+      NSI.nsiState = "TERMINATE"
       return (vars(NSI))  
     else:
-      return ("Please specify a correct termination: 0 to terminate inmediately or a time value later than " + NSI.instantiateTime+ "- to terminate in the future.")
+      return ("Please specify a correct termination: 0 to terminate inmediately or a time value later than: " + NSI.instantiateTime+ ", to terminate in the future.")
 
 def getNSI(nsiId):
     logging.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))

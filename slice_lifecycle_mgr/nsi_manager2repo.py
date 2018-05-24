@@ -29,7 +29,7 @@ def safe_nsi(NSI_string):
     response = requests.post(url, data, headers=header, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):                                              #TODO: change the value when tng-rapos will be changed
+    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR storage accepted.")
     else:
         error = {'http_code': response.status_code,
@@ -49,7 +49,7 @@ def getAll_saved_nsi():
     LOG.info(response.text)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):                                              #TODO: change the value when tng-rapos will be changed
+    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: all NSIR received.")
     else:
         error = {'http_code': response.status_code,
@@ -70,7 +70,7 @@ def get_saved_nsi(nsiId):
     response = requests.get(url, headers)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):                                              #TODO: change the value when tng-rapos will be changed
+    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR received.")
     else:
         error = {'http_code': response.status_code,
@@ -80,9 +80,9 @@ def get_saved_nsi(nsiId):
     
     return jsonresponse
 
-
-#curl -X PUT -d '{"id":<service uuid>,"descriptor_version":<latest service descriptor version>,"version":<version>,"vendor":<vendor>,"name":<name>,"<field_to_be_updated>":<value>}'
-def update_nsi(updatedata):
+#TODO: do we send all the invariant information (i.e.: name, id, etc) again with the changed paramters? 
+#PUT update specific NSI information in repositories
+def update_nsi(updatedata, nsiId):
     LOG.info("NSI_MNGR2REPO: Updating NSI information")
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     headers = {'Content-Type': 'application/json'}
@@ -90,7 +90,7 @@ def update_nsi(updatedata):
     response = requests.put(url, headers, data)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):                                              #TODO: change the value when tng-rapos will be changed
+    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR updated.")
     else:
         error = {'http_code': response.status_code,
@@ -98,16 +98,16 @@ def update_nsi(updatedata):
         jsonresponse = error
         LOG.info('NSI_MNGR2REPO: nsir update action to repo failed: ' + str(error))
     
-    return response
+    return jsonresponse
 
-#curl -X DELETE <base URL>/records/nsir/ns-instances/<service_instance_uuid>
-def delete_saved_nsi():
+#DELETE soecific NSI information in repositories
+def delete_saved_nsi(nsiId):
     LOG.info("NSI_MNGR2REPO: Deleting NSI")
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     response = requests.delete(url)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):                                              #TODO: change the value when tng-rapos will be changed
+    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR deleted.")
     else:
         error = {'http_code': response.status_code,
