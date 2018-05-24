@@ -48,7 +48,7 @@ def net_serv_instantiate(service_uuid):
 #POST /requests to TERMINATE Network Service instance
 def net_serv_terminate(servInstance_uuid):
     LOG.info("MAPPER: Preparing the request to terminate NetServices")
-    time.sleep(0.2)
+    time.sleep(.2)
     # prepares the parameters for the POST request
     url = get_base_url() + "/requests"
     headers = '{"Content-Type":"application/json"}'
@@ -68,7 +68,7 @@ def net_serv_terminate(servInstance_uuid):
 #GET /requests to pull the information of all Network Services INSTANCES
 def getAllNetServInstances():
     LOG.info("MAPPER: Preparing the request to get all the NetServicesInstances")
-    time.sleep(0.2)
+    time.sleep(.2)
     # prepares the parameters for the POST request
     url = get_base_url() + "/requests"
     headers = '{"Content-Type":"application/json"}'
@@ -84,7 +84,7 @@ def getAllNetServInstances():
     else:
       jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(headers)
       LOG.info(jsonresponse)
-      time.sleep(0.2)
+      time.sleep(.2)
       return jsonresponse
 
 #GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
