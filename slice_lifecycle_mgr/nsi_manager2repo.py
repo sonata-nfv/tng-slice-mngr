@@ -65,7 +65,6 @@ def getAll_saved_nsi():
 #GET specific NSI information from the repositories
 def get_saved_nsi(nsiId):
     LOG.info("NSI_MNGR2REPO: Requesting NSI information from repositories")
-    time.sleep(.2)
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     headers = {'Content-Type': 'application/json'}
     response = requests.get(url, headers)
@@ -73,13 +72,11 @@ def get_saved_nsi(nsiId):
     
     if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR received.")
-        time.sleep(.2)
     else:
         error = {'http_code': response.status_code,
                  'message': response.json()}
         jsonresponse = error
         LOG.info('NSI_MNGR2REPO: nsir get from repo failed: ' + str(error))
-        time.sleep(.2)
     
     return jsonresponse
 
@@ -106,22 +103,16 @@ def update_nsi(updatedata, nsiId):
 #DELETE soecific NSI information in repositories
 def delete_nsi(nsiId):
     LOG.info("NSI_MNGR2REPO: Deleting NSI")
-    time.sleep(.2)
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     response = requests.delete(url)
-    jsonresponse = json.loads(response.text)
-    LOG.info(jsonresponse)
     LOG.info(response.status_code)
-    time.sleep(.2)
     
     if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR deleted.")
-        time.sleep(.2)
     else:
         error = {'http_code': response.status_code,
                  'message': response.json()}
-        jsonresponse = error
+        response = error
         LOG.info('NSI_MNGR2REPO: nsir delete action to repo failed: ' + str(error))
-        time.sleep(.2)
     
-    return jsonresponse
+    return response.status_code
