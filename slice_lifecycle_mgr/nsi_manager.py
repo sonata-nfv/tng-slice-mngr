@@ -69,9 +69,9 @@ def instantiateNSI(nsi_jsondata):
 
 def terminateNSI(nsiId, TerminOrder):
     logging.info("NSI_MNGR: Terminate NSI with id: " +str(nsiId))
+    time.sleep(0.2)
     #NSI = db.nsi_dict.get(nsiId)                                       #TODO: substitute with the repositories command (GET)
     repo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
-    logging.info(repo_jsonresponse)
     
     #prepares the NSI object to manage with the info coming from repositories
     NSI = nsi.nsi_content()
@@ -106,8 +106,13 @@ def terminateNSI(nsiId, TerminOrder):
         #termination requests to all NetServiceInstances belonging to the NetSlice
         for ServInstanceUuid_item in NSI.netServInstance_Uuid:
           termination = mapper.net_serv_terminate(ServInstanceUuid_item) #TODO: validate all related NetService instances are terminated
+        
+        logging.info("NSI_MNGR: All NetService Instances stopped.")
+         time.sleep(0.2)
       
-      repo_response = nsi_repo.delete_saved_nsi(nsiId)
+      repo_response = nsi_repo.delete_nsi(nsiId)
+      logging.info("NSI_MNGR: NSI deleted from repositories.")
+      time.sleep(0.2)
       
       NSI.nsiState = "TERMINATE"
       return (vars(NSI))
