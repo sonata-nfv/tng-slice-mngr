@@ -92,7 +92,7 @@ def update_nsi(update_NSI, nsiId):
     
     LOG.info("NSI_MNGR2REPO: URL -> " +url)
     time.sleep(.2)
-    LOG.info("NSI_MNGR2REPO: headers -> "+headers)
+    LOG.info("NSI_MNGR2REPO: headers -> "+header)
     time.sleep(.2)
     LOG.info("NSI_MNGR2REPO: data -> "+data)
     time.sleep(.2)
