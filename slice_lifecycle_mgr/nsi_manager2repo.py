@@ -92,9 +92,9 @@ def update_nsi(update_NSI, nsiId):
     
     LOG.info("NSI_MNGR2REPO: URL -> " +url)
     time.sleep(.2)
-    LOG.info("NSI_MNGR2REPO: headers -> "+header)
+    LOG.info("NSI_MNGR2REPO: headers -> "+str(header))
     time.sleep(.2)
-    LOG.info("NSI_MNGR2REPO: data -> "+data)
+    LOG.info("NSI_MNGR2REPO: data -> "+update_NSI)
     time.sleep(.2)
     
     response = requests.put(url, data, headers=header, timeout=1.0, )
