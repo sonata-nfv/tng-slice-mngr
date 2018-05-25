@@ -111,12 +111,12 @@ def terminateNSI(nsiId, TerminOrder):
       repo_responseStatus = nsi_repo.delete_nsi(NSI.id)
       logging.info("NSI_MNGR: NSI deleted from repositories.")
       
-      NSI.nsiState = "TERMINATE"
+      NSI.nsiState = "TERMINATED"
       return (vars(NSI))                                                          #TODO: check if is the last NSI of the NST to change the "usageState" = "NOT_IN_USE"
     
     elif instan_time < termin_time:                                               #TODO: manage future termination orders
       NSI.terminateTime = str(termin_time)                                             #TODO: update the repositories information (PUT)
-      NSI.nsiState = "TERMINATE"
+      NSI.nsiState = "TERMINATED"
       
       logging.info("NSI_MNGR -> Updating NSI: " +str(vars(NSI)))
       time.sleep(.2)
