@@ -115,7 +115,7 @@ def terminateNSI(nsiId, TerminOrder):
       return (vars(NSI))                                                          #TODO: check if is the last NSI of the NST to change the "usageState" = "NOT_IN_USE"
     
     elif instan_time < termin_time:                                               #TODO: manage future termination orders
-      NSI.terminateTime = termin_time                                             #TODO: update the repositories information (PUT)
+      NSI.terminateTime = str(termin_time)                                             #TODO: update the repositories information (PUT)
       NSI.nsiState = "TERMINATE"
       
       logging.info("NSI_MNGR -> Updating NSI: " +str(vars(NSI)))
