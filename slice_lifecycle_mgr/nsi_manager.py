@@ -22,7 +22,7 @@ def check_requests_status(requestsID_list):
 
 def instantiateNSI(nsi_jsondata):
     logging.info("NSI_MNGR: Creating a new NSI")
-    NST = db.nst_dict.get(nsi_jsondata['nstId'])                       #TODO: substitute this db for the catalogue connection (GET)
+    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
     
     #Generates a RANDOM (uuid4) UUID for this NSI
     uuident = uuid.uuid4()
@@ -35,9 +35,9 @@ def instantiateNSI(nsi_jsondata):
     NSI.description = nsi_jsondata['description']
     NSI.nstId = nsi_jsondata['nstId']
     NSI.vendor = NST.getVendor()
-    #NSI.nstInfoId = nsi_jsondata['nstInfoId']                         #TODO: where does it come from??
-    #NSI.flavorId = nsi_jsondata['flavorId']                           #TODO: where does it come from??
-    #NSI.sapInfo = nsi_jsondata['sapInfo']                             #TODO: where does it come from??
+    #NSI.nstInfoId = nsi_jsondata['nstInfoId']                                      #TODO: where does it come from??
+    #NSI.flavorId = nsi_jsondata['flavorId']                                        #TODO: where does it come from??
+    #NSI.sapInfo = nsi_jsondata['sapInfo']                                          #TODO: where does it come from??
     NSI.nsiState = "INSTANTIATED"
     NSI.instantiateTime = str(datetime.datetime.now().isoformat())
       
@@ -63,13 +63,13 @@ def instantiateNSI(nsi_jsondata):
     #update nstUsageState parameter
     if NST.usageState == "NOT_IN_USE":
       NST.usageState = "IN_USE"
-      db.nst_dict[NST.id] = NST                                        #TODO: substitute this db for the catalogue connection (PUT)
+      db.nst_dict[NST.id] = NST                                                    #TODO: substitute this db for the catalogue connection (PUT)
       
     return nsirepo_jsonresponse
 
 def terminateNSI(nsiId, TerminOrder):
     logging.info("NSI_MNGR: Terminate NSI with id: " +str(nsiId))
-    #NSI = db.nsi_dict.get(nsiId)                                       #TODO: substitute with the repositories command (GET)
+    time.sleep(.2)
     repo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
     
     #prepares the NSI object to manage with the info coming from repositories
@@ -104,7 +104,7 @@ def terminateNSI(nsiId, TerminOrder):
       if NSI.nsiState == "INSTANTIATED":
         #termination requests to all NetServiceInstances belonging to the NetSlice
         for ServInstanceUuid_item in NSI.netServInstance_Uuid:
-          terminatedNetServ = mapper.net_serv_terminate(ServInstanceUuid_item) #TODO: validate all related NetService instances are terminated
+          terminatedNetServ = mapper.net_serv_terminate(ServInstanceUuid_item)     #TODO: validate all related NetService instances are terminated
         
         logging.info("NSI_MNGR: All NetService Instances stopped.")
       
@@ -112,11 +112,17 @@ def terminateNSI(nsiId, TerminOrder):
       logging.info("NSI_MNGR: NSI deleted from repositories.")
       
       NSI.nsiState = "TERMINATE"
-      return (vars(NSI))
-    elif instan_time < termin_time:                                     #TODO: manage future termination orders
-      NSI.terminateTime = termin_time
+      return (vars(NSI))                                                          #TODO: check if is the last NSI of the NST to change the "usageState" = "NOT_IN_USE"
+    
+    elif instan_time < termin_time:                                               #TODO: manage future termination orders
+      NSI.terminateTime = termin_time                                             #TODO: update the repositories information (PUT)
       NSI.nsiState = "TERMINATE"
-      return (vars(NSI))  
+      
+      logging.info("NSI_MNGR -> Updating NSI: " +vars(NSI))
+      time.sleep(.2)
+      repo_responseStatus = nsi_repo.update_nsi(vars(NSI), nsiId)
+      
+      return (vars(NSI))                                                          #TODO: check if is the last NSI of the NST to change the "usageState" = "NOT_IN_USE"
     else:
       return ("Please specify a correct termination: 0 to terminate inmediately or a time value later than: " + NSI.instantiateTime+ ", to terminate in the future.")
 
