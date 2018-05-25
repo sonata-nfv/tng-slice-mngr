@@ -82,12 +82,14 @@ def get_saved_nsi(nsiId):
 
 #TODO: do we send all the invariant information (i.e.: name, id, etc) again with the changed paramters? 
 #PUT update specific NSI information in repositories
-def update_nsi(updatedata, nsiId):
+def update_nsi(update_NSI, nsiId):
     LOG.info("NSI_MNGR2REPO: Updating NSI information")
+    
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
-    headers = {'Content-Type': 'application/json'}
-    data = updatedata
-    response = requests.put(url, headers, data)
+    header = {'Content-Type': 'application/json'}
+    data = json.dumps(update_NSI)
+    
+    response = requests.put(url, data, headers=header, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
     if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
