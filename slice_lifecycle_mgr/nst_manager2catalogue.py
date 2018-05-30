@@ -2,6 +2,8 @@
 import os, sys, requests, json, logging, time
 from flask import jsonify
 
+import database.database as db
+
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
