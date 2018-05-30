@@ -6,6 +6,7 @@ logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
+JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 #################################### Sonata Catalogues information ###################################
 def get_base_url():
@@ -19,9 +20,8 @@ def get_base_url():
 def safe_nst(NST_string):
     LOG.info("NST_MNGR2CAT: Sending information to the catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts'
-    header = {'Content-Type': 'application/json'}
     data = json.dumps(NST_string)
-    response = requests.post(url, data, headers=header, timeout=1.0, )
+    response = requests.post(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
     if (response.status_code == 200):
@@ -37,8 +37,7 @@ def safe_nst(NST_string):
 def getAll_saved_nst():
     LOG.info("NST_MNGR2CAT: Requesting all NSTD information from catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts'
-    header = {'Content-Type': 'application/json'}
-    response = requests.get(url, headers=header)
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
     LOG.info(response.text)
     jsonresponse = json.loads(response.text)
     
@@ -55,9 +54,8 @@ def getAll_saved_nst():
 def update_nst(update_NST, nstId):
     LOG.info("NST_MNGR2CAT: Updating NSTD information")
     url = get_base_url() + '/api/catalogues/v2/nsts' + nstId
-    header = {'Content-Type': 'application/json'}
     data = json.dumps(update_NST)
-    response = requests.put(url, data, headers=header, timeout=1.0, )
+    response = requests.put(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
     if (response.status_code == 200):
@@ -75,8 +73,7 @@ def update_nst(update_NST, nstId):
 def get_saved_nst(nstId):
     LOG.info("NST_MNGR2CAT: Requesting NST information from catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
-    headers = {'Content-Type': 'application/json'}
-    response = requests.get(url, headers)
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
     if (response.status_code == 200):

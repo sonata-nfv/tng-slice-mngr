@@ -8,6 +8,7 @@ logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
+JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 #################################### Sonata Repositories information #####################################
 def get_base_url():
@@ -23,9 +24,8 @@ def get_base_url():
 def safe_nsi(NSI_string):
     LOG.info("NSI_MNGR2REPO: Sending information to the repositories")
     url = get_base_url() + '/records/nsir/ns-instances'
-    header = {'Content-Type': 'application/json'}
     data = json.dumps(NSI_string)
-    response = requests.post(url, data, headers=header, timeout=1.0, )
+    response = requests.post(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
     if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
@@ -43,8 +43,7 @@ def safe_nsi(NSI_string):
 def getAll_saved_nsi():
     LOG.info("NSI_MNGR2REPO: Requesting all NSIs information from repositories")
     url = get_base_url() + '/records/nsir/ns-instances'
-    header = {'Content-Type': 'application/json'}
-    response = requests.get(url, headers=header)
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
     LOG.info(response.text)
     jsonresponse = json.loads(response.text)
     
@@ -65,8 +64,7 @@ def getAll_saved_nsi():
 def get_saved_nsi(nsiId):
     LOG.info("NSI_MNGR2REPO: Requesting NSI information from repositories")
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
-    headers = {'Content-Type': 'application/json'}
-    response = requests.get(url, headers)
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
     if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
@@ -84,10 +82,9 @@ def update_nsi(update_NSI, nsiId):
     LOG.info("NSI_MNGR2REPO: Updating NSI information")
     
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
-    header = {'Content-Type': 'application/json'}
     data = json.dumps(update_NSI)
     
-    response = requests.put(url, data, headers=header, timeout=1.0, )
+    response = requests.put(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
     if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed

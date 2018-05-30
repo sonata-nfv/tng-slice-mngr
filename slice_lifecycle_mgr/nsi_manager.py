@@ -46,7 +46,7 @@ def parseNewNSI(nst_ref, nsi_json):
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
-    vendor = nst_ref.getVendor()
+    vendor = nst_ref.vendor
     nstInfoId = ""                                                                 #TODO: where does it come from??
     flavorId = ""                                                                  #TODO: where does it come from??
     sapInfo = ""                                                                   #TODO: where does it come from??
