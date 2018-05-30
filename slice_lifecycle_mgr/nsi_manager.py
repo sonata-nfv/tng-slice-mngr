@@ -57,7 +57,7 @@ def parseNewNSI(nst_ref, nsi_json):
     updateTime = ""
     netServInstance_Uuid = []
     
-    nsi=nsi_content(uuid_nsi, name, description, nstId, vendor, nstInfoId, flavorId, 
+    nsi=nsi(uuid_nsi, name, description, nstId, vendor, nstInfoId, flavorId, 
                     sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, 
                     updateTime, netServInstance_Uuid)
     #TODO: to use when integrationg with catalogue implemented because of the NST['vendor']
