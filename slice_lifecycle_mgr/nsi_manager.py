@@ -55,14 +55,13 @@ def parseNewNSI(nst_ref, nsi_json):
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    netServInstance_Uuid = []
+    #netServInstance_Uuid = []
     
-    nsi=nsi(uuid_nsi, name, description, nstId, vendor, nstInfoId, flavorId, 
-                    sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, 
-                    updateTime, netServInstance_Uuid)
+    NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstInfoId, flavorId, sapInfo, 
+                  nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
     #TODO: to use when integrationg with catalogue implemented because of the NST['vendor']
-    #nsi=nsi_content(nsi_uuid, nsi_json['name'], nsi_json['description'], nsi_json['nstId'], nst_ref['vendor'], nstInfoId, flavorId, sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime, netServInstance_Uuid)
-    return nsi
+    #nsi=nsi_content(nsi_uuid, nsi_json['name'], nsi_json['description'], nsi_json['nstId'], nst_ref['vendor'], nstInfoId, flavorId, sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
+    return NSI
 
 def instantiateNetServices(NetServicesIDs):
     #instantiates required NetServices by sending requests to Sonata SP
@@ -90,7 +89,7 @@ def terminateNSI(nsiId, TerminOrder):
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
     
     #prepares the NSI object to manage with the info coming from repositories
-    NSI=nsi_content(jsonNSI['uuid'], jsonNSI['name'], jsonNSI['description'], jsonNSI['nstId'], 
+    NSI=nsi.nsi_content(jsonNSI['uuid'], jsonNSI['name'], jsonNSI['description'], jsonNSI['nstId'], 
                     jsonNSI['vendor'], jsonNSI['nstInfoId'], jsonNSI['flavorId'], jsonNSI['sapInfo'], 
                     jsonNSI['nsiState'], jsonNSI['instantiateTime'], jsonNSI['terminateTime'], 
                     jsonNSI['scaleTime'], jsonNSI['updateTime'], jsonNSI['netServInstance_Uuid'])

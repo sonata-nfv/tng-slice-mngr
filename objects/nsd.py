@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-class nsd:
+class nsd_content:
     def __init__(self, uuid="", name="", description="", vendor="", version="", md5="", author="", created="", status="", updated=""):
         self.uuid=uuid
         self.name=name

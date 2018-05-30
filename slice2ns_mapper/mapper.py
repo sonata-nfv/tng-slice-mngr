@@ -131,14 +131,14 @@ def getListNetServices():
       print ("SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(JSON_CONTENT_HEADER))
 
 def parseNetworkService(service):
-    nsd=nsd(service['nsd']['name'], 
-            service['uuid'], 
-            service['nsd']['description'], 
-            service['nsd']['version'], 
-            service['nsd']['vendor'],
-            service['md5'],
-            service['nsd']['author'],
-            service['created_at'],
-            service['status'], 
-            service['updated_at'] )
-    return nsd
+    NSD=nsd.nsd_content(service['nsd']['name'], 
+                        service['uuid'], 
+                        service['nsd']['description'], 
+                        service['nsd']['version'], 
+                        service['nsd']['vendor'],
+                        service['md5'],
+                        service['nsd']['author'],
+                        service['created_at'],
+                        service['status'], 
+                        service['updated_at'] )
+    return NSD
