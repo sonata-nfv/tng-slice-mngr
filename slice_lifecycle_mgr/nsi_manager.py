@@ -17,7 +17,7 @@ def createNSI(nsi_jsondata):
     #NST = nst_catalogue.get_saved_nst(nstId)
         
     #creates NSI with the received information
-    NSI = parseNewNSI(NST, nsi_json)
+    NSI = parseNewNSI(NST, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
     requestsID_list = instantiateNetServices(NST.nstNsdIds)  #instantiateNetServices(NST['nstNsdIds'])
