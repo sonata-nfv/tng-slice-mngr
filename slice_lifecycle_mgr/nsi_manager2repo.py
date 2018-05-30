@@ -9,13 +9,12 @@ LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
 
-
 #################################### Sonata Repositories information #####################################
 def get_base_url():
     #http://tng-rep:4012/records/nsir/ns-instances
-    ip_address=db.settings.get('SLICE_MGR','SONATA_REPO')
-    base_url = 'http://'+ip_address+':4012'
-    
+    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_REP')
+    port = db.settings.get('SONATA_COMPONENTS','SONATA_REP_PORT')
+    base_url = 'http://'+ip_address+':'+port
     return base_url
 
 
@@ -80,7 +79,6 @@ def get_saved_nsi(nsiId):
     
     return jsonresponse
 
-#TODO: do we send all the invariant information (i.e.: name, id, etc) again with the changed paramters? 
 #PUT update specific NSI information in repositories
 def update_nsi(update_NSI, nsiId):
     LOG.info("NSI_MNGR2REPO: Updating NSI information")

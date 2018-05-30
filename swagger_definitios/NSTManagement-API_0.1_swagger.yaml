@@ -20,7 +20,7 @@ paths:
   /descriptors:
     post:
       description: |
-        **Create NST Info**: Create a NST Info object and returns an nsdInfoId. After NST creation, the Upload NST completes the on-boarding operation. 
+        **Create NST Info**: Create a NST Info object and the whole NST item information presented as JSON. After NST creation, the Upload NST completes the on-boarding operation. 
       parameters:
         - name: userDefinedData
           description: Data associated to a NST (includes the NST content?).
