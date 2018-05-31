@@ -2,7 +2,7 @@
 
 class nst_content:
     def __init__(self):
-        self.id = ""                      #id given by the creator of the slice
+        #self.id = ""                      #id given by the creator of the slice
         self.name = ""
         self.version = ""
         self.author = ""

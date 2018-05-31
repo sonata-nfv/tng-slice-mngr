@@ -58,7 +58,6 @@ def getAll_saved_nsi():
     return jsonresponse
 
 
-  
 ######################## /records/nsir/ns-instances/<service_instance_uuid> #############################
 #GET specific NSI information from the repositories
 def get_saved_nsi(nsiId):
