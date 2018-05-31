@@ -17,12 +17,15 @@ LOG.setLevel(logging.INFO)
 #MAIN FUNCTION: createNSI(...)
 #related functions: parseNetSliceInstance(...), instantiateNetServices(...), checkRequestsStatus(...)
 def createNSI(nsi_jsondata):
-    logging.info("NSI_MNGR: Creating a new NSI")
+    LOG.info("NSI_MNGR: Creating a new NSI")
 #    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
     NST = nst_catalogue.get_saved_nst(nsi_jsondata['nstId'])
+    NST_json = json.loads(NST.text)
+    LOG.info("NSI_MNGR: That's the NST coming from Catalogues: " +NST_json)
+    LOG.info("NSI_MNGR: Some of the NST_information: " +NST_json['message']['nstd']['vendor'])
         
     #creates NSI with the received information
-    NSI = parseNewNSI(NST, nsi_jsondata)
+    NSI = parseNewNSI(NST_json, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
 #    requestsID_list = instantiateNetServices(NST.nstNsdIds)
@@ -43,9 +46,9 @@ def createNSI(nsi_jsondata):
 #    if NST.usageState == "NOT_IN_USE":   
 #      NST.usageState = "IN_USE"          
 #      db.nst_dict[NST.id] = NST                                                    #TODO: substitute this db for the catalogue connection (PUT)
-    if (NST['message']['nstd']['usageState'] == "NOT_IN_USE"):  
-      NST['message']['nstd']['usageState'] = "IN_USE" 
-      updatedNST_jsonresponse = update_nst(NST, nstId)
+    if (NST_json['message']['nstd']['usageState'] == "NOT_IN_USE"):  
+      NST_json['message']['nstd']['usageState'] = "IN_USE" 
+      updatedNST_jsonresponse = update_nst(NST_json, nstId)
       
     NSI_string = vars(NSI)
     nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
@@ -95,7 +98,7 @@ def checkRequestsStatus(requestsID_list):
 
 ##### TERMINATE NSI SECTION #####
 def terminateNSI(nsiId, TerminOrder):
-    logging.info("NSI_MNGR: Terminate NSI with id: " +str(nsiId))
+    LOG.info("NSI_MNGR: Terminate NSI with id: " +str(nsiId))
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
     
     #prepares the NSI object to manage with the info coming from repositories
@@ -138,13 +141,13 @@ def terminateNSI(nsiId, TerminOrder):
 
 ##### GET NSI SECTION #####
 def getNSI(nsiId):
-    logging.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))
+    LOG.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))
     nsirepo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
 
     return nsirepo_jsonresponse
 
 def getAllNsi():
-    logging.info("NSI_MNGR: Retrieve all existing NSIs")
+    LOG.info("NSI_MNGR: Retrieve all existing NSIs")
     nsirepo_jsonresponse = nsi_repo.getAll_saved_nsi()
     
     return nsirepo_jsonresponse
