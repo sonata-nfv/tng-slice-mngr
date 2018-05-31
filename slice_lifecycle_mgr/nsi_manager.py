@@ -43,7 +43,7 @@ def createNSI(nsi_jsondata):
 #    if NST.usageState == "NOT_IN_USE":   
 #      NST.usageState = "IN_USE"          
 #      db.nst_dict[NST.id] = NST                                                    #TODO: substitute this db for the catalogue connection (PUT)
-    if NST['message']['nstd']['usageState'] == "NOT_IN_USE"  
+    if (NST['message']['nstd']['usageState'] == "NOT_IN_USE"):  
       NST['message']['nstd']['usageState'] = "IN_USE" 
       updatedNST_jsonresponse = update_nst(NST, nstId)
       
