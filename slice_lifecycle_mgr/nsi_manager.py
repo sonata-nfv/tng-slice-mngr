@@ -20,8 +20,7 @@ def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
 #    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
     NST = nst_catalogue.get_saved_nst(nsi_jsondata['nstId'])
-    NST_json = json.loads(NST.text)
-    LOG.info("NSI_MNGR: That's the NST coming from Catalogues: " +NST_json)
+    LOG.info("NSI_MNGR: That's the NST coming from Catalogues: " +NST)
     LOG.info("NSI_MNGR: Some of the NST_information: " +NST_json['message']['nstd']['vendor'])
         
     #creates NSI with the received information
