@@ -21,7 +21,7 @@ def createNSI(nsi_jsondata):
 #    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
     NST = nst_catalogue.get_saved_nst(nsi_jsondata['nstId'])
     LOG.info("NSI_MNGR: That's the NST coming from Catalogues: " +str(NST))
-    LOG.info("NSI_MNGR: Some of the NST_information: " +str(NST['message']['nstd']['vendor']))
+    LOG.info("NSI_MNGR: Some of the NST_information: " +str(NST['nstd']['vendor']))
         
     #creates NSI with the received information
     NSI = parseNewNSI(NST, nsi_jsondata)
@@ -58,8 +58,8 @@ def parseNewNSI(nst_ref, nsi_json):
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
-    vendor = nst_ref['message']['nstd']['vendor']
-    nstInfoId = nst_ref['message']['uuid']
+    vendor = nst_ref['nstd']['vendor']
+    nstInfoId = nst_ref['uuid']
     flavorId = ""                                                                  #TODO: where does it come from??
     sapInfo = ""                                                                   #TODO: where does it come from??
     nsiState = "INSTANTIATED"
