@@ -21,10 +21,10 @@ def createNSI(nsi_jsondata):
 #    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
     NST = nst_catalogue.get_saved_nst(nsi_jsondata['nstId'])
     LOG.info("NSI_MNGR: That's the NST coming from Catalogues: " +str(NST))
-    LOG.info("NSI_MNGR: Some of the NST_information: " +str(NST_json['message']['nstd']['vendor']))
+    LOG.info("NSI_MNGR: Some of the NST_information: " +str(NST['message']['nstd']['vendor']))
         
     #creates NSI with the received information
-    NSI = parseNewNSI(NST_json, nsi_jsondata)
+    NSI = parseNewNSI(NST, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
 #    requestsID_list = instantiateNetServices(NST.nstNsdIds)
@@ -45,9 +45,9 @@ def createNSI(nsi_jsondata):
 #    if NST.usageState == "NOT_IN_USE":   
 #      NST.usageState = "IN_USE"          
 #      db.nst_dict[NST.id] = NST                                                    #TODO: substitute this db for the catalogue connection (PUT)
-    if (NST_json['message']['nstd']['usageState'] == "NOT_IN_USE"):  
-      NST_json['message']['nstd']['usageState'] = "IN_USE" 
-      updatedNST_jsonresponse = update_nst(NST_json, nstId)
+    if (NST['message']['nstd']['usageState'] == "NOT_IN_USE"):  
+      NST['message']['nstd']['usageState'] = "IN_USE" 
+      updatedNST_jsonresponse = update_nst(NST, nstId)
       
     NSI_string = vars(NSI)
     nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
