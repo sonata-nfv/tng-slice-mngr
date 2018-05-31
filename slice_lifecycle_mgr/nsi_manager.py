@@ -8,13 +8,17 @@ import slice2ns_mapper.mapper as mapper
 import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo
 import database.database as db
 
+logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger("slicemngr:repo")
+LOG.setLevel(logging.INFO)
+
 ##### CREATE NSI SECTION #####
 #MAIN FUNCTION: createNSI(...)
 #related functions: parseNetSliceInstance(...), instantiateNetServices(...), checkRequestsStatus(...)
 def createNSI(nsi_jsondata):
     logging.info("NSI_MNGR: Creating a new NSI")
-    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
-    #NST = nst_catalogue.get_saved_nst(nstId)
+    #NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
+    NST = nst_catalogue.get_saved_nst(nstId)
         
     #creates NSI with the received information
     NSI = parseNewNSI(NST, nsi_jsondata)
