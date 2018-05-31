@@ -6,6 +6,7 @@ import dateutil.parser
 import objects.nsi_content as nsi
 import slice2ns_mapper.mapper as mapper
 import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo
+import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
 import database.database as db
 
 logging.basicConfig(level=logging.INFO)
