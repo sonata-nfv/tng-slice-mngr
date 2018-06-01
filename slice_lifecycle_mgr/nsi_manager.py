@@ -19,8 +19,8 @@ LOG.setLevel(logging.INFO)
 def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
     nstId = nsi_jsondata['nstId']
-    catalogue_response_NSTD = nst_catalogue.get_saved_nst(nstId)
-    NST_json = catalogue_response_NSTD['nstd']
+    catalogue_response = nst_catalogue.get_saved_nst(nstId)
+    NST_json = catalogue_response['nstd']
         
     #creates NSI with the received information
     NSI = parseNewNSI(NST_json, nsi_jsondata)
