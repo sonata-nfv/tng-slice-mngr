@@ -19,7 +19,8 @@ LOG.setLevel(logging.INFO)
 def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
 #    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
-    NST = nst_catalogue.get_saved_nst(nsi_jsondata['nstId'])
+    nstId = nsi_jsondata['nstId']
+    NST = nst_catalogue.get_saved_nst(nstId)
         
     #creates NSI with the received information
     NSI = parseNewNSI(NST, nsi_jsondata)
@@ -45,7 +46,7 @@ def createNSI(nsi_jsondata):
 #      db.nst_dict[NST.id] = NST                                                    #TODO: substitute this db for the catalogue connection (PUT)
     if (NST['nstd']['usageState'] == "NOT_IN_USE"):  
       NST['nstd']['usageState'] = "IN_USE" 
-      updatedNST_jsonresponse = update_nst(NST, nstId)
+      updatedNST_jsonresponse = nst_catalogue.update_nst(NST, nstId)
       
     NSI_string = vars(NSI)
     nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
