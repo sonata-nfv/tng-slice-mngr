@@ -55,10 +55,19 @@ def getAll_saved_nst():
 #PUT update specific NST information in catalogues
 def update_nst(nst_json, nstId):
     LOG.info("NST_MNGR2CAT: Updating NSTD information")
+    time.sleep(.2)
+    LOG.info("NST_MNGR2CAT: Information received from nsiCreate: " +str(nst_json))
+    time.sleep(.2)
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
-    data = nst_json
-    response = requests.put(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
+    LOG.info("NST_MNGR2CAT: URL TO SEND REQUEST: " +url)
+    time.sleep(.2)
+    response = requests.put(url, data=nst_json, headers=JSON_CONTENT_HEADER, timeout=1.0, )
+    LOG.info("NST_MNGR2CAT: RESPONSE.TEXT: "+ response.text)
+    LOG.info("NST_MNGR2CAT: RESPONSE.TEXT: "+ response.status_code)
+    time.sleep(.2)
     jsonresponse = json.loads(response.text)
+    LOG.info("NST_MNGR2CAT: this is jsonresponse: " +str(jsonresponse))
+    time.sleep(.2)
     
     if (response.status_code == 200) or (response.status_code == 201):
         LOG.info("NST_MNGR2CAT: NSTD updated.")
