@@ -56,7 +56,7 @@ def getAll_saved_nst():
 def update_nst(nst_json, nstId):
     LOG.info("NST_MNGR2CAT: Updating NSTD information")
     time.sleep(.2)
-    url = get_base_url() + '/api/catalogues/v2/nsts' + nstId
+    url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
     LOG.info('NST_MNGR2CAT: this is the URL: ' +url)
     time.sleep(.2)
     data = nst_json
