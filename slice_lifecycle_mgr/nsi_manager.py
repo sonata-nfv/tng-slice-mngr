@@ -18,16 +18,15 @@ LOG.setLevel(logging.INFO)
 #related functions: parseNetSliceInstance(...), instantiateNetServices(...), checkRequestsStatus(...)
 def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
-#    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
     nstId = nsi_jsondata['nstId']
-    NST_json = nst_catalogue.get_saved_nst(nstId)
+    catalogue_response_NSTD = nst_catalogue.get_saved_nst(nstId)
+    NST_json = catalogue_response_NSTD['nstd']
         
     #creates NSI with the received information
     NSI = parseNewNSI(NST_json, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
-#    requestsID_list = instantiateNetServices(NST.nstNsdIds)
-    requestsID_list = instantiateNetServices(NST_json['nstd']['nstNsdIds'])
+    requestsID_list = instantiateNetServices(NST_json['nstNsdIds'])
     
     #checks if all instantiations in Sonata SP are READY to store NSI object
     allInstantiationsReady = False
@@ -35,21 +34,17 @@ def createNSI(nsi_jsondata):
       allInstantiationsReady = checkRequestsStatus(requestsID_list)
       #time.sleep(5)
     
-    #witg all Services instantiated, it gets their uuids and keeps them inside the NSI information.
+    #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     for request_uuid_item in requestsID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
 
-    #update nstUsageState parameter
-#    if NST.usageState == "NOT_IN_USE":   
-#      NST.usageState = "IN_USE"          
-#      db.nst_dict[NST.id] = NST                                                    #TODO: substitute this db for the catalogue connection (PUT)
-    if (NST_json['nstd']['usageState'] == "NOT_IN_USE"):  
-      NST_json['nstd']['usageState'] = "IN_USE" 
-      LOG.info('NSI_MNGR2REP: THE PUT DATA TO SEND: ' +str(NST_json))
-      time.sleep(.2)
+    #Updating the the usageState parameter of the slelected NST
+    if (NST_json['usageState'] == "NOT_IN_USE"):  
+      NST_json['usageState'] = "IN_USE" 
       updatedNST_jsonresponse = nst_catalogue.update_nst(NST_json, nstId)
-      
+    
+    #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
     nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
     return nsirepo_jsonresponse
@@ -59,27 +54,25 @@ def parseNewNSI(nst_json, nsi_json):
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
-    vendor = nst_json['nstd']['vendor']
-    nstInfoId = nst_json['uuid']
-    flavorId = ""                                                                  #TODO: where does it come from??
-    sapInfo = ""                                                                   #TODO: where does it come from??
+    vendor = nst_json['vendor']
+    nstInfoId = nst_json['name'] + "made by " + nst_json['author'] + "belonging to " + nst_json['vendor']
+    flavorId = ""                                                                                            #TODO: where does it come from??
+    sapInfo = ""                                                                                             #TODO: where does it come from??
     nsiState = "INSTANTIATED"
     instantiateTime = str(datetime.datetime.now().isoformat())
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    #netServInstance_Uuid = []
+    #netServInstance_Uuid = []    #these values are given later on, when the services are isntantiated and have a uuid given by the SP
     
     NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstInfoId, flavorId, sapInfo, 
                   nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
-    #TODO: to use when integrationg with catalogue implemented because of the NST['vendor']
-    #nsi=nsi_content(nsi_uuid, nsi_json['name'], nsi_json['description'], nsi_json['nstId'], nst_ref['vendor'], nstInfoId, flavorId, sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
     return NSI
 
 def instantiateNetServices(NetServicesIDs):
     #instantiates required NetServices by sending requests to Sonata SP
     requestsID_list = []   
-    for uuidNetServ_item in NetServicesIDs:           #for uuidNetServ_item in NST['nstNsdIds']
+    for uuidNetServ_item in NetServicesIDs:
       instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
       requestsID_list.append(instantiation_response['id'])
     return requestsID_list
