@@ -53,10 +53,10 @@ def getAll_saved_nst():
     return jsonresponse
     
 #PUT update specific NST information in catalogues
-def update_nst(updatedNST, nstId):
+def update_nst(nst_json, nstId):
     LOG.info("NST_MNGR2CAT: Updating NSTD information")
     url = get_base_url() + '/api/catalogues/v2/nsts' + nstId
-    data = json.dumps(updatedNST)
+    data = nst_json
     response = requests.put(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     

@@ -20,14 +20,14 @@ def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
 #    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
     nstId = nsi_jsondata['nstId']
-    NST = nst_catalogue.get_saved_nst(nstId)
+    NST_json = nst_catalogue.get_saved_nst(nstId)
         
     #creates NSI with the received information
-    NSI = parseNewNSI(NST, nsi_jsondata)
+    NSI = parseNewNSI(NST_json, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
 #    requestsID_list = instantiateNetServices(NST.nstNsdIds)
-    requestsID_list = instantiateNetServices(NST['nstd']['nstNsdIds'])
+    requestsID_list = instantiateNetServices(NST_json['nstd']['nstNsdIds'])
     
     #checks if all instantiations in Sonata SP are READY to store NSI object
     allInstantiationsReady = False
@@ -44,21 +44,21 @@ def createNSI(nsi_jsondata):
 #    if NST.usageState == "NOT_IN_USE":   
 #      NST.usageState = "IN_USE"          
 #      db.nst_dict[NST.id] = NST                                                    #TODO: substitute this db for the catalogue connection (PUT)
-    if (NST['nstd']['usageState'] == "NOT_IN_USE"):  
-      NST['nstd']['usageState'] = "IN_USE" 
-      updatedNST_jsonresponse = nst_catalogue.update_nst(NST, nstId)
+    if (NST_json['nstd']['usageState'] == "NOT_IN_USE"):  
+      NST_json['nstd']['usageState'] = "IN_USE" 
+      updatedNST_jsonresponse = nst_catalogue.update_nst(NST_json, nstId)
       
     NSI_string = vars(NSI)
     nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
     return nsirepo_jsonresponse
 
-def parseNewNSI(nst_ref, nsi_json):
+def parseNewNSI(nst_json, nsi_json):
     uuid_nsi = str(uuid.uuid4())
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
-    vendor = nst_ref['nstd']['vendor']
-    nstInfoId = nst_ref['uuid']
+    vendor = nst_json['nstd']['vendor']
+    nstInfoId = nst_json['uuid']
     flavorId = ""                                                                  #TODO: where does it come from??
     sapInfo = ""                                                                   #TODO: where does it come from??
     nsiState = "INSTANTIATED"
