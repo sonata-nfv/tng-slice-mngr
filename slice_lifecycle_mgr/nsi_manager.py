@@ -20,13 +20,13 @@ def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
     nstId = nsi_jsondata['nstId']
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
-    NST_dict = catalogue_response['nstd']
+    nst_json = catalogue_response['nstd']
         
     #creates NSI with the received information
-    NSI = parseNewNSI(NST_dict, nsi_jsondata)
+    NSI = parseNewNSI(nst_json, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
-    requestsID_list = instantiateNetServices(NST_dict['nstNsdIds'])
+    requestsID_list = instantiateNetServices(nst_json['nstNsdIds'])
     
     #checks if all instantiations in Sonata SP are READY to store NSI object
     allInstantiationsReady = False
@@ -40,9 +40,10 @@ def createNSI(nsi_jsondata):
       NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
 
     #Updating the the usageState parameter of the slelected NST
-    if (NST_dict['usageState'] == "NOT_IN_USE"):  
-      NST_dict['usageState'] = "IN_USE" 
-      updatedNST_jsonresponse = nst_catalogue.update_nst(NST_dict, nstId)
+    if (nst_json['usageState'] == "NOT_IN_USE"):  
+      nst_json['usageState'] = "IN_USE"
+      nst_string = json.dumps(nst_json)
+      updatedNST_jsonresponse = nst_catalogue.update_nst(nst_string, nstId)
     
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)

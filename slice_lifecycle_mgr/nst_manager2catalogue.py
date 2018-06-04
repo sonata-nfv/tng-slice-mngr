@@ -19,10 +19,10 @@ def get_base_url():
     
 ####################################### /api/catalogues/v2/nsts ######################################
 #POST to send the NST information to the catalogues
-def safe_nst(NST_string):
+def safe_nst(nst_string):
     LOG.info("NST_MNGR2CAT: Sending information to the catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts'
-    data = json.dumps(NST_string)
+    data = json.dumps(nst_string)
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
@@ -53,18 +53,17 @@ def getAll_saved_nst():
     return jsonresponse
     
 #PUT update specific NST information in catalogues
-def update_nst(nst_dict, nstId):
+def update_nst(nst_string, nstId):
     LOG.info("NST_MNGR2CAT: Updating NSTD information")
     time.sleep(.2)
-    LOG.info("NST_MNGR2CAT: Information received from nsiCreate: " +str(type(nst_dict)))
+    LOG.info("NST_MNGR2CAT: Information TYPE received from nsiCreate: " +str(type(nst_string)))
+    time.sleep(.2)
+    LOG.info("NST_MNGR2CAT: Information CONTENT received from nsiCreate: " +(nst_string))
     time.sleep(.2)
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
     LOG.info("NST_MNGR2CAT: URL TO SEND REQUEST: " +url)
     time.sleep(.2)
-    nst_json = json.dumps(nst_dict)
-    LOG.info("NST_MNGR2CAT: Information received from nsiCreate: " +str(type(nst_json)))
-    time.sleep(.2)
-    response = requests.put(url, data=nst_json, headers=JSON_CONTENT_HEADER, timeout=1.0, )
+    response = requests.put(url, data=nst_string, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     LOG.info("NST_MNGR2CAT: this is jsonresponse: " +str(jsonresponse))
     time.sleep(.2)
