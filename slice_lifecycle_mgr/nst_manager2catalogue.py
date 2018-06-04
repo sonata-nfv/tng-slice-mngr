@@ -61,7 +61,7 @@ def update_nst(nst_dict, nstId):
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
     LOG.info("NST_MNGR2CAT: URL TO SEND REQUEST: " +url)
     time.sleep(.2)
-    nst_json = json.dump(nst_dict)
+    nst_json = json.dumps(nst_dict)
     LOG.info("NST_MNGR2CAT: Information received from nsiCreate: " +str(type(nst_json)))
     time.sleep(.2)
     response = requests.put(url, data=nst_json, headers=JSON_CONTENT_HEADER, timeout=1.0, )
