@@ -59,9 +59,9 @@ def update_nst(nstParameter2update, nstId):
     LOG.info("NST_MNGR2CAT: URL TO SEND REQUEST: " +url)
     time.sleep(.2)
     #response = requests.put(url, data=nst_string, headers=JSON_CONTENT_HEADER, timeout=1.0, )
-    response = requests.put(url, headers=JSON_CONTENT_HEADER, timeout=1.0, )
-    jsonresponse = json.loads(response.text)
-    LOG.info("NST_MNGR2CAT: this is jsonresponse: " +str(jsonresponse))
+    jsonresponse = requests.put(url, headers=JSON_CONTENT_HEADER, timeout=1.0, )
+    #jsonresponse = json.loads(response.text)
+    LOG.info("NST_MNGR2CAT: this is jsonresponse: " +str(jsonresponse.text))
     time.sleep(.2)
     
     if (response.status_code == 200) or (response.status_code == 201):
@@ -71,7 +71,7 @@ def update_nst(nstParameter2update, nstId):
         jsonresponse = error
         LOG.info('NST_MNGR2CAT: nstd update action to catalogues failed: ' + str(error))
     
-    return jsonresponse
+    return jsonresponse.text
 
 
 #################################### /api/catalogues/v2/nsts/{id} ####################################
