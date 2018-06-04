@@ -41,9 +41,9 @@ def createNSI(nsi_jsondata):
 
     #Updating the the usageState parameter of the slelected NST
     if (nst_json['usageState'] == "NOT_IN_USE"):  
-      nst_json['usageState'] = "IN_USE"
-      nst_string = json.dumps(nst_json)
-      updatedNST_jsonresponse = nst_catalogue.update_nst(nst_string, nstId)
+      #nst_json['usageState'] = "IN_USE"
+      nstParameter2update = "usageState=IN_USE"
+      updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
     
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
