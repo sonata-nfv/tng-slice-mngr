@@ -15,7 +15,7 @@ LOG.setLevel(logging.INFO)
 
 ##### CREATE NSI SECTION #####
 #MAIN FUNCTION: createNSI(...)
-#related functions: parseNetSliceInstance(...), instantiateNetServices(...), checkRequestsStatus(...)
+#related functions: parseNetSliceInstance(), instantiateNetServices(), checkRequestsStatus()
 def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
     nstId = nsi_jsondata['nstId']

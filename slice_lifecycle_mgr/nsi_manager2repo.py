@@ -28,7 +28,7 @@ def safe_nsi(NSI_string):
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
+    if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR storage accepted.")
     else:
         error = {'http_code': response.status_code,
@@ -47,7 +47,7 @@ def getAll_saved_nsi():
     LOG.info(response.text)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
+    if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: all NSIR received.")
     else:
         error = {'http_code': response.status_code,
@@ -66,7 +66,7 @@ def get_saved_nsi(nsiId):
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
+    if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR received.")
     else:
         error = {'http_code': response.status_code,
@@ -84,7 +84,7 @@ def update_nsi(update_NSI, nsiId):
     response = requests.put(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
+    if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR updated.")
     else:
         error = {'http_code': response.status_code,
@@ -101,7 +101,7 @@ def delete_nsi(nsiId):
     response = requests.delete(url)
     LOG.info(response.status_code)
     
-    if (response.status_code == 200):                                              #TODO: change the value according to tng-rep when this will be changed
+    if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR deleted.")
     else:
         error = {'http_code': response.status_code,
