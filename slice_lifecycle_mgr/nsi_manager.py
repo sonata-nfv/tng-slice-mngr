@@ -6,21 +6,27 @@ import dateutil.parser
 import objects.nsi_content as nsi
 import slice2ns_mapper.mapper as mapper
 import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo
+import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
 import database.database as db
+
+logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger("slicemngr:repo")
+LOG.setLevel(logging.INFO)
 
 ##### CREATE NSI SECTION #####
 #MAIN FUNCTION: createNSI(...)
-#related functions: parseNetSliceInstance(...), instantiateNetServices(...), checkRequestsStatus(...)
+#related functions: parseNetSliceInstance(), instantiateNetServices(), checkRequestsStatus()
 def createNSI(nsi_jsondata):
-    logging.info("NSI_MNGR: Creating a new NSI")
-    NST = db.nst_dict.get(nsi_jsondata['nstId'])                                   #TODO: substitute this db for the catalogue connection (GET)
-    #NST = nst_catalogue.get_saved_nst(nstId)
+    LOG.info("NSI_MNGR: Creating a new NSI")
+    nstId = nsi_jsondata['nstId']
+    catalogue_response = nst_catalogue.get_saved_nst(nstId)
+    nst_json = catalogue_response['nstd']
         
     #creates NSI with the received information
-    NSI = parseNewNSI(NST, nsi_jsondata)
+    NSI = parseNewNSI(nst_json, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
-    requestsID_list = instantiateNetServices(NST.nstNsdIds)  #instantiateNetServices(NST['nstNsdIds'])
+    requestsID_list = instantiateNetServices(nst_json['nstNsdIds'])
     
     #checks if all instantiations in Sonata SP are READY to store NSI object
     allInstantiationsReady = False
@@ -28,45 +34,45 @@ def createNSI(nsi_jsondata):
       allInstantiationsReady = checkRequestsStatus(requestsID_list)
       #time.sleep(5)
     
+    #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     for request_uuid_item in requestsID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
 
-    #update nstUsageState parameter
-    if NST.usageState == "NOT_IN_USE":   #if NST['usageState'] == "NOT_IN_USE"
-      NST.usageState = "IN_USE"          #NST['usageState'] = "IN_USE" 
-      db.nst_dict[NST.id] = NST                                                    #TODO: substitute this db for the catalogue connection (PUT)
-      
+    #Updating the the usageState parameter of the slelected NST
+    if (nst_json['usageState'] == "NOT_IN_USE"):  
+      nstParameter2update = "usageState=IN_USE"
+      updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+    
+    #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
     nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
     return nsirepo_jsonresponse
 
-def parseNewNSI(nst_ref, nsi_json):
+def parseNewNSI(nst_json, nsi_json):
     uuid_nsi = str(uuid.uuid4())
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
-    vendor = nst_ref.vendor
-    nstInfoId = ""                                                                 #TODO: where does it come from??
-    flavorId = ""                                                                  #TODO: where does it come from??
-    sapInfo = ""                                                                   #TODO: where does it come from??
+    vendor = nst_json['vendor']
+    nstInfoId = nst_json['name'] + "made by " + nst_json['author'] + "belonging to " + nst_json['vendor']
+    flavorId = ""                                                                                            #TODO: where does it come from??
+    sapInfo = ""                                                                                             #TODO: where does it come from??
     nsiState = "INSTANTIATED"
     instantiateTime = str(datetime.datetime.now().isoformat())
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    #netServInstance_Uuid = []
+    #netServInstance_Uuid = []    #these values are given later on, when the services are isntantiated and have a uuid given by the SP
     
     NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstInfoId, flavorId, sapInfo, 
                   nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
-    #TODO: to use when integrationg with catalogue implemented because of the NST['vendor']
-    #nsi=nsi_content(nsi_uuid, nsi_json['name'], nsi_json['description'], nsi_json['nstId'], nst_ref['vendor'], nstInfoId, flavorId, sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
     return NSI
 
 def instantiateNetServices(NetServicesIDs):
     #instantiates required NetServices by sending requests to Sonata SP
     requestsID_list = []   
-    for uuidNetServ_item in NetServicesIDs:           #for uuidNetServ_item in NST['nstNsdIds']
+    for uuidNetServ_item in NetServicesIDs:
       instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
       requestsID_list.append(instantiation_response['id'])
     return requestsID_list
@@ -85,7 +91,7 @@ def checkRequestsStatus(requestsID_list):
 
 ##### TERMINATE NSI SECTION #####
 def terminateNSI(nsiId, TerminOrder):
-    logging.info("NSI_MNGR: Terminate NSI with id: " +str(nsiId))
+    LOG.info("NSI_MNGR: Terminate NSI with id: " +str(nsiId))
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
     
     #prepares the NSI object to manage with the info coming from repositories
@@ -128,13 +134,13 @@ def terminateNSI(nsiId, TerminOrder):
 
 ##### GET NSI SECTION #####
 def getNSI(nsiId):
-    logging.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))
+    LOG.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))
     nsirepo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
 
     return nsirepo_jsonresponse
 
 def getAllNsi():
-    logging.info("NSI_MNGR: Retrieve all existing NSIs")
+    LOG.info("NSI_MNGR: Retrieve all existing NSIs")
     nsirepo_jsonresponse = nsi_repo.getAll_saved_nsi()
     
     return nsirepo_jsonresponse

@@ -10,7 +10,7 @@ class nsi_content:
         self.nstInfoId=nstInfoId
         self.flavorId=flavorId
         self.sapInfo=sapInfo
-        self.nsiState=nsiState
+        self.nsiState=nsiState                                    #values are Instantiated/Terminated TODO: check if there are there more
         self.instantiateTime=instantiateTime
         self.terminateTime=terminateTime
         self.scaleTime=scaleTime

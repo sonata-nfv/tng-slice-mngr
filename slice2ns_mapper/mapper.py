@@ -27,17 +27,14 @@ def use_sonata():
 #POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(service_uuid):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
-    # prepares the parameters for the POST request
     url = get_base_url() + '/requests'
     data = '{"service_uuid":"' + service_uuid + '", "ingresses":[], "egresses":[]}'
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
-      #sends the request to the Sonata Gatekeeper API
       response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data)
       jsonresponse = json.loads(response.text)
       return jsonresponse
-      
     else:
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data))
       #Generates a RANDOM (uuid4) UUID for this emulated NSI
@@ -48,17 +45,14 @@ def net_serv_instantiate(service_uuid):
 #POST /requests to TERMINATE Network Service instance
 def net_serv_terminate(servInstance_uuid):
     LOG.info("MAPPER: Preparing the request to terminate NetServices")
-    # prepares the parameters for the POST request
     url = get_base_url() + "/requests"
     data = '{"service_instance_uuid":'+ servInstance_uuid + ', "request_type":"TERMINATE"}'
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
-      # sends the request to the Sonata Gatekeeper API
       response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data)
       jsonresponse = json.loads(response.text)
       return jsonresponse
-    
     else:
       jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
       print (jsonresponse)
@@ -67,16 +61,13 @@ def net_serv_terminate(servInstance_uuid):
 #GET /requests to pull the information of all Network Services INSTANCES
 def getAllNetServInstances():
     LOG.info("MAPPER: Preparing the request to get all the NetServicesInstances")
-    # prepares the parameters for the POST request
     url = get_base_url() + "/requests"
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
-      #sends the request to the Sonata Gatekeeper API
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       jsonresponse = json.loads(response.text)
       return jsonresponse
-    
     else:
       jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
       LOG.info(jsonresponse)
@@ -85,16 +76,13 @@ def getAllNetServInstances():
 #GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
 def getRequestedNetServInstance(request_uuid):
     LOG.info("MAPPER: Preparing the request to get desired NetServicesInstance")
-    # prepares the parameters for the POST request
     url = get_base_url() + "/requests/" + str(request_uuid)
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
-      # sends the request to the Sonata Gatekeeper API
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       jsonresponse = json.loads(response.text)
       return jsonresponse
-    
     else:
       print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER))
       uuident = uuid.uuid4()
@@ -107,28 +95,22 @@ def getRequestedNetServInstance(request_uuid):
 #GET /services to pull all Network Services information
 def getListNetServices():
     LOG.info("MAPPER: Preparing the request to get the NetServices Information")
-    #cleans the current nsInfo_list to have the information updated
-    del db.nsInfo_list[:]
-    
-    # prepares the parameters for the POST request
+    del db.nsInfo_list[:]                                #cleans the current nsInfo_list to have the information updated
     url = get_base_url() + "/services"
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
-      # sends the request to the Sonata Gatekeeper API
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       services_array = json.loads(response.text)
     
       for service_item in services_array:
-        #Each element of the list is a dictionary   
-        nsd=parseNetworkService(service_item) 
-        #adds the dictionary element into the list
-        db.nsInfo_list.append(nsd)
-              
+        nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary   
+        db.nsInfo_list.append(nsd)                       #adds the dictionary element into the list
       return db.nsInfo_list
-      
     else:
-      print ("SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(JSON_CONTENT_HEADER))
+      URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(JSON_CONTENT_HEADER)
+      print (URL_response)
+      return URL_response
 
 def parseNetworkService(service):
     NSD=nsd.nsd_content(service['nsd']['name'], 
