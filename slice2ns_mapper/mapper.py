@@ -97,9 +97,8 @@ def getListNetServices():
     LOG.info("MAPPER: Preparing the request to get the NetServices Information")
     del db.nsInfo_list[:]                                #cleans the current nsInfo_list to have the information updated
     url = get_base_url() + "/services"
-
-    #SONATA SP or EMULATED Connection 
-    if use_sonata() == "True":
+ 
+    if use_sonata() == "True":                           #SONATA SP or EMULATED Mode
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       services_array = json.loads(response.text)
     
