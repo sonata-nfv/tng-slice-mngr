@@ -22,7 +22,7 @@ pipeline {
           steps {
             sh 'echo TODO Unit Tests'
           }
-        }
+        } 
       }
     }
     stage('Checkstyle') {
@@ -77,6 +77,8 @@ pipeline {
         branch 'master'
       }      
       steps {
+        sh 'docker tag registry.sonata-nfv.eu:5000/tng-slice-mngr:latest registry.sonata-nfv.eu:5000/tng-slice-mngr:int'
+        sh 'docker push registry.sonata-nfv.eu:5000/tng-slice-mngr:int'
         sh 'rm -rf tng-devops || true'
         sh 'git clone https://github.com/sonata-nfv/tng-devops.git'
         dir(path: 'tng-devops') {

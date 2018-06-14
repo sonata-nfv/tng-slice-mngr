@@ -28,7 +28,7 @@ def getAllNetServ():
 
 ######################################### NETSLICE TEMPLATE Actions #########################################
 #creates a NetSlice template(NST)
-@app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST'])
+@app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
 def postNST():
     receivedNSTd = request.json
     new_NST = nst_manager.createNST(receivedNSTd)
