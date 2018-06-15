@@ -13,9 +13,7 @@ pipeline {
     }
     stage('Unit Test Dependencies') {
       steps {
-        dir(path: 'test/unit'){
-          sh './test-dependencies.sh'
-        }
+        echo 'If needed, add unit test dependencies in the future'
       }
     }
     stage('Unit Test Execution'){
