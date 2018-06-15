@@ -20,14 +20,14 @@ pipeline {
       parallel {
         stage('Performing NST Unit Tests') {
           steps {
-            dir(path: 'test/unit'){
+            dir(path: 'tests/unit'){
               sh './nstapi.sh'
             }
           }
         }
         stage('Performing NSI Unit Tests') {
           steps {
-            dir(path: 'test/unit'){
+            dir(path: 'tests/unit'){
               sh './nsiapi.sh'
             }
           }
