@@ -11,18 +11,29 @@ pipeline {
         }
       }
     }
-    stage('Unittest Dependencies') {
+    stage('Unit Test Dependencies') {
       steps {
-        sh 'echo TODO Unit Tests Dependencies'
+        dir(path: 'test/unit'){
+          sh './test-dependencies.sh'
+        }
       }
     }
-    stage('Unittest execution'){
+    stage('Unit Test Execution'){
       parallel {
-        stage('Performing Unit Tests') {
+        stage('Performing NST Unit Tests') {
           steps {
-            sh 'echo TODO Unit Tests'
+            dir(path: 'test/unit'){
+              sh './nstapi.sh'
+            }
           }
-        } 
+        }
+        stage('Performing NSI Unit Tests') {
+          steps {
+            dir(path: 'test/unit'){
+              sh './nsiapi.sh'
+            }
+          }
+        }
       }
     }
     stage('Checkstyle') {
@@ -83,6 +94,20 @@ pipeline {
         sh 'git clone https://github.com/sonata-nfv/tng-devops.git'
         dir(path: 'tng-devops') {
           sh 'ansible-playbook roles/sp.yml -i environments -e "target=int-sp"'
+        }
+      }
+    }
+    stage('Checking Swagger Documentation'){
+      parallel {
+        stage('NST_API swagger validation'){
+          steps {
+            swagger-cli validate swagger_definitios/slice-mngr_NST.json
+          }
+        }
+        stage('NSI_API swagger validation'){
+          steps {
+            swagger-cli validate swagger_definitios/slice-mngr_NSI.json
+          }
         }
       }
     }
