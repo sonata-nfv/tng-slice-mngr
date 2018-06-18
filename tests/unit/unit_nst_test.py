@@ -10,7 +10,7 @@ import time
 from unittest.mock import patch
 from datetime import datetime
 
-import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
+import slice_lifecycle_mgr.nst_manager2catalogue
 #from main
 
 class TestCase(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestCase(unittest.TestCase):
 #    def tearDown():
 #        nst_dict.del
     
-    @patch('nst_catalogue.requestst.post')
+    @patch('nst_manager2catalogue.requests.post')
     def test_create_NST(self, mock_createNST):
         NetService_1_uuid = str(uuid.uuid4())
         NetService_2_uuid = str(uuid.uuid4())
