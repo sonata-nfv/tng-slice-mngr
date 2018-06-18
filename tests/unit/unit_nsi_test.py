@@ -12,15 +12,18 @@ from app import app, db
 
 class TestCase(unittest.TestCase):
     def setUp():
-    
+        
     def tearDown():
     
     def test_create_NSI(self):
         #Test create NST before NSI
         NetService_uuid = str(uuid.uuid4())
         
-        response = self.app.post("/api/nst/v1/descriptors", data=json.dumps(dict(name="5gtango_NST_name", version="1.0", author="5gtango", vendor="5gtango_vendor",
-                                  nstNsdIds=[dict(NsdId=NetService_uuid)])),content_type='application/json')
+        response = self.app.post("/api/nst/v1/descriptors", data=json.dumps(dict(name="5gtango_NST_name",
+                                                                        version="1.0", author="5gtango",
+                                                                        vendor="5gtango_vendor",
+                                                                        nstNsdIds=[dict(NsdId=NetService_uuid)])),
+                                                            content_type='application/json')
         
         self.assertEqual(response.status_code, 201)
         resp_json = json.loads(response.data)
@@ -54,7 +57,7 @@ class TestCase(unittest.TestCase):
     def test_get_NSI(self):
         #Test create NST before NSI
         NetService_uuid = str(uuid.uuid4())
-        response = self.app.post("/api/nst/v1/descriptors", data=json.dumps(dict(name="5gtango_NST_name", version="1.0", author="5gtango", vendor="5gtango_vendor",
+        response = self.app.post("/api/nst/v1/descriptors", data=json.dumps(dict(name="5gtango_NST_name_2", version="1.0", author="5gtango", vendor="5gtango_vendor",
                                   nstNsdIds=[dict(NsdId=NetService_uuid)])),content_type='application/json')
         
         self.assertEqual(response.status_code, 201)
