@@ -21,7 +21,7 @@ class TestCase(unittest.TestCase):
 #    def tearDown():
 #        nst_dict.del
     
-    @patch('nst_manager2catalogue.requests.post')
+    @patch('slice_lifecycle_mgr.nst_manager2catalogue.requests.post')
     def test_create_NST(self, mock_createNST):
         NetService_1_uuid = str(uuid.uuid4())
         NetService_2_uuid = str(uuid.uuid4())
