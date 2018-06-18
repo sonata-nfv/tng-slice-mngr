@@ -7,6 +7,7 @@ import xmlrunner
 import uuid
 import subprocess
 import time
+from unittest.mock import patch
 from datetime import datetime
 
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
