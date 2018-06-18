@@ -1,6 +1,12 @@
 #!/usr/bin/python
 
-import os, json, uuid, time, unittest, xmlrunner, subprocess
+import os
+import json
+import unittest
+import xmlrunner
+import uuid
+import subprocess
+import time
 from datetime import datetime
 
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue

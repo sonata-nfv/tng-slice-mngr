@@ -63,7 +63,7 @@ setup(
     keywords='NFV orchestrator',
 
     packages=find_packages(),
-    install_requires=['Flask>=0.12.2', 'flask-restful', 'python-dateutil', 'requests'],
+    install_requires=['Flask>=0.12.2', 'flask-restful', 'python-dateutil', 'requests', 'xmlrunner==1.7.7'],
     #setup_requires=['pytest-runner'],
 
     # To provide executable scripts, use entry points in preference to the
