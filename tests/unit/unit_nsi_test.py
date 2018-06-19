@@ -25,7 +25,7 @@ class TestCase(unittest.TestCase):
 
     def test_create_NSI(self):
         #Prepares MOCK NST/NSI objects to send to the tested function      
-        mock_nst_json = {"created_at": "2018-06-08T10:36:53.425+00:00","md5": "5024cfde7637ab98f086ff51bd158bc9","nstd": {"author": "5gTango","name": "5gtango_NST_name","notificationTypes": "","nstNsdIds": ["6a01afdc-9d42-4bc9-866c-a8a3868fdf5e"],"onboardingState": "ENABLED","operationalState": "ENABLED","usageState": "NOT_IN_USE","userDefinedData": "","vendor": "5gTango","version": "1.0"},"signature": null,"status": "active","updated_at": "2018-06-08T10:36:53.425+00:00","username": null,"uuid": "096c26f9-6142-43d2-8521-57cea9e76c6c"}
+        mock_nst_json = {"created_at": "2018-06-08T10:36:53.425+00:00","md5": "5024cfde7637ab98f086ff51bd158bc9","nstd": {"author": "5gTango","name": "5gtango_NST_name","notificationTypes": "","nstNsdIds": ["6a01afdc-9d42-4bc9-866c-a8a3868fdf5e"],"onboardingState": "ENABLED","operationalState": "ENABLED","usageState": "NOT_IN_USE","userDefinedData": "","vendor": "5gTango","version": "1.0"},"signature": "null","status": "active","updated_at": "2018-06-08T10:36:53.425+00:00","username": "null","uuid": "096c26f9-6142-43d2-8521-57cea9e76c6c"}
         mock_nsi_json = {"name": "tango_NSI", "description": "5gTango_descriptor", "nstId": "096c26f9-6142-43d2-8521-57cea9e76c6c"}
         
         #Creates NSI object and json (to send to the repositories in integration tests)
