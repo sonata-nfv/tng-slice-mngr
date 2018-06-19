@@ -19,9 +19,9 @@ from slice_lifecycle_mgr.nsi_manager import parseNewNSI
 
 
 class TestCase(unittest.TestCase):
-    def setUp(self):
+    #def setUp(self):
 
-    def tearDown():
+    #def tearDown():
 
     def test_create_NSI(self):
         #Prepares MOCK NST/NSI objects to send to the tested function      
