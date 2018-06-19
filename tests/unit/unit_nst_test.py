@@ -16,14 +16,14 @@ from database import database as db
 #from main
 
 class TestCase(unittest.TestCase):
-    def setUp():
+    def setUp(self):
         config = ConfigParser()
         config.read('config.cfg')
         db.settings = config
 #        nst_dict={}
 #        self.app = main.app.test_client()
             
-#    def tearDown():
+#    def tearDown(self):
 #        nst_dict.del
     
     @patch('slice_lifecycle_mgr.nst_manager2catalogue.requests.post')
