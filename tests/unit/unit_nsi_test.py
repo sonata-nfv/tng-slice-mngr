@@ -30,14 +30,13 @@ class TestCase(unittest.TestCase):
         
         #Creates NSI object and json (to send to the repositories in integration tests)
         response_NSI = parseNewNSI(mock_nst_json, mock_nsi_json)
-        string_NSI = vars(response_NSI)
-        resp_json = json.loads(string_NSI)
+        resp_NSI_json = vars(response_NSI)
         
-        NSI_name = resp_json["name"]
-        NSI_vendor = resp_json["vendor"]
-        NSI_description = resp_json["description"]
-        NSI_nsiState = resp_json["nsiState"]
-        NSI_nstId = resp_json["nstId"]
+        NSI_name = resp_NSI_json["name"]
+        NSI_vendor = resp_NSI_json["vendor"]
+        NSI_description = resp_NSI_json["description"]
+        NSI_nsiState = resp_NSI_json["nsiState"]
+        NSI_nstId = resp_NSI_json["nstId"]
         
         self.assertEqual(NSI_name, "tango_NSI")
         self.assertEqual(NSI_vendor, "5gTango")

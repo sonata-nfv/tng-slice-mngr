@@ -34,10 +34,10 @@ class TestCase(unittest.TestCase):
         #Prepares received information from portal
         NetService_1_uuid = str(uuid.uuid4())
         NetService_2_uuid = str(uuid.uuid4())
-        data = {"name":"5gtango_NST_name", "version":"1.0", "author":"5gtango", "vendor":"5gTango", "nstNsdIds":[{"NsdId":"52047455-5792-4ce7-8809-2f56c4a876bd"},{"NsdId":"fb050678-2b12-432a-8ee2-a2dff777510f"}]}
+        mock_jsondata = {"name":"5gtango_NST_name", "version":"1.0", "author":"5gtango", "vendor":"5gTango", "nstNsdIds":[{"NsdId":"52047455-5792-4ce7-8809-2f56c4a876bd"},{"NsdId":"fb050678-2b12-432a-8ee2-a2dff777510f"}]}
         
         #Testing the function to create NST
-        response = createNST(data)
+        response = createNST(mock_jsondata)
 
         #Comparing response values
         NST_uuid = response["uuid"]
