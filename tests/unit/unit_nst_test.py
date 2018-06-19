@@ -9,6 +9,7 @@ import subprocess
 import time
 from unittest.mock import patch
 from datetime import datetime
+from configparser import ConfigParser
 
 import slice_lifecycle_mgr.nst_manager2catalogue
 from slice_lifecycle_mgr.nst_manager import createNST
