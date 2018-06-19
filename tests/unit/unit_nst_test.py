@@ -12,13 +12,17 @@ from datetime import datetime
 
 import slice_lifecycle_mgr.nst_manager2catalogue
 from slice_lifecycle_mgr.nst_manager import createNST
+from database import database as db
 #from main
 
 class TestCase(unittest.TestCase):
-#    def setUp():
+    def setUp():
+        config = ConfigParser()
+        config.read('config.cfg')
+        db.settings = config
 #        nst_dict={}
 #        self.app = main.app.test_client()
-#    
+            
 #    def tearDown():
 #        nst_dict.del
     
