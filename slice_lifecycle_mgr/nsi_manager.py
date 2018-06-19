@@ -50,6 +50,7 @@ def createNSI(nsi_jsondata):
     return nsirepo_jsonresponse
 
 def parseNewNSI(nst_json, nsi_json):
+    LOG.info("NSI_MNGR: Parsing a new NSI from the user_info and the reference NST")
     uuid_nsi = str(uuid.uuid4())
     name = nsi_json['name']
     description = nsi_json['description']
