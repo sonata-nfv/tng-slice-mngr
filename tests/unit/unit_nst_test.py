@@ -43,12 +43,12 @@ class TestCase(unittest.TestCase):
         
         #self.assertEqual(response.status_code, 201)
         
-        NST_uuid = resp_json["uuid"]
-        NST_name = resp_json["nstd"]["name"]
-        NST_author = resp_json["nstd"]["author"]
-        NST_usageState = resp_json["nstd"]["usageState"]
-        NST_onboardingState = resp_json["nstd"]["onboardingState"]
-        NST_operationalState = resp_json["nstd"]["operationalState"]
+        NST_uuid = response["uuid"]
+        NST_name = response["nstd"]["name"]
+        NST_author = response["nstd"]["author"]
+        NST_usageState = resresponsep_json["nstd"]["usageState"]
+        NST_onboardingState = response["nstd"]["onboardingState"]
+        NST_operationalState = response["nstd"]["operationalState"]
         
         self.assertEqual(NST_uuid, "096c26f9-6142-43d2-8521-57cea9e76c6c")
         self.assertEqual(NST_name, "5gtango_NST_name")
