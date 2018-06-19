@@ -27,11 +27,11 @@ class TestCase(unittest.TestCase):
         NetService_1_uuid = str(uuid.uuid4())
         NetService_2_uuid = str(uuid.uuid4())
         
-        data = '{"name":"tango_NST", "version":"1.0", "author":"5gtango", "vendor":"5gTango", "nstNsdIds":[{"NsdId":"52047455-5792-4ce7-8809-2f56c4a876bd"},{"NsdId":"fb050678-2b12-432a-8ee2-a2dff777510f"}]}'
-        data_json = json.dumps(data)
+        data = {"name":"tango_NST", "version":"1.0", "author":"5gtango", "vendor":"5gTango", "nstNsdIds":[{"NsdId":"52047455-5792-4ce7-8809-2f56c4a876bd"},{"NsdId":"fb050678-2b12-432a-8ee2-a2dff777510f"}]}
+        #data_json = json.dumps(data)
         
         mock_createNST.return_value.status_code = 201
-        response = createNST(data_json)
+        response = createNST(data)
         
         self.assertEqual(response.status_code, 201)
         #resp_json = json.loads(response.data)
