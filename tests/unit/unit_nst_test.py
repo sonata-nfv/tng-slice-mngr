@@ -46,7 +46,7 @@ class TestCase(unittest.TestCase):
         NST_uuid = response["uuid"]
         NST_name = response["nstd"]["name"]
         NST_author = response["nstd"]["author"]
-        NST_usageState = resresponsep_json["nstd"]["usageState"]
+        NST_usageState = response["nstd"]["usageState"]
         NST_onboardingState = response["nstd"]["onboardingState"]
         NST_operationalState = response["nstd"]["operationalState"]
         
