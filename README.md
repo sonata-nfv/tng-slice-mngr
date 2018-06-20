@@ -1,3 +1,5 @@
+<p align="center"><img src="https://github.com/sonata-nfv/tng-api-gtw/wiki/images/sonata-5gtango-logo-500px.png" /></p>
+
 # tng-slicemgr
 Description: 5GTANGO Service Platform Slice Manager
 
@@ -133,25 +135,29 @@ Once the NST is created, it is possible to create/delete and check NSIs based on
 
   3) GET SPECIFIC NetSlice Instance
   
-	    *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/{nsiId}*
+    *curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/{nsiId}*
     
 		    REQUEST EXAMPLE:
         curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://127.0.0.1:5998/api/nsilcm/v1/nsi/deb3a1fc-2493-4d76-a65d-9ac129a213fb
 
   4) TERMINATE a NetSlice Instance
   
-  This command allows you to decide when to terminate(delete) a NSI. It is possible to terminate it instantly ({"terminateTime": "0"}) or apply a future termination time {"terminateTime": "2019-04-11T10:55:30.560Z"}.
+    This command allows you to decide when to terminate(delete) a NSI. It is possible to terminate it instantly ({"terminateTime": "0"}) or apply a future termination time {"terminateTime": "2019-04-11T10:55:30.560Z"}.
   
 		*curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/{nsiId}/terminate*
     
-		    REQUEST EXAMPLE:
-        Planned Termination: curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/deb3a1fc-2493-4d76-a65d-9ac129a213fb/terminate
-        Instant Termination: curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "0"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/deb3a1fc-2493-4d76-a65d-9ac129a213fb/terminate
+		    REQUEST EXAMPLES:
+          1) Planned Termination: curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "2019-04-11T10:55:30.560Z"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/deb3a1fc-2493-4d76-a65d-9ac129a213fb/terminate
+          2) Instant Termination: curl -i -H "Content-Type:application/json" -X POST -d '{"terminateTime": "0"}' http://127.0.0.1:5998/api/nsilcm/v1/nsi/deb3a1fc-2493-4d76-a65d-9ac129a213fb/terminate
         
 		    NOTE: On the server side, it is possible to see the emulated request sent to SONATA SP ...
 		    SONATA EMULATED TERMINATE NSI --> URL: http://10.1.7.21:32001/api/v2/requests,HEADERS: {'authorization': 'bearer None'},DATA: {"service_instance_uuid":"59cf2b1f-2a4d-4ab7-b160-9ed88d3b9dc2", "request_type":"TERMINATE"}
 
+## License
 
+This 5GTANGO component is published under Apache 2.0 license. Please see the LICENSE file for more details.
+
+---
 ## Authors contact
   * Ricard Vilalta (ricard.vilalta@cttc.es)
   * Pol Alemany (pol.alemany@cttc.cat)

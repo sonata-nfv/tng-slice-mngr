@@ -4800,7 +4800,7 @@
             "name": "filter",
             "description": "Filter to match the NSTs.",
             "in": "body",
-            "required": true,
+            #"required": true,
             "schema": {
               "description": "Filter to match the NSTs.",
               "type": "object",
