@@ -28,7 +28,8 @@ def use_sonata():
 def net_serv_instantiate(service_uuid):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
-    data = '{"service_uuid":"' + service_uuid + '", "ingresses":[], "egresses":[]}'
+    data = '{"uuid":"' + service_uuid + '"}'
+    #data = '{"uuid":"' + service_uuid + '", "ingresses":[]", "egresses":[]", "blacklist":["]}'            #TODO: create function to add ingresses/egresses/blacklist
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
