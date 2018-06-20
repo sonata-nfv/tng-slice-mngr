@@ -99,12 +99,12 @@ pipeline {
       parallel {
         stage('NST_API swagger validation'){
           steps {
-            sh 'swagger-cli validate swagger_definitios/slice-mngr_NST.json'
+            sh 'swagger-cli validate swagger_definitions/slice-mngr_NST.json'
           }
         }
         stage('NSI_API swagger validation'){
           steps {
-            sh 'swagger-cli validate swagger_definitios/slice-mngr_NSI.json'
+            sh 'swagger-cli validate swagger_definitions/slice-mngr_NSI.json'
           }
         }
       }
