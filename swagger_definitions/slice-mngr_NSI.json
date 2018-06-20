@@ -671,7 +671,7 @@
             "name": "filter",
             "description": "Filter to match the NSI.",
             "in": "path",
-            "required": true,
+            #"required": true,
             "type": "string"
           },
           {
@@ -1363,7 +1363,7 @@
             "name": "filter",
             "description": "Filter to match the NSIs.",
             "in": "path",
-            "required": true,
+            #"required": true,
             "type": "string"
           },
           {
@@ -6020,7 +6020,7 @@
             "name": "filter",
             "description": "Filter to match the NSIs.",
             "in": "body",
-            "required": true,
+            #"required": true,
             "schema": {
               "description": "Filter to match the NSIs.",
               "type": "object",
