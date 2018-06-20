@@ -666,7 +666,7 @@
       },
       "get": {
         "description": "**Query NSI**: Queries NSIs information.\n",
-        "parameters": [
+#        "parameters": [
 #          {
 #            "name": "filter",
 #            "description": "Filter to match the NSI.",
@@ -674,14 +674,14 @@
 #            "required": true,
 #            "type": "string"
 #          },
-          {
-            "name": "attributeSelector",
-            "description": "Attribute names (keys) to be returned.",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
+#          {
+#            "name": "attributeSelector",
+#            "description": "Attribute names (keys) to be returned.",
+#            "in": "path",
+#            "required": true,
+#            "type": "string"
+#          }
+#        ],
         "responses": {
           "200": {
             "description": "Results of the query (NSIs).",
@@ -1366,14 +1366,14 @@
 #            #"required": true,
 #            "type": "string"
 #          },
-          {
-            "name": "attributeSelector",
-            "description": "Attribute names (keys) to be returned.",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
+#          {
+#            "name": "attributeSelector",
+#            "description": "Attribute names (keys) to be returned.",
+#            "in": "path",
+#            "required": true,
+#            "type": "string"
+#          }
+#        ],
         "responses": {
           "200": {
             "description": "Results of the query (NSIs).\n",
