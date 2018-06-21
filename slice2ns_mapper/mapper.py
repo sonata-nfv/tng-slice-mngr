@@ -99,13 +99,15 @@ def getRequestedNetServInstance(request_uuid):
    
 ########################################## /services ##########################################
 #GET /services to pull all Network Services information
+#curl -X GET tng-gtk-common:5000/services
 def getListNetServices():
     LOG.info("MAPPER: Preparing the request to get the NetServices Information")
     del db.nsInfo_list[:]                                #cleans the current nsInfo_list to have the information updated
     url = get_base_url_NetService_info() + "/services"
  
     if use_sonata() == "True":                           #SONATA SP or EMULATED Mode
-      response = requests.get(url, headers=JSON_CONTENT_HEADER)
+      #response = requests.get(url, headers=JSON_CONTENT_HEADER)
+      response = requests.get(url)
       services_array = json.loads(response.text)
     
       for service_item in services_array:
