@@ -111,9 +111,22 @@ def getListNetServices():
       services_array = json.loads(response.text)
     
       for service_item in services_array:
-        nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary   
-        db.nsInfo_list.append(nsd)                       #adds the dictionary element into the list
-      return db.nsInfo_list
+        nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary
+        nsd_string = vars(nsd)
+        LOG.info("MAPPER_nsd_string: %s" + str(nsd_string))
+        nsd_json = json.dumps(nsd_string)
+        LOG.info("MAPPER_nsd_json: %s" + str(nsd_json))
+        db.nsInfo_list.append(nsd_json)                       #adds the dictionary element into the list
+      
+      if (response.status_code == 200) or (response.status_code == 201):
+          LOG.info("MAPPER: Services from the SP received.")
+          response = db.nsInfo_list
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          response = error
+          LOG.info('MAPPER: reception of the SP savailable services: ' + str(error))
+          
+      return response
     else:
       URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(JSON_CONTENT_HEADER)
       print (URL_response)
