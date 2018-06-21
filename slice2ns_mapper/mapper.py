@@ -37,7 +37,7 @@ def net_serv_instantiate(service_uuid):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
     LOG.info("MAPPER: URL is: " + str(url))
-    data = '{"uuid":"' + str(service_uuid) + '"}'
+    data = {'"uuid"':'"' + str(service_uuid) + '"'}
     data_json = json.dumps(data)
     LOG.info("MAPPER: data sent to instantiateNS: " +str(data_json))
     #data = '{"uuid":"' + service_uuid + '", "ingresses":[]", "egresses":[]", "blacklist":["]}'            #TODO: create function to add ingresses/egresses/blacklist
