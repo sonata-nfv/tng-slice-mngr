@@ -11,12 +11,17 @@ LOG.setLevel(logging.INFO)
 JSON_CONTENT_HEADER = '{"Content-Type":"application/json"}'
 
 #################################### Sonata SP information #####################################
-def get_base_url():
-    #ip_address=db.settings.get('SLICE_MGR','SONATA_SP_IP')
-    #base_url = 'http://'+ip_address+':32001/api/v2'
+#Prepare the URL to ask for the available network services to create NST.
+def get_base_url_NetService_info():
+    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK_COMMON')
+    port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_COMMON_PORT')
+    base_url = 'http://'+ip_address+':'+port
+    return base_url
     
-    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK')
-    port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_PORT')
+#Prepares the URL_requests to manage Network Services instantiations belonging to the NST/NSI
+def get_base_url():   
+    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP')
+    port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP_PORT')
     base_url = 'http://'+ip_address+':'+port
     return base_url
 
@@ -97,7 +102,7 @@ def getRequestedNetServInstance(request_uuid):
 def getListNetServices():
     LOG.info("MAPPER: Preparing the request to get the NetServices Information")
     del db.nsInfo_list[:]                                #cleans the current nsInfo_list to have the information updated
-    url = get_base_url() + "/services"
+    url = get_base_url_NetService_info() + "/services"
  
     if use_sonata() == "True":                           #SONATA SP or EMULATED Mode
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
