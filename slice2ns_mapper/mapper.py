@@ -29,18 +29,31 @@ def use_sonata():
     return db.settings.get('SLICE_MGR','USE_SONATA')
 
 ########################################## /requests ##########################################
+#curl -X POST tng-gtk-sp:5000/requests -d'{"uuid":"1234-abc..."}'
+#curl -X POST tng-gtk-sp:5000/requests -d'{"uuid":"1234-abc...", "egresses":"[]", "ingresses":"[]", "blacklist":"[]"}'
+
 #POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(service_uuid):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
-    data = '{"uuid":"' + service_uuid + '"}'
+    LOG.info("MAPPER: URL is: " + str(url))
+    data = {"uuid":'"' + str(service_uuid) + '"'}
+    LOG.info("MAPPER: data sent to instantiaeNS: " +str(data))
     #data = '{"uuid":"' + service_uuid + '", "ingresses":[]", "egresses":[]", "blacklist":["]}'            #TODO: create function to add ingresses/egresses/blacklist
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
-      response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data)
+      response = requests.post(url, data=data)
       jsonresponse = json.loads(response.text)
+      
+      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+          LOG.info("MAPPER: NetService belonging the NetSlice INSTANTIATED.")
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          jsonresponse = error
+          LOG.info('MAPPER: error when instantiating NetService: ' + str(error))
       return jsonresponse
+
     else:
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data))
       #Generates a RANDOM (uuid4) UUID for this emulated NSI
@@ -58,7 +71,15 @@ def net_serv_terminate(servInstance_uuid):
     if use_sonata() == "True":
       response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data)
       jsonresponse = json.loads(response.text)
+      
+      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+          LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED.")
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          jsonresponse = error
+          LOG.info('MAPPER: error when terminating NetService instantiation: ' + str(error))
       return jsonresponse
+      
     else:
       jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
       print (jsonresponse)
@@ -73,7 +94,15 @@ def getAllNetServInstances():
     if use_sonata() == "True":
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       jsonresponse = json.loads(response.text)
+      
+      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+          LOG.info("MAPPER: Information of all instantiated netService received.")
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          jsonresponse = error
+          LOG.info('MAPPER: error when receiving all NS instantiations info: ' + str(error))
       return jsonresponse
+      
     else:
       jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
       LOG.info(jsonresponse)
@@ -88,7 +117,15 @@ def getRequestedNetServInstance(request_uuid):
     if use_sonata() == "True":
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       jsonresponse = json.loads(response.text)
+      
+      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+          LOG.info("MAPPER: Information of the instantiated netService received.")
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          jsonresponse = error
+          LOG.info('MAPPER: error when receiving the NS instantiation info: ' + str(error))
       return jsonresponse
+    
     else:
       print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER))
       uuident = uuid.uuid4()
@@ -106,29 +143,28 @@ def getListNetServices():
     url = get_base_url_NetService_info() + "/services"
  
     if use_sonata() == "True":                           #SONATA SP or EMULATED Mode
-      #response = requests.get(url, headers=JSON_CONTENT_HEADER)
       response = requests.get(url)
       services_array = json.loads(response.text)
     
       for service_item in services_array:
         nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary
         nsd_string = vars(nsd)
-        #nsd_json = json.dumps(nsd_string)
-        db.nsInfo_list.append(nsd_string)                       #adds the dictionary element into the list
+        db.nsInfo_list.append(nsd_string)                #Adds the dictionary element into the list
+        response = db.nsInfo_list
       
-      if (response.status_code == 200) or (response.status_code == 201):
+      if (response.status_code == 200):
           LOG.info("MAPPER: Services from the SP received.")
-          response = db.nsInfo_list
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           response = error
-          LOG.info('MAPPER: reception of the SP savailable services: ' + str(error))
-          
+          LOG.info('MAPPER: error when deceiving the SP services information: ' + str(error))  
       return response
+    
     else:
       URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(JSON_CONTENT_HEADER)
       print (URL_response)
       return URL_response
+      
 
 def parseNetworkService(service):
     NSD=nsd.nsd_content(service['nsd']['name'], 
