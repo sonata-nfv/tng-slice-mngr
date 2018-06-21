@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
-JSON_CONTENT_HEADER = '{"Content-Type":"application/json"}'
+JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 #################################### Sonata SP information #####################################
 #Prepare the URL to ask for the available network services to create NST.
@@ -29,9 +29,6 @@ def use_sonata():
     return db.settings.get('SLICE_MGR','USE_SONATA')
 
 ########################################## /requests ##########################################
-#curl -X POST tng-gtk-sp:5000/requests -d'{"uuid":"1234-abc..."}'
-#curl -X POST tng-gtk-sp:5000/requests -d'{"uuid":"1234-abc...", "egresses":"[]", "ingresses":"[]", "blacklist":"[]"}'
-
 #POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(service_uuid):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
