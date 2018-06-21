@@ -149,6 +149,7 @@ def getListNetServices():
       if (response.status_code == 200):
           LOG.info("MAPPER: Services from the SP received.")
           services_array = json.loads(response.text)
+          LOG.info("MAPPER: ALL SERVICES AVAILABLE: " +str(services_array))
           for service_item in services_array:
             nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary
             nsd_string = vars(nsd)
