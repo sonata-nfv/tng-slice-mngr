@@ -144,16 +144,15 @@ def getListNetServices():
  
     if use_sonata() == "True":                           #SONATA SP or EMULATED Mode
       response = requests.get(url)
-      services_array = json.loads(response.text)
-    
-      for service_item in services_array:
-        nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary
-        nsd_string = vars(nsd)
-        db.nsInfo_list.append(nsd_string)                #Adds the dictionary element into the list
-        response = db.nsInfo_list
       
       if (response.status_code == 200):
           LOG.info("MAPPER: Services from the SP received.")
+          services_array = json.loads(response.text)
+          for service_item in services_array:
+            nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary
+            nsd_string = vars(nsd)
+            db.nsInfo_list.append(nsd_string)                #Adds the dictionary element into the list
+            response = db.nsInfo_list
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           response = error
