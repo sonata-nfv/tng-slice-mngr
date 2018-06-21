@@ -45,6 +45,7 @@ def net_serv_instantiate(service_uuid):
     if use_sonata() == "True":
       response = requests.post(url, data=data)
       jsonresponse = json.loads(response.text)
+      LOG.info("MAPPER: SHOWING THE JSON NETSLICE INSTANTIATED. " + str(jsonresponse))
       
       if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
           LOG.info("MAPPER: NetService belonging the NetSlice INSTANTIATED.")
