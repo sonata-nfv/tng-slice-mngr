@@ -149,7 +149,6 @@ def getListNetServices():
       if (response.status_code == 200):
           LOG.info("MAPPER: Services from the SP received.")
           services_array = json.loads(response.text)
-          LOG.info("MAPPER: ALL SERVICES AVAILABLE: " +str(services_array))
           for service_item in services_array:
             nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary
             nsd_string = vars(nsd)
@@ -168,11 +167,11 @@ def getListNetServices():
       
 
 def parseNetworkService(service):
-    NSD=nsd.nsd_content(service['nsd']['name'], 
-                        service['uuid'], 
+      NSD=nsd.nsd_content(service['uuid'],
+                        service['nsd']['name'], 
                         service['nsd']['description'], 
-                        service['nsd']['version'], 
-                        service['nsd']['vendor'],
+                        service['nsd']['vendor'], 
+                        service['nsd']['version'],
                         service['md5'],
                         service['nsd']['author'],
                         service['created_at'],

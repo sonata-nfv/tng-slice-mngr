@@ -11,6 +11,8 @@ from database import database as db
 
 app = Flask(__name__)
 
+#/api/nst/v1/
+#/api/nsilcm/v1/nsi
 API_ROOT="/api"
 API_NST="/nst"
 API_VERSION="/v1"

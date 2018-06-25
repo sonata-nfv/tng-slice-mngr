@@ -26,5 +26,3 @@ class nsd_content:
                     + self.updated
                     
         return str_result
-
-  
