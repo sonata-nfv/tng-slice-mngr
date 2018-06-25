@@ -167,7 +167,7 @@ def getListNetServices():
       
 
 def parseNetworkService(service):
-      NSD=nsd.nsd_content(service['uuid'],
+    NSD=nsd.nsd_content(service['uuid'],
                         service['nsd']['name'], 
                         service['nsd']['description'], 
                         service['nsd']['vendor'], 
@@ -176,5 +176,5 @@ def parseNetworkService(service):
                         service['nsd']['author'],
                         service['created_at'],
                         service['status'], 
-                        service['updated_at'] )
+                        service['updated_at'])
     return NSD
