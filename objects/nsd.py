@@ -14,6 +14,15 @@ class nsd_content:
         self.updated=updated
         
     def __str__(self):
-        str_result = "NSD: " + self.uuid + self.name + self.description + self.vendor + self.version \ 
-                    + self.md5 + self.author + self.created + self.status + self.updated    
+        str_result = "NSD: " + self.uuid \
+                    + self.name \
+                    + self.description \
+                    + self.vendor \
+                    + self.version \
+                    + self.md5 \
+                    + self.author \
+                    + self.created \
+                    + self.status \
+                    + self.updated    
+        
         return str_result
