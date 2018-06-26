@@ -153,19 +153,18 @@ def getListNetServices():
             nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary
             nsd_string = vars(nsd)
             db.nsInfo_list.append(nsd_string)                #Adds the dictionary element into the list
-            response = db.nsInfo_list
+          service_response = db.nsInfo_list
       else:
           error = {'http_code': response.status_code,'message': response.json()}
-          response = error
+          service_response = error
           LOG.info('MAPPER: error when deceiving the SP services information: ' + str(error))  
-      return response
+      return service_response
     
     else:
       URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(JSON_CONTENT_HEADER)
       print (URL_response)
       return URL_response
       
-
 def parseNetworkService(service):
     NSD=nsd.nsd_content(service['uuid'],
                         service['nsd']['name'], 
