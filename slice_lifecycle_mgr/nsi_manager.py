@@ -76,7 +76,8 @@ def instantiateNetServices(NetServicesIDs):
     for uuidNetServ_item in NetServicesIDs:
       instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
       LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: " + str(instantiation_response))
-      requestsID_list.append(instantiation_response['uuid'])
+      LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE_ID: " + str(instantiation_response['id']))
+      requestsID_list.append(instantiation_response['id'])
     return requestsID_list
 
 def checkRequestsStatus(requestsUUID_list):
