@@ -31,7 +31,7 @@ def createNSI(nsi_jsondata):
     #checks if all instantiations in Sonata SP are READY to store NSI object
     allInstantiationsReady = False
     while (allInstantiationsReady == False):
-      allInstantiationsReady = checkRequestsStatus(requestsID_list)
+      allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
       time.sleep(2)
     
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.

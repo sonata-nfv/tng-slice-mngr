@@ -48,7 +48,7 @@ def net_serv_instantiate(service_uuid):
       LOG.info("MAPPER: SHOWING THE JSON NETSLICE INSTANTIATED. " + str(jsonresponse))
       
       if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
-          LOG.info("MAPPER: NetService belonging the NetSlice INSTANTIATED.")
+          LOG.info("MAPPER: NetService belonging the NetSlice instantiating.")
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
