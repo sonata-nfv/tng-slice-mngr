@@ -20,6 +20,7 @@ def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
     nstId = nsi_jsondata['nstId']
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
+    logging.debug('catalogue_response '+str(catalogue_response))
     nst_json = catalogue_response['nstd']
         
     #creates NSI with the received information
@@ -27,7 +28,8 @@ def createNSI(nsi_jsondata):
       
     #instantiates required NetServices by sending requests to Sonata SP
     requestsID_list = instantiateNetServices(nst_json['nstNsdIds'])
-    
+    logging.debug('requestsID_list: '+str(requestsID_list))
+
     #checks if all instantiations in Sonata SP are READY to store NSI object
     allInstantiationsReady = False
     while (allInstantiationsReady == False):
@@ -37,7 +39,7 @@ def createNSI(nsi_jsondata):
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     for request_uuid_item in requestsID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
-      NSI.netServInstance_Uuid.append(instantiation_response['service_instance_uuid'])
+      NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
 
     #Updating the the usageState parameter of the slelected NST
     if (nst_json['usageState'] == "NOT_IN_USE"):  
@@ -72,10 +74,13 @@ def parseNewNSI(nst_json, nsi_json):
 
 def instantiateNetServices(NetServicesIDs):
     #instantiates required NetServices by sending requests to Sonata SP
-    requestsID_list = []   
+    requestsID_list = []
+    logging.debug('NetServicesIDs: '+str(NetServicesIDs))   
     for uuidNetServ_item in NetServicesIDs:
       instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
+      logging.debug('request id:'+str(instantiation_response['id']))
       requestsID_list.append(instantiation_response['id'])
+    logging.debug('requestsID_list: '+str(requestsID_list))
     return requestsID_list
 
 def checkRequestsStatus(requestsID_list):
