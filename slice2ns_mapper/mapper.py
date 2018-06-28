@@ -39,7 +39,7 @@ def net_serv_instantiate(service_uuid):
     data['uuid'] = str(service_uuid)
     data_json = json.dumps(data)
     LOG.info("MAPPER: data sent to instantiateNS: " +str(data_json))
-    #data = '{"uuid":"' + service_uuid + '", "ingresses":[]", "egresses":[]", "blacklist":["]}'            #TODO: create function to add ingresses/egresses/blacklist
+    #data = {"uuid":'"' + service_uuid + '", "ingresses"':[], '"egresses"':[], '"blacklist"':[]}            #TODO: create function to add ingresses/egresses/blacklist
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
@@ -48,7 +48,7 @@ def net_serv_instantiate(service_uuid):
       LOG.info("MAPPER: SHOWING THE JSON NETSLICE INSTANTIATED. " + str(jsonresponse))
       
       if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
-          LOG.info("MAPPER: NetService belonging the NetSlice instantiating.")
+          LOG.info("MAPPER: INSTANTIATING NetServices belonging to the NetSlice.")
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
