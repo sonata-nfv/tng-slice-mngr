@@ -8,15 +8,20 @@ logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
-JSON_CONTENT_HEADER = '{"Content-Type":"application/json"}'
+JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 #################################### Sonata SP information #####################################
-def get_base_url():
-    #ip_address=db.settings.get('SLICE_MGR','SONATA_SP_IP')
-    #base_url = 'http://'+ip_address+':32001/api/v2'
+#Prepare the URL to ask for the available network services to create NST.
+def get_base_url_NetService_info():
+    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK_COMMON')
+    port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_COMMON_PORT')
+    base_url = 'http://'+ip_address+':'+port
+    return base_url
     
-    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK')
-    port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_PORT')
+#Prepares the URL_requests to manage Network Services instantiations belonging to the NST/NSI
+def get_base_url():   
+    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP')
+    port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP_PORT')
     base_url = 'http://'+ip_address+':'+port
     return base_url
 
@@ -28,13 +33,28 @@ def use_sonata():
 def net_serv_instantiate(service_uuid):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
-    data = '{"service_uuid":"' + service_uuid + '", "ingresses":[], "egresses":[]}'
+    LOG.info("MAPPER: URL is: " + str(url))
+    #data = '{"uuid":"' + str(service_uuid) + '"}'
+    data = {}
+    data['uuid'] = str(service_uuid)
+    data_json = json.dumps(data)
+    LOG.info("MAPPER: data sent to instantiateNS: " +str(data_json))
+    #data = '{"uuid":"' + service_uuid + '", "ingresses":[]", "egresses":[]", "blacklist":["]}'            #TODO: create function to add ingresses/egresses/blacklist
 
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
-      response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data)
+      response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data_json)
       jsonresponse = json.loads(response.text)
+      LOG.info("MAPPER: SHOWING THE JSON NETSLICE INSTANTIATED. " + str(jsonresponse))
+      
+      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+          LOG.info("MAPPER: NetService belonging the NetSlice instantiating.")
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          jsonresponse = error
+          LOG.info('MAPPER: error when instantiating NetService: ' + str(error))
       return jsonresponse
+
     else:
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data))
       #Generates a RANDOM (uuid4) UUID for this emulated NSI
@@ -52,7 +72,15 @@ def net_serv_terminate(servInstance_uuid):
     if use_sonata() == "True":
       response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data)
       jsonresponse = json.loads(response.text)
+      
+      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+          LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED.")
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          jsonresponse = error
+          LOG.info('MAPPER: error when terminating NetService instantiation: ' + str(error))
       return jsonresponse
+      
     else:
       jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
       print (jsonresponse)
@@ -67,7 +95,15 @@ def getAllNetServInstances():
     if use_sonata() == "True":
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       jsonresponse = json.loads(response.text)
+      
+      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+          LOG.info("MAPPER: Information of all instantiated netService received.")
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          jsonresponse = error
+          LOG.info('MAPPER: error when receiving all NS instantiations info: ' + str(error))
       return jsonresponse
+      
     else:
       jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
       LOG.info(jsonresponse)
@@ -82,7 +118,15 @@ def getRequestedNetServInstance(request_uuid):
     if use_sonata() == "True":
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       jsonresponse = json.loads(response.text)
+      
+      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+          LOG.info("MAPPER: Information of the instantiated netService received.")
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          jsonresponse = error
+          LOG.info('MAPPER: error when receiving the NS instantiation info: ' + str(error))
       return jsonresponse
+    
     else:
       print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER))
       uuident = uuid.uuid4()
@@ -93,33 +137,43 @@ def getRequestedNetServInstance(request_uuid):
    
 ########################################## /services ##########################################
 #GET /services to pull all Network Services information
+#curl -X GET tng-gtk-common:5000/services
 def getListNetServices():
     LOG.info("MAPPER: Preparing the request to get the NetServices Information")
     del db.nsInfo_list[:]                                #cleans the current nsInfo_list to have the information updated
-    url = get_base_url() + "/services"
+    url = get_base_url_NetService_info() + "/services"
  
     if use_sonata() == "True":                           #SONATA SP or EMULATED Mode
-      response = requests.get(url, headers=JSON_CONTENT_HEADER)
-      services_array = json.loads(response.text)
+      response = requests.get(url)
+      
+      if (response.status_code == 200):
+          LOG.info("MAPPER: Services from the SP received.")
+          services_array = json.loads(response.text)
+          for service_item in services_array:
+            nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary
+            nsd_string = vars(nsd)
+            db.nsInfo_list.append(nsd_string)                #Adds the dictionary element into the list
+          service_response = db.nsInfo_list
+      else:
+          error = {'http_code': response.status_code,'message': response.json()}
+          service_response = error
+          LOG.info('MAPPER: error when deceiving the SP services information: ' + str(error))  
+      return service_response
     
-      for service_item in services_array:
-        nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary   
-        db.nsInfo_list.append(nsd)                       #adds the dictionary element into the list
-      return db.nsInfo_list
     else:
       URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(JSON_CONTENT_HEADER)
       print (URL_response)
       return URL_response
-
+      
 def parseNetworkService(service):
-    NSD=nsd.nsd_content(service['nsd']['name'], 
-                        service['uuid'], 
+    NSD=nsd.nsd_content(service['uuid'],
+                        service['nsd']['name'], 
                         service['nsd']['description'], 
-                        service['nsd']['version'], 
-                        service['nsd']['vendor'],
+                        service['nsd']['vendor'], 
+                        service['nsd']['version'],
                         service['md5'],
                         service['nsd']['author'],
                         service['created_at'],
                         service['status'], 
-                        service['updated_at'] )
+                        service['updated_at'])
     return NSD

@@ -33,11 +33,11 @@ def createNSI(nsi_jsondata):
     #checks if all instantiations in Sonata SP are READY to store NSI object
     allInstantiationsReady = False
     while (allInstantiationsReady == False):
-      allInstantiationsReady = checkRequestsStatus(requestsID_list)
-      #time.sleep(5)
+      allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
+      time.sleep(2)
     
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
-    for request_uuid_item in requestsID_list:
+    for request_uuid_item in requestsUUID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
 
@@ -78,19 +78,22 @@ def instantiateNetServices(NetServicesIDs):
     logging.debug('NetServicesIDs: '+str(NetServicesIDs))   
     for uuidNetServ_item in NetServicesIDs:
       instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
-      logging.debug('request id:'+str(instantiation_response['id']))
+      LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: " + str(instantiation_response))
+      LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE_ID: " + str(instantiation_response['id']))
       requestsID_list.append(instantiation_response['id'])
     logging.debug('requestsID_list: '+str(requestsID_list))
     return requestsID_list
 
-def checkRequestsStatus(requestsID_list):
+def checkRequestsStatus(requestsUUID_list):
     counter=0
-    for resquestID_item in requestsID_list:
-      getRequest_response = mapper.getRequestedNetServInstance(resquestID_item)  
+    for resquestUUID_item in requestsUUID_list:
+      LOG.info("NSI_MNGR: Checking the instantiated service with uuid: " + str(resquestUUID_item))
+      getRequest_response = mapper.getRequestedNetServInstance(resquestUUID_item)
+      LOG.info("NSI_MNGR: Checking the instantiated service: " + str(getRequest_response))
       if(getRequest_response['status'] == 'READY'):
         counter=counter+1
     
-    if (counter == len(requestsID_list)):
+    if (counter == len(requestsUUID_list)):
       return True
     else:
       return False
