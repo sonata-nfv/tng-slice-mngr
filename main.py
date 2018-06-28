@@ -70,6 +70,7 @@ def deleteNST(nstId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def postNSIinstantiation():
     new_NSI = request.json
+    logging.debug(new_NSI)
     instantiatedNSI = nsi_manager.createNSI(new_NSI)
     logging.info('NSI Created and Instantiated')
     return jsonify(instantiatedNSI), 201
