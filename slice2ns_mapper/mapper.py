@@ -44,6 +44,8 @@ def net_serv_instantiate(service_uuid):
     #SONATA SP or EMULATED Connection 
     if use_sonata() == "True":
       response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data_json)
+      LOG.info("MAPPER: SHOWING THE JSON NETSLICE INSTANTIATED. " + str(response.status_code))
+      LOG.info("MAPPER: SHOWING THE JSON NETSLICE INSTANTIATED. " + str(response.text))
       jsonresponse = json.loads(response.text)
       LOG.info("MAPPER: SHOWING THE JSON NETSLICE INSTANTIATED. " + str(jsonresponse))
       
