@@ -21,7 +21,7 @@ def get_base_url_NetService_info():
 #Prepares the URL_requests to manage Network Services instantiations belonging to the NST/NSI
 def get_base_url():   
     ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP')
-    port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP_PORT')
+    port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP_PORT') 
     base_url = 'http://'+ip_address+':'+port
     return base_url
 
