@@ -33,17 +33,19 @@ def use_sonata():
 def net_serv_instantiate(service_uuid):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
-    data = {}
-    data['uuid'] = str(service_uuid)
-    data_json = json.dumps(data)
+#    data = {}
+#    data['uuid'] = str(service_uuid)
+#    data_json = json.dumps(data)
+
+    data_string = '{"uuid":"' + service_uuid + '", "ingresses":[], "egresses":[],"blacklist":[]}'
+    data = json.dumps(data_string)
     LOG.info("MAPPER: URL is: " + str(url))
-    LOG.info("MAPPER: data sent to instantiateNS: " +str(data_json))
+    LOG.info("MAPPER: data sent to instantiateNS: " +str(data))
     #data = {"uuid":'"' + service_uuid + '", "ingresses"':[], '"egresses"':[], '"blacklist"':[]}            #TODO: create function to add ingresses/egresses/blacklist
 
-    #SONATA SP or EMULATED Connection 
+    #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
-      #response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data_json)
-      response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER, timeout=1.0, )
+      response = requests.post(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
       if (response.status_code == 201):
           jsonresponse = json.loads(response.text)
           LOG.info("MAPPER: INSTANTIATING NetServices belonging to the NetSlice: " + str(jsonresponse))
@@ -66,7 +68,7 @@ def net_serv_terminate(servInstance_uuid):
     url = get_base_url() + "/requests"
     data = '{"service_instance_uuid":'+ servInstance_uuid + ', "request_type":"TERMINATE"}'
 
-    #SONATA SP or EMULATED Connection 
+    #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data)
       if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
@@ -87,10 +89,10 @@ def getAllNetServInstances():
     LOG.info("MAPPER: Preparing the request to get all the NetServicesInstances")
     url = get_base_url() + "/requests"
 
-    #SONATA SP or EMULATED Connection 
+    #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
-      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+      if (response.status_code == 200):
           jsonresponse = json.loads(response.text)
           LOG.info("MAPPER: Information of all instantiated netService received: " + str(jsonresponse))
       else:
@@ -109,10 +111,10 @@ def getRequestedNetServInstance(request_uuid):
     LOG.info("MAPPER: Preparing the request to get desired NetServicesInstance")
     url = get_base_url() + "/requests/" + str(request_uuid)
 
-    #SONATA SP or EMULATED Connection 
+    #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
-      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+      if (response.status_code == 200):
           jsonresponse = json.loads(response.text)
           LOG.info("MAPPER: Information of the instantiated netService received: " + str(jsonresponse))
       else:
