@@ -31,8 +31,8 @@ def createNSI(nsi_jsondata):
     logging.debug('requestsID_list: '+str(requestsUUID_list))
 
     #checks if all instantiations in Sonata SP are READY to store NSI object
-    allInstantiationsReady = False
-    while (allInstantiationsReady == False):
+    allInstantiationsReady = "NEW"
+    while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING"):
       allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
       time.sleep(2)
     
@@ -93,9 +93,11 @@ def checkRequestsStatus(requestsUUID_list):
         counter=counter+1
     
     if (counter == len(requestsUUID_list)):
-      return True
+      return "READY"
+    elif getRequest_response['status'] == 'ERROR':
+      return "ERROR"
     else:
-      return False
+      return "INSTANTIATING"
 
 ##### TERMINATE NSI SECTION #####
 def terminateNSI(nsiId, TerminOrder):
