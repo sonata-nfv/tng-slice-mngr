@@ -37,8 +37,6 @@ def net_serv_instantiate(service_uuid):
     data["uuid"] = str(service_uuid)
     data_json = json.dumps(data)
     #data_json = {"uuid":" + service_uuid + '", "ingresses"':[], '"egresses"':[], '"blacklist"':[]}            #TODO: create function to add ingresses/egresses/blacklist
-    #data_json = {'uuid':'', 'ingresses':[], 'egresses':[],'blacklist':[]}
-    #data_json ["uuid"] = service_uuid
     LOG.info("MAPPER: URL is: " + str(url))
     LOG.info("MAPPER: data sent to instantiateNS: " +str(data_json))
     

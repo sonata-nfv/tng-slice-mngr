@@ -58,7 +58,7 @@ def parseNewNSI(nst_json, nsi_json):
     description = nsi_json['description']
     nstId = nsi_json['nstId']
     vendor = nst_json['vendor']
-    nstInfoId = nst_json['name'] + "made by " + nst_json['author'] + "belonging to " + nst_json['vendor']
+    nstInfoId = "This NSI is based on the NST: " + nst_json['name'] + " made by " + nst_json['author'] + " belonging to " + nst_json['vendor']
     flavorId = ""                                                                                            #TODO: where does it come from??
     sapInfo = ""                                                                                             #TODO: where does it come from??
     nsiState = "INSTANTIATED"

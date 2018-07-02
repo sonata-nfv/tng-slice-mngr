@@ -29,6 +29,14 @@ def getAllNetServ():
 
 
 ######################################### NETSLICE TEMPLATE Actions #########################################
+@app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['OPTIONS']) 
+def optionsAllNST():
+   return "Allow: OPTIONS, GET, HEAD, POST", 200
+
+@app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['OPTIONS']) 
+def optionsOneNST(nstId):
+   return "Allow: OPTIONS, GET, HEAD, POST", 200
+
 #creates a NetSlice template(NST)
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
 def postNST():
