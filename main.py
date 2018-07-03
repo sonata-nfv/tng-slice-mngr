@@ -70,7 +70,9 @@ def deleteNST(nstId):
     else:
       returnMessage = "The NST was deleted successfully."
       logging.info(returnMessage)
-      return jsonify(returnMessage), 204
+      #return jsonify(returnMessage), 204
+      #return ('', 204)
+      return jsonify_no_content()
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
