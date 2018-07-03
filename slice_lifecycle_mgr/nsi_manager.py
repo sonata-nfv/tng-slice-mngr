@@ -31,8 +31,8 @@ def createNSI(nsi_jsondata):
     logging.debug('requestsID_list: '+str(requestsUUID_list))
 
     #checks if all instantiations in Sonata SP are READY to store NSI object
-    allInstantiationsReady = False
-    while (allInstantiationsReady == False):
+    allInstantiationsReady = "NEW"
+    while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING"):
       allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
       time.sleep(2)
     
@@ -58,7 +58,7 @@ def parseNewNSI(nst_json, nsi_json):
     description = nsi_json['description']
     nstId = nsi_json['nstId']
     vendor = nst_json['vendor']
-    nstInfoId = nst_json['name'] + "made by " + nst_json['author'] + "belonging to " + nst_json['vendor']
+    nstInfoId = "This NSI is based on the NST: " + nst_json['name'] + " made by " + nst_json['author'] + " belonging to " + nst_json['vendor']
     flavorId = ""                                                                                            #TODO: where does it come from??
     sapInfo = ""                                                                                             #TODO: where does it come from??
     nsiState = "INSTANTIATED"
@@ -79,7 +79,6 @@ def instantiateNetServices(NetServicesIDs):
     for uuidNetServ_item in NetServicesIDs:
       instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
       LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: " + str(instantiation_response))
-      LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE_ID: " + str(instantiation_response['id']))
       requestsID_list.append(instantiation_response['id'])
     logging.debug('requestsID_list: '+str(requestsID_list))
     return requestsID_list
@@ -94,9 +93,11 @@ def checkRequestsStatus(requestsUUID_list):
         counter=counter+1
     
     if (counter == len(requestsUUID_list)):
-      return True
+      return "READY"
+    elif getRequest_response['status'] == 'ERROR':
+      return "ERROR"
     else:
-      return False
+      return "INSTANTIATING"
 
 ##### TERMINATE NSI SECTION #####
 def terminateNSI(nsiId, TerminOrder):
