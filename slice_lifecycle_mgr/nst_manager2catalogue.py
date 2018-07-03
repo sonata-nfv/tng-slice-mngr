@@ -84,7 +84,7 @@ def get_saved_nst(nstId):
     return jsonresponse
     
 #DELETE the specific NST information from catalogues
-def delete_nsi(nstId):
+def delete_nst(nstId):
     LOG.info("NST_MNGR2CAT: Deleting NSTD")
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
     response = requests.delete(url)
