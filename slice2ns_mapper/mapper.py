@@ -26,7 +26,7 @@ def get_base_url():
     #port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP_PORT')
     ip_address = os.environ.get("SONATA_GTK_SP")
     port = os.environ.get("SONATA_GTK_SP_PORT")
-    base_url = 'http://'+ip_address+':'+port+'/api/v3'                                                      #TODO: delete '/api/v3' when the "id:None" problem is solved
+    base_url = 'http://'+ip_address+':'+port                                                      #TODO: delete '/api/v3' when the "id:None" problem is solved
     return base_url
 
 def use_sonata():    
