@@ -12,12 +12,12 @@ JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 #################################### Sonata Repositories information #####################################
 def get_base_url():
-    #http://tng-rep:4012/records/nsir/ns-instances
-    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_REP')
-    port = db.settings.get('SONATA_COMPONENTS','SONATA_REP_PORT')
+    #ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_REP')
+    #port = db.settings.get('SONATA_COMPONENTS','SONATA_REP_PORT')
+    ip_address = os.environ.get("SONATA_REP")
+    port = os.environ.get("SONATA_REP_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
-
 
 ####################################### /records/nsir/ns-instances #######################################
 #POST to send the NSI information to the repositories

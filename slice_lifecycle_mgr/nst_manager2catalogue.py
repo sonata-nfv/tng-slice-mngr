@@ -12,8 +12,10 @@ JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 #################################### Sonata Catalogues information ###################################
 def get_base_url():
-    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_CAT')
-    port = db.settings.get('SONATA_COMPONENTS','SONATA_CAT_PORT')
+    #ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_CAT')
+    #port = db.settings.get('SONATA_COMPONENTS','SONATA_CAT_PORT')
+    ip_address = os.environ.get("SONATA_CAT")
+    port = os.environ.get("SONATA_CAT_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
     

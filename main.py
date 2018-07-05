@@ -117,4 +117,5 @@ if __name__ == '__main__':
     db.settings = config
     
     #RUN SERVER
-    app.run(debug=True, host='0.0.0.0', port=db.settings.getint("SLICE_MGR","SLICE_MGR_PORT"))
+    #app.run(debug=True, host='0.0.0.0', port=db.settings.getint("SLICE_MGR","SLICE_MGR_PORT"))
+    app.run(debug=True, host='0.0.0.0', port=os.environ.get("SLICE_MGR_PORT"))
