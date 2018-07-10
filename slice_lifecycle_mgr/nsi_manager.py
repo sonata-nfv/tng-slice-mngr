@@ -34,7 +34,7 @@ def createNSI(nsi_jsondata):
     allInstantiationsReady = "NEW"
     while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING"):
       allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
-      time.sleep(2)
+      time.sleep(30)
     
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     for request_uuid_item in requestsUUID_list:

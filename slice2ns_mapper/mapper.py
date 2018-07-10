@@ -45,7 +45,6 @@ def net_serv_instantiate(service_uuid):
     LOG.info("MAPPER: URL is: " + str(url))
     LOG.info("MAPPER: data sent to instantiateNS: " +str(data_json))
     
-
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
