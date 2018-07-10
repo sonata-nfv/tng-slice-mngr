@@ -5,7 +5,7 @@ class nsi_content:
         self.id=id
         self.name=name
         self.description=description
-        self.nstId=nstId
+        self.nstId=nstId                                          #in portal is the NST Reference
         self.vendor=vendor
         self.nstInfoId=nstInfoId
         self.flavorId=flavorId

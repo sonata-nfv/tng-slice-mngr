@@ -12,8 +12,10 @@ JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 #################################### Sonata Catalogues information ###################################
 def get_base_url():
-    ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_CAT')
-    port = db.settings.get('SONATA_COMPONENTS','SONATA_CAT_PORT')
+    #ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_CAT')
+    #port = db.settings.get('SONATA_COMPONENTS','SONATA_CAT_PORT')
+    ip_address = os.environ.get("SONATA_CAT")
+    port = os.environ.get("SONATA_CAT_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
     
@@ -84,7 +86,7 @@ def get_saved_nst(nstId):
     return jsonresponse
     
 #DELETE the specific NST information from catalogues
-def delete_nsi(nstId):
+def delete_nst(nstId):
     LOG.info("NST_MNGR2CAT: Deleting NSTD")
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
     response = requests.delete(url)

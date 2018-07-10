@@ -68,11 +68,8 @@ def deleteNST(nstId):
       logging.info(returnMessage)
       return jsonify(returnMessage), 403
     else:
-      returnMessage = "The NST was deleted successfully."
-      logging.info(returnMessage)
-      #return jsonify(returnMessage), 204
-      #return ('', 204)
-      return jsonify_no_content()
+      logging.info("The NST was deleted successfully.")
+      return '', 204
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
@@ -120,4 +117,4 @@ if __name__ == '__main__':
     db.settings = config
     
     #RUN SERVER
-    app.run(debug=True, host='0.0.0.0', port=db.settings.getint("SLICE_MGR","SLICE_MGR_PORT"))
+    app.run(debug=True, host='0.0.0.0', port=os.environ.get("SLICE_MGR_PORT"))
