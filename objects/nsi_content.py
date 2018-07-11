@@ -1,13 +1,14 @@
 #!/usr/bin/python
 
 class nsi_content:
-    def __init__(self, id="", name="", description="", nstId="", vendor="", nstInfoId="", flavorId="", sapInfo="", nsiState="", instantiateTime="", terminateTime="", scaleTime="", updateTime="", netServInstance_Uuid=[]):
+    def __init__(self, id="", name="", description="", nstId="", nstVendor="", nstName="", nstVersion="", flavorId="", sapInfo="", nsiState="", instantiateTime="", terminateTime="", scaleTime="", updateTime="", netServInstance_Uuid=[]):
         self.id=id
         self.name=name
         self.description=description
         self.nstId=nstId                                          #in portal is the NST Reference
-        self.vendor=vendor
-        self.nstInfoId=nstInfoId
+        self.nstVendor=vendor
+        self.nstName=nstName
+        self.nstVersion=nstVersion
         self.flavorId=flavorId
         self.sapInfo=sapInfo
         self.nsiState=nsiState                                    #values are Instantiated/Terminated TODO: check if there are there more
@@ -22,8 +23,9 @@ class nsi_content:
                     + self.name \
                     + self.description \
                     + self.nstId \
-                    + self.vendor \
-                    + self.nstInfoId \
+                    + self.nstVendor \
+                    + self.nstName \
+                    + self.nstVersion \
                     + self.flavorId \
                     + self.sapInfo \
                     + self.nsiState \

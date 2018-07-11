@@ -16,7 +16,7 @@ LOG.setLevel(logging.INFO)
 ##### CREATE NSI SECTION #####
 #MAIN FUNCTION: createNSI(...)
 #related functions: parseNetSliceInstance(), instantiateNetServices(), checkRequestsStatus()
-def createNSI(nsi_jsondata):
+def createNSI(nsi_jsondata):                                        #TODO: add and if condition for each response to acces the next one or return with the error
     LOG.info("NSI_MNGR: Creating a new NSI")
     nstId = nsi_jsondata['nstId']
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
@@ -57,8 +57,9 @@ def parseNewNSI(nst_json, nsi_json):
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
-    vendor = nst_json['vendor']
-    nstInfoId = "This NSI is based on the NST: " + nst_json['name'] + " made by " + nst_json['author'] + " belonging to " + nst_json['vendor']
+    nstVendor = nst_json['vendor']
+    nstName = nst_json['name']
+    nstVersion = nst_json['version']
     flavorId = ""                                                                                            #TODO: where does it come from??
     sapInfo = ""                                                                                             #TODO: where does it come from??
     nsiState = "INSTANTIATED"
