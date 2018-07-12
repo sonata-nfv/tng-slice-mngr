@@ -69,7 +69,7 @@ def parseNewNSI(nst_json, nsi_json):
     updateTime = ""
     #netServInstance_Uuid = []    #these values are given later on, when the services are isntantiated and have a uuid given by the SP
     
-    NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, nstvendor, nstName, nstVersion, flavorId, sapInfo, 
+    NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, nstVendor, nstName, nstVersion, flavorId, sapInfo, 
                   nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
     return NSI
 
