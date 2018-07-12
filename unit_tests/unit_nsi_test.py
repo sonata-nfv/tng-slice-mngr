@@ -33,13 +33,13 @@ class TestCase(unittest.TestCase):
         resp_NSI_json = vars(response_NSI)
         
         NSI_name = resp_NSI_json["name"]
-        NSI_vendor = resp_NSI_json["vendor"]
+        NSI_nstvendor = resp_NSI_json["nstVendor"]
         NSI_description = resp_NSI_json["description"]
         NSI_nsiState = resp_NSI_json["nsiState"]
         NSI_nstId = resp_NSI_json["nstId"]
         
         self.assertEqual(NSI_name, "tango_NSI")
-        self.assertEqual(NSI_vendor, "5gTango")
+        self.assertEqual(NSI_nstvendor, "5gTango")
         self.assertEqual(NSI_description, "5gTango_descriptor")
         self.assertEqual(NSI_nsiState, "INSTANTIATED")
         self.assertEqual(NSI_nstId, "096c26f9-6142-43d2-8521-57cea9e76c6c")
