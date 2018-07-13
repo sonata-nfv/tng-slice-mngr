@@ -29,7 +29,7 @@ def getAllNetServ():
 
 
 ######################################### NETSLICE TEMPLATE Actions #########################################
-@app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['OPTIONS']) 
+@app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['OPTIONS'])
 def optionsAllNST():
    return "Allow: OPTIONS, GET, HEAD, POST", 200
 
