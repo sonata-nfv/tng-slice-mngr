@@ -1,7 +1,7 @@
 FROM python:3.4-slim
 LABEL organization=5GTANGO
 
-# configrurations
+# configurations
 ENV SLICE_MGR_PORT 5998
 ENV USE_SONATA True
 
