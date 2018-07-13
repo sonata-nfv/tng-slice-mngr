@@ -6,7 +6,7 @@
 # tng-slicemgr
 Description: 5GTANGO Service Platform Slice Manager
 
-Version: 0.3
+Version: 1.0
 
 Features:
 - NST, NSI management (creation, instantiation, get, termination).
@@ -159,6 +159,7 @@ Once the NST is created, it is possible to create/delete and check NSIs based on
 ## License
 
 This 5GTANGO component is published under Apache 2.0 license. Please see the LICENSE file for more details.
+
 
 ---
 ## Authors contact

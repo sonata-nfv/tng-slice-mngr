@@ -13,13 +13,17 @@ JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 #################################### Sonata SP information #####################################
 #Prepare the URL to ask for the available network services to create NST.
 def get_base_url_NetService_info():
+    #ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK_COMMON')
+    #port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_COMMON_PORT')
     ip_address = os.environ.get("SONATA_GTK_COMMON")
     port = os.environ.get("SONATA_GTK_COMMON_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
     
 #Prepares the URL_requests to manage Network Services instantiations belonging to the NST/NSI
-def get_base_url():   
+def get_base_url():
+    #ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP')
+    #port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP_PORT')
     ip_address = os.environ.get("SONATA_GTK_SP")
     port = os.environ.get("SONATA_GTK_SP_PORT")
     base_url = 'http://'+ip_address+':'+port

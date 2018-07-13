@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
 class nsi_content:
-    def __init__(self, id="", name="", description="", nstId="", nstVendor="", nstName="", nstVersion="", flavorId="", sapInfo="", nsiState="", instantiateTime="", terminateTime="", scaleTime="", updateTime="", netServInstance_Uuid=[]):
+    def __init__(self, id="", name="", description="", nstId="", vendor="", nstName="", nstVersion="", flavorId="", sapInfo="", nsiState="", instantiateTime="", terminateTime="", scaleTime="", updateTime="", netServInstance_Uuid=[]):
         self.id=id
         self.name=name
         self.description=description
         self.nstId=nstId                                          #in portal is the NST Reference
-        self.nstVendor=nstVendor
+        self.vendor=vendor                                        # same vendor as the NetSlice Template
         self.nstName=nstName
         self.nstVersion=nstVersion
         self.flavorId=flavorId
@@ -23,7 +23,7 @@ class nsi_content:
                     + self.name \
                     + self.description \
                     + self.nstId \
-                    + self.nstVendor \
+                    + self.vendor \
                     + self.nstName \
                     + self.nstVersion \
                     + self.flavorId \

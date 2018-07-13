@@ -31,8 +31,7 @@ def safe_nsi(NSI_string):
     if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR storage accepted.")
     else:
-        error = {'http_code': response.status_code,
-                 'message': response.json()}
+        error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
         LOG.info('NSI_MNGR2REPO: nsir to repo failed: ' + str(error))
     
@@ -50,8 +49,7 @@ def getAll_saved_nsi():
     if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: all NSIR received.")
     else:
-        error = {'http_code': response.status_code,
-                 'message': response.json()}
+        error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
         LOG.info('NSI_MNGR2REPO: nsir getAll from repo failed: ' + str(error))
     
@@ -69,8 +67,7 @@ def get_saved_nsi(nsiId):
     if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR received.")
     else:
-        error = {'http_code': response.status_code,
-                 'message': response.json()}
+        error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
         LOG.info('NSI_MNGR2REPO: nsir get from repo failed: ' + str(error))
     
@@ -87,8 +84,7 @@ def update_nsi(update_NSI, nsiId):
     if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR updated.")
     else:
-        error = {'http_code': response.status_code,
-                 'message': response.json()}
+        error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
         LOG.info('NSI_MNGR2REPO: nsir update action to repo failed: ' + str(error))
     
@@ -104,8 +100,7 @@ def delete_nsi(nsiId):
     if (response.status_code == 200):                                              #TODO: change the status_code value according to tng-rep when this will be changed
         LOG.info("NSI_MNGR2REPO: NSIR deleted.")
     else:
-        error = {'http_code': response.status_code,
-                 'message': response.json()}
+        error = {'http_code': response.status_code,'message': response.json()}
         response = error
         LOG.info('NSI_MNGR2REPO: nsir delete action to repo failed: ' + str(error))
     

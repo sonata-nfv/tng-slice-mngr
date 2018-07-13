@@ -57,7 +57,7 @@ def parseNewNSI(nst_json, nsi_json):
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
-    nstVendor = nst_json['vendor']
+    vendor = nst_json['vendor']
     nstName = nst_json['name']
     nstVersion = nst_json['version']
     flavorId = ""                                                                                            #TODO: where does it come from??
@@ -69,7 +69,7 @@ def parseNewNSI(nst_json, nsi_json):
     updateTime = ""
     #netServInstance_Uuid = []    #these values are given later on, when the services are isntantiated and have a uuid given by the SP
     
-    NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, nstVendor, nstName, nstVersion, flavorId, sapInfo, 
+    NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstName, nstVersion, flavorId, sapInfo, 
                   nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
     return NSI
 
@@ -89,10 +89,9 @@ def checkRequestsStatus(requestsUUID_list):
     for resquestUUID_item in requestsUUID_list:
       LOG.info("NSI_MNGR: Checking the instantiated service with uuid: " + str(resquestUUID_item))
       getRequest_response = mapper.getRequestedNetServInstance(resquestUUID_item)
-      LOG.info("NSI_MNGR: Checking the instantiated service: " + str(getRequest_response))
+      LOG.info("NSI_MNGR: Information of the instantiated service: " + str(getRequest_response))
       if(getRequest_response['status'] == 'READY'):
         counter=counter+1
-    
     if (counter == len(requestsUUID_list)):
       return "READY"
     elif getRequest_response['status'] == 'ERROR':

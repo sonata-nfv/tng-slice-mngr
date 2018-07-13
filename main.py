@@ -108,13 +108,12 @@ def getNSI(nsiId):
 #MAIN FUNCTION OF THE SERVER
 if __name__ == '__main__':
     #READ CONFIG
-    conf_parser = argparse.ArgumentParser( description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=True )
-    conf_parser.add_argument("-c", "--conf_file",
-                             help="Specify config file", metavar="FILE", default='config.cfg')
-    args, remaining_argv = conf_parser.parse_known_args()
-    config = ConfigParser()
-    config.read(args.conf_file)
-    db.settings = config
+#    conf_parser = argparse.ArgumentParser( description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=True )
+#    conf_parser.add_argument("-c", "--conf_file", help="Specify config file", metavar="FILE", default='config.cfg')
+#    args, remaining_argv = conf_parser.parse_known_args()
+#    config = ConfigParser()
+#    config.read(args.conf_file)
+#    db.settings = config
     
     #RUN SERVER
     app.run(debug=True, host='0.0.0.0', port=os.environ.get("SLICE_MGR_PORT"))
