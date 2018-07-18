@@ -52,6 +52,16 @@ API_VERSION="/v1"
 API_NSILCM="/nsilcm"
 API_NSI="/nsi"
 
+
+
+########################################## NETWORK SERVICES Actions #########################################
+#asks all the available NetService Descriptors to the Sonata SP
+@app.route('/pings', methods=['GET'])
+def getPings():
+    ping_response  = {"alive_since": "2018-07-18 10:00:00 UTC”}
+    return jsonify(ping_response), 200
+
+
 ########################################## NETWORK SERVICES Actions #########################################
 #asks all the available NetService Descriptors to the Sonata SP
 @app.route('/api/services', methods=['GET'])
