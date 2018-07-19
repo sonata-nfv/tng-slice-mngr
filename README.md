@@ -27,7 +27,7 @@ This component is using the following dependencies. To be sure the code works, p
 * requests
 * xmlrunner (1.7.7)
 
-**NOTE:** these are minimum versions, it is not tested with the newest versions probably they should be fine.
+**NOTE:** these are minimum versions, it is not tested with the newest versions probably they should be fine. If there's no specific version, the newest versions should work fine but it is not tested.
 
 
 ## License

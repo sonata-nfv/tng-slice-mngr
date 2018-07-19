@@ -74,7 +74,7 @@ def createNSI(nsi_jsondata):
       NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
     #updates the used NetSlice template ("usageState" and "referencedNSIs" parameters)
-    addNSIinNST(nstId, nst_json)
+    addNSIinNST(nstId, nst_json, NSI.id)
     
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
@@ -128,7 +128,7 @@ def checkRequestsStatus(requestsUUID_list):
     else:
       return "INSTANTIATING"
 
-def addNSIinNST(nstId, nst_json):
+def addNSIinNST(nstId, nst_json, nsi_id):
     #Updates the usageState parameter
     if (nst_json['usageState'] == "NOT_IN_USE"):
       nstParameter2update = "usageState=IN_USE"
@@ -136,7 +136,7 @@ def addNSIinNST(nstId, nst_json):
       
     #Updates (adds) the list of NSIref of original NST
     nst_refnsi_list = nst_json['referencedNSIs']
-    nst_refnsi_list.append(NSI.id)
+    nst_refnsi_list.append(nsi_id)
     nst_refnsi_string = (', '.join(nst_refnsi_list))
     nstParameter2update = "referencedNSIs="+nst_refnsi_string
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
