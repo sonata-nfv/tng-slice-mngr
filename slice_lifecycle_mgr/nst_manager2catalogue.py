@@ -99,7 +99,7 @@ def update_nst(nstParameter2update, nstId):
         error = {'http_code': response.status_code,'message': response.json()}
         response = error
         LOG.info('NST_MNGR2CAT: nstd update action to catalogues failed: ' + str(error))
-    return response.text
+    return response
 
 
 #################################### /api/catalogues/v2/nsts/{id} ####################################
@@ -127,11 +127,12 @@ def delete_nst(nstId):
     
     if (response.status_code == 200):
         LOG.info("NST_MNGR2CAT: NSTD deleted.")
+        return response.status_code
     else:
         error = {'http_code': response.status_code,'message': response.json()}
         response = error
         LOG.info('NST_MNGR2CAT: nstd delete action to catalogues failed: ' + str(error))
-    return response.status_code
+        return response
   
 ################################## OTHER OPTIONS TO WORK IN THE FUTURE ################################
 #GET 	  /api/catalogues/v2/{collection}?{attributeName}={value}  --> Lists all descriptors matching a specific filter(s)

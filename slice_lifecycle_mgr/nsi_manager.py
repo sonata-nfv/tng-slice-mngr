@@ -138,7 +138,9 @@ def addNSIinNST(nstId, nst_json, nsi_id):
     nst_refnsi_list = nst_json['referencedNSIs']
     nst_refnsi_list.append(nsi_id)
     nst_refnsi_string = (', '.join(nst_refnsi_list))
-    nstParameter2update = "referencedNSIs="+nst_refnsi_string
+    nstParameter2update = "referencedNSIs="+str(nst_refnsi_string)
+    LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + nstParameter2update)
+    print(type(nstParameter2update))
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
 
 
