@@ -1,3 +1,36 @@
+"""
+## Copyright (c) 2015 SONATA-NFV, 2017 5GTANGO [, ANY ADDITIONAL AFFILIATION]
+## ALL RIGHTS RESERVED.
+##
+## Licensed under the Apache License, Version 2.0 (the "License");
+## you may not use this file except in compliance with the License.
+## You may obtain a copy of the License at
+##
+##     http://www.apache.org/licenses/LICENSE-2.0
+##
+## Unless required by applicable law or agreed to in writing, software
+## distributed under the License is distributed on an "AS IS" BASIS,
+## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+## See the License for the specific language governing permissions and
+## limitations under the License.
+##
+## Neither the name of the SONATA-NFV, 5GTANGO [, ANY ADDITIONAL AFFILIATION]
+## nor the names of its contributors may be used to endorse or promote
+## products derived from this software without specific prior written
+## permission.
+##
+## This work has been performed in the framework of the SONATA project,
+## funded by the European Commission under Grant number 671517 through
+## the Horizon 2020 and 5G-PPP programmes. The authors would like to
+## acknowledge the contributions of their colleagues of the SONATA
+## partner consortium (www.sonata-nfv.eu).
+##
+## This work has been performed in the framework of the 5GTANGO project,
+## funded by the European Commission under Grant number 761493 through
+## the Horizon 2020 and 5G-PPP programmes. The authors would like to
+## acknowledge the contributions of their colleagues of the 5GTANGO
+## partner consortium (www.5gtango.eu).
+"""
 #!/usr/bin/python
 
 from flask import Flask, request, jsonify
@@ -19,6 +52,16 @@ API_VERSION="/v1"
 API_NSILCM="/nsilcm"
 API_NSI="/nsi"
 
+
+
+########################################## NETWORK SERVICES Actions #########################################
+#asks all the available NetService Descriptors to the Sonata SP
+@app.route('/pings', methods=['GET'])
+def getPings():
+    ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC'}
+    return jsonify(ping_response), 200
+
+
 ########################################## NETWORK SERVICES Actions #########################################
 #asks all the available NetService Descriptors to the Sonata SP
 @app.route('/api/services', methods=['GET'])
@@ -29,7 +72,7 @@ def getAllNetServ():
 
 
 ######################################### NETSLICE TEMPLATE Actions #########################################
-@app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['OPTIONS']) 
+@app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['OPTIONS'])
 def optionsAllNST():
    return "Allow: OPTIONS, GET, HEAD, POST", 200
 
@@ -109,8 +152,7 @@ def getNSI(nsiId):
 if __name__ == '__main__':
     #READ CONFIG
     conf_parser = argparse.ArgumentParser( description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=True )
-    conf_parser.add_argument("-c", "--conf_file",
-                             help="Specify config file", metavar="FILE", default='config.cfg')
+    conf_parser.add_argument("-c", "--conf_file", help="Specify config file", metavar="FILE", default='config.cfg')
     args, remaining_argv = conf_parser.parse_known_args()
     config = ConfigParser()
     config.read(args.conf_file)

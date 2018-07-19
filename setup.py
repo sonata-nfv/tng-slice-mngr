@@ -19,6 +19,12 @@
 ## products derived from this software without specific prior written
 ## permission.
 ##
+## This work has been performed in the framework of the SONATA project,
+## funded by the European Commission under Grant number 671517 through
+## the Horizon 2020 and 5G-PPP programmes. The authors would like to
+## acknowledge the contributions of their colleagues of the SONATA
+## partner consortium (www.sonata-nfv.eu).
+##
 ## This work has been performed in the framework of the 5GTANGO project,
 ## funded by the European Commission under Grant number 761493 through
 ## the Horizon 2020 and 5G-PPP programmes. The authors would like to
