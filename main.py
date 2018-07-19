@@ -58,7 +58,7 @@ API_NSI="/nsi"
 #asks all the available NetService Descriptors to the Sonata SP
 @app.route('/pings', methods=['GET'])
 def getPings():
-    ping_response  = {"alive_since": "2018-07-18 10:00:00 UTC”}
+    ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC'}
     return jsonify(ping_response), 200
 
 
