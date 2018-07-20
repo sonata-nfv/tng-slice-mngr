@@ -71,9 +71,16 @@ def createNSI(nsi_jsondata):
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     for request_uuid_item in requestsUUID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
-      NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
+      LOG.info("NSI_MNGR: This is the type of: " +str(type(instantiation_response['instance_uuid'])))
+      if(instantiation_response['instance_uuid'] == None):
+        error_instance_uuid  = "None"
+        NSI.netServInstance_Uuid.append(error_instance_uuid)
+        NSI.nsiState = "ERROR"
+        NSI.sapInfo = "NO instance uuid due to ERROR when instantiating the service."
+      else:
+        NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
-    #updates the used NetSlice template ("usageState" and "referencedNSIs" parameters)
+    #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters)
     addNSIinNST(nstId, nst_json, NSI.id)
     
     #Saving the NSI into the repositories and returning it
@@ -84,6 +91,7 @@ def createNSI(nsi_jsondata):
 def parseNewNSI(nst_json, nsi_json):
     LOG.info("NSI_MNGR: Parsing a new NSI from the user_info and the reference NST")
     uuid_nsi = str(uuid.uuid4())
+    LOG.info("NSI_MNGR: ID of the NetSlice instance: " +str(uuid_nsi))
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
@@ -135,12 +143,12 @@ def addNSIinNST(nstId, nst_json, nsi_id):
       updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
       
     #Updates (adds) the list of NSIref of original NST
-    nst_refnsi_list = nst_json['referencedNSIs']
+    nst_refnsi_list = nst_json['NSI_list_ref']
     nst_refnsi_list.append(nsi_id)
     nst_refnsi_string = (', '.join(nst_refnsi_list))
-    nstParameter2update = "referencedNSIs="+str(nst_refnsi_string)
+    nstParameter2update = "NSI_list_ref="+str(nst_refnsi_string)
     LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + nstParameter2update)
-    print(type(nstParameter2update))
+    LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + str(type(nstParameter2update)))
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
 
 
@@ -216,14 +224,14 @@ def removeNSIinNST(nsi_id, nsi_nstid):
     nst_json = catalogue_response['nstd']
     
     #deletes the terminated NetSlice instance uuid 
-    nst_refnsi_list = nst_json['referencedNSIs']
+    nst_refnsi_list = nst_json['NSI_list_ref']
     nst_refnsi_list.remove(nsi_id)
     nst_refnsi_string = (', '.join(nst_refnsi_list))
-    nstParameter2update = "referencedNSIs="+nst_refnsi_string
+    nstParameter2update = "NSI_list_ref="+nst_refnsi_string
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nsi_nstid)  
     
     #if there are no more NSI assigned to the NST, updates usageState parameter
-    if not nst_json['referencedNSIs']:
+    if not nst_json['NSI_list_ref']:
       if (nst_json['usageState'] == "IN_USE"):  
         nstParameter2update = "usageState=NOT_IN_USE"
         updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nsi_nstid)    

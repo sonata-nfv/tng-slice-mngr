@@ -54,7 +54,7 @@ def createNST(jsondata):
     NST.onboardingState = "ENABLED"
     NST.operationalState = "ENABLED"
     NST.usageState = "NOT_IN_USE"
-    #NST.referencedNSIs = []                       #empty until a NetSlice instance is created
+    #NST.NSI_list_ref = []                       #empty until a NetSlice instance is created
     
     NST_string = vars(NST)
     nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)
