@@ -71,6 +71,7 @@ def createNSI(nsi_jsondata):
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     for request_uuid_item in requestsUUID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
+      LOG.info("NSI_MNGR: This is the type of: " +str(type(instantiation_response['instance_uuid'])))
       NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
     #updates the used NetSlice template ("usageState" and "referencedNSIs" parameters)
@@ -84,6 +85,7 @@ def createNSI(nsi_jsondata):
 def parseNewNSI(nst_json, nsi_json):
     LOG.info("NSI_MNGR: Parsing a new NSI from the user_info and the reference NST")
     uuid_nsi = str(uuid.uuid4())
+    LOG.info("NSI_MNGR: ID of the NetSlice instance: " +str(uuid_nsi))
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
