@@ -72,7 +72,11 @@ def createNSI(nsi_jsondata):
     for request_uuid_item in requestsUUID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       LOG.info("NSI_MNGR: This is the type of: " +str(type(instantiation_response['instance_uuid'])))
-      NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
+      if(instantiation_response['instance_uuid'] == None):
+        error_instance_uuid  = "NO instance uuid due to ERROR when instantiating the service."
+        NSI.netServInstance_Uuid.append()
+      else:
+        NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
     #updates the used NetSlice template ("usageState" and "referencedNSIs" parameters)
     addNSIinNST(nstId, nst_json, NSI.id)
