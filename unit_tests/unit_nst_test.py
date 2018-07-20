@@ -29,7 +29,7 @@ class TestCase(unittest.TestCase):
     def test_create_NST(self, mock_createNST):
         #Mock answer for the request to the catalogues     
         mock_createNST.return_value.status_code = 201
-        mock_createNST.return_value.text = '{"created_at": "2018-06-08T10:36:53.425+00:00","md5": "5024cfde7637ab98f086ff51bd158bc9","nstd": {"author": "5gTango","name": "5gtango_NST_name","notificationTypes": "","nstNsdIds": ["52047455-5792-4ce7-8809-2f56c4a876bd", "fb050678-2b12-432a-8ee2-a2dff777510f"],"onboardingState": "ENABLED","operationalState": "ENABLED","usageState": "NOT_IN_USE","userDefinedData": "","vendor": "5gTango","version": "1.0","referencedNSIs": []},"signature": null,"status": "active","updated_at": "2018-06-08T10:36:53.425+00:00","username": null,"uuid": "096c26f9-6142-43d2-8521-57cea9e76c6c"}'
+        mock_createNST.return_value.text = '{"created_at": "2018-06-08T10:36:53.425+00:00","md5": "5024cfde7637ab98f086ff51bd158bc9","nstd": {"author": "5gTango","name": "5gtango_NST_name","notificationTypes": "","nstNsdIds": ["52047455-5792-4ce7-8809-2f56c4a876bd", "fb050678-2b12-432a-8ee2-a2dff777510f"],"onboardingState": "ENABLED","operationalState": "ENABLED","usageState": "NOT_IN_USE","userDefinedData": "","vendor": "5gTango","version": "1.0","NSI_list_ref": []},"signature": null,"status": "active","updated_at": "2018-06-08T10:36:53.425+00:00","username": null,"uuid": "096c26f9-6142-43d2-8521-57cea9e76c6c"}'
         
         #Prepares received information from portal
         NetService_1_uuid = str(uuid.uuid4())

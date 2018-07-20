@@ -46,4 +46,4 @@ class nst_content:
         self.usageState = ""              #values are IN_USE/NOT_IN_USE in string format
         self.notificationTypes = ""       #containts a Nst_Onboarding_Notification
         self.userDefinedData = ""
-        self.referencedNSIs = []           #list of NetSlices Instances using this Template
+        self.NSI_list_ref = []           #list of NetSlices Instances using this Template
