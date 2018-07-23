@@ -62,26 +62,27 @@ def createNSI(nsi_jsondata):
     requestsUUID_list = instantiateNetServices(nst_json['nstNsdIds'])
     logging.debug('requestsID_list: '+str(requestsUUID_list))
 
-    #checks if all instantiations in Sonata SP are READY to store NSI object
+    #keeps requesting if all instantiations in Sonata SP are READY (or ERROR) to store the NSI object
     allInstantiationsReady = "NEW"
     while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING"):
       allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
       time.sleep(30)
     
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
+    LOG.info("NSI_MNGR: List of requests uuid: " +str(requestsUUID_list))
     for request_uuid_item in requestsUUID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       LOG.info("NSI_MNGR: This is the type of: " +str(type(instantiation_response['instance_uuid'])))
-      if(instantiation_response['instance_uuid'] == None):
-        error_instance_uuid  = "None"
-        NSI.netServInstance_Uuid.append(error_instance_uuid)
+      if(instantiation_response['status'] == "ERROR"):
+        failed_service = instantiation_response['service_uuid'] + "_Error"
+        NSI.netServInstance_Uuid.append(failed_service)
         NSI.nsiState = "ERROR"
-        NSI.sapInfo = "NO instance uuid due to ERROR when instantiating the service."
+        NSI.sapInfo = "NO instance uuid due to ERROR when instantiating the service. Check in the list, the instantiation Error to know the service id."
       else:
         NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
     #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters)
-    addNSIinNST(nstId, nst_json, NSI.id)
+    updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
     
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
@@ -91,7 +92,6 @@ def createNSI(nsi_jsondata):
 def parseNewNSI(nst_json, nsi_json):
     LOG.info("NSI_MNGR: Parsing a new NSI from the user_info and the reference NST")
     uuid_nsi = str(uuid.uuid4())
-    LOG.info("NSI_MNGR: ID of the NetSlice instance: " +str(uuid_nsi))
     name = nsi_json['name']
     description = nsi_json['description']
     nstId = nsi_json['nstId']
@@ -99,13 +99,13 @@ def parseNewNSI(nst_json, nsi_json):
     nstName = nst_json['name']
     nstVersion = nst_json['version']
     flavorId = ""                                                                                            #TODO: where does it come from??
-    sapInfo = ""                                                                                             #TODO: where does it come from??
+    sapInfo = ""                                                                                             #TODO: where does it come from?? -> using it to inform when service instantiation is ERROR
     nsiState = "INSTANTIATED"
     instantiateTime = str(datetime.datetime.now().isoformat())
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    #netServInstance_Uuid = []                                                                  #values given when services are isntantiated by the SP
+    #netServInstance_Uuid = []                                                                               #values given when services are instantiated by the SP
     
     NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstName, nstVersion, flavorId, 
                   sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
@@ -123,15 +123,19 @@ def instantiateNetServices(NetServicesIDs):
     return requestsID_list
 
 def checkRequestsStatus(requestsUUID_list):
-    counter=0
+    counter_ready=0
+    counter_error=0
     for resquestUUID_item in requestsUUID_list:
       getRequest_response = mapper.getRequestedNetServInstance(resquestUUID_item)
       LOG.info("NSI_MNGR: Information of the instantiated service: " + str(getRequest_response))
       if(getRequest_response['status'] == 'READY'):
-        counter=counter+1
-    if (counter == len(requestsUUID_list)):
+        counter_ready=counter_ready+1
+      else(getRequest_response['status'] == 'ERROR'):
+        counter_error=counter_error+1
+        
+    if (counter_ready == len(requestsUUID_list)):
       return "READY"
-    elif getRequest_response['status'] == 'ERROR':
+    elif (counter_error > 0):
       return "ERROR"
     else:
       return "INSTANTIATING"
@@ -144,12 +148,17 @@ def addNSIinNST(nstId, nst_json, nsi_id):
       
     #Updates (adds) the list of NSIref of original NST
     nst_refnsi_list = nst_json['NSI_list_ref']
+    LOG.info("NSI_MNGR: Looking the list BEFORE ADDING: " + str(nst_refnsi_list))
     nst_refnsi_list.append(nsi_id)
+    LOG.info("NSI_MNGR: Looking the list AFTER ADDING: " + str(nst_refnsi_list))
     nst_refnsi_string = (', '.join(nst_refnsi_list))
+    LOG.info("NSI_MNGR: Looking the list CONVERTED TO STRING: " + str(nst_refnsi_string))
     nstParameter2update = "NSI_list_ref="+str(nst_refnsi_string)
     LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + nstParameter2update)
     LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + str(type(nstParameter2update)))
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+    
+    return updatedNST_jsonresponse
 
 
 

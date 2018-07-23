@@ -36,7 +36,7 @@ LABEL organization=5GTANGO
 
 # configurations
 ENV SLICE_MGR_PORT 5998
-ENV USE_SONATA True
+ENV USE_SONATA False
 
 ENV SONATA_GTK_COMMON tng-gtk-common
 ENV SONATA_GTK_COMMON_PORT 5000
@@ -47,9 +47,12 @@ ENV SONATA_REP_PORT 4012
 ENV SONATA_CAT tng-cat
 ENV SONATA_CAT_PORT 4011
 
+#Preparing directory
 ADD . /tng-slice-mngr
-
 WORKDIR /tng-slice-mngr
+
+#runing the pythons cript to prepare the docker environment
 RUN python setup.py install
 
+#starting the slice-server/service
 CMD ["python", "main.py"]
