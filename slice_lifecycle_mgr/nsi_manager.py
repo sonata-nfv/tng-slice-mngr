@@ -130,7 +130,7 @@ def checkRequestsStatus(requestsUUID_list):
       LOG.info("NSI_MNGR: Information of the instantiated service: " + str(getRequest_response))
       if(getRequest_response['status'] == 'READY'):
         counter_ready=counter_ready+1
-      else(getRequest_response['status'] == 'ERROR'):
+      if(getRequest_response['status'] == 'ERROR'):
         counter_error=counter_error+1
         
     if (counter_ready == len(requestsUUID_list)):
