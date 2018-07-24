@@ -74,7 +74,7 @@ def createNSI(nsi_jsondata):
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       LOG.info("NSI_MNGR: This is the type of: " +str(type(instantiation_response['instance_uuid'])))
       if(instantiation_response['status'] == "ERROR"):
-        failed_service = instantiation_response['service_uuid'] + "_Error"
+        failed_service = instantiation_response['service']['uuid'] + "_Error"
         NSI.netServInstance_Uuid.append(failed_service)
         NSI.nsiState = "ERROR"
         NSI.sapInfo = "NO instance uuid due to ERROR when instantiating the service. Check in the list, the instantiation Error to know the service id."
