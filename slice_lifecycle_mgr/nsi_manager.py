@@ -31,6 +31,10 @@
 ## acknowledge the contributions of their colleagues of the 5GTANGO
 ## partner consortium (www.5gtango.eu).
 """
+
+#CODE STRUCTURE INFORMATION
+#This python script is divided in 4 sections: common functions, create NSI, terminate NSI and get NSI.
+
 #!/usr/bin/python
 
 import os, sys, logging, datetime, uuid, time, json
@@ -45,6 +49,26 @@ logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
+
+#################### COMMON FUNCTIONS  ####################
+#This function is used by the TWO MAIN ACTION (create/terminate)
+def checkRequestsStatus(requestsUUID_list):
+    counter_ready=0
+    counter_error=0
+    for resquestUUID_item in requestsUUID_list:
+      getRequest_response = mapper.getRequestedNetServInstance(resquestUUID_item)
+      LOG.info("NSI_MNGR: Information of the instantiated service: " + str(getRequest_response))
+      if(getRequest_response['status'] == 'READY'):
+        counter_ready=counter_ready+1
+      if(getRequest_response['status'] == 'ERROR'):
+        counter_error=counter_error+1
+        
+    if (counter_ready == len(requestsUUID_list)):
+      return "READY"
+    elif (counter_error > 0):
+      return "ERROR"
+    else:
+      return "INSTANTIATING"
 
 
 #################### CREATE NSI SECTION ####################
@@ -121,25 +145,7 @@ def instantiateNetServices(NetServicesIDs):
       requestsID_list.append(instantiation_response['id'])
     logging.debug('requestsID_list: '+str(requestsID_list))
     return requestsID_list
-
-def checkRequestsStatus(requestsUUID_list):
-    counter_ready=0
-    counter_error=0
-    for resquestUUID_item in requestsUUID_list:
-      getRequest_response = mapper.getRequestedNetServInstance(resquestUUID_item)
-      LOG.info("NSI_MNGR: Information of the instantiated service: " + str(getRequest_response))
-      if(getRequest_response['status'] == 'READY'):
-        counter_ready=counter_ready+1
-      if(getRequest_response['status'] == 'ERROR'):
-        counter_error=counter_error+1
-        
-    if (counter_ready == len(requestsUUID_list)):
-      return "READY"
-    elif (counter_error > 0):
-      return "ERROR"
-    else:
-      return "INSTANTIATING"
-
+      
 def addNSIinNST(nstId, nst_json, nsi_id):
     #Updates the usageState parameter
     if (nst_json['usageState'] == "NOT_IN_USE"):
@@ -170,10 +176,9 @@ def terminateNSI(nsiId, TerminOrder):
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
     
     #prepares the NSI object to manage with the info coming from repositories
-    NSI=nsi.nsi_content(jsonNSI['uuid'], jsonNSI['name'], jsonNSI['description'], jsonNSI['nstId'], 
-                    jsonNSI['vendor'], jsonNSI['nstName'], jsonNSI['nstVersion'], jsonNSI['flavorId'], jsonNSI['sapInfo'], 
-                    jsonNSI['nsiState'], jsonNSI['instantiateTime'], jsonNSI['terminateTime'], 
-                    jsonNSI['scaleTime'], jsonNSI['updateTime'], jsonNSI['netServInstance_Uuid'])
+    NSI=nsi.nsi_content(jsonNSI['uuid'], jsonNSI['name'], jsonNSI['description'], jsonNSI['nstId'], jsonNSI['vendor'], 
+                    jsonNSI['nstName'], jsonNSI['nstVersion'], jsonNSI['flavorId'], jsonNSI['sapInfo'], jsonNSI['nsiState'], 
+                    jsonNSI['instantiateTime'], jsonNSI['terminateTime'], jsonNSI['scaleTime'], jsonNSI['updateTime'], jsonNSI['netServInstance_Uuid'])
     LOG.info("NSI_MNGR_TERMINATE: The NSI to terminate: " +str(vars(NSI)))
     
     #prepares the datetime values to work with them
@@ -188,18 +193,17 @@ def terminateNSI(nsiId, TerminOrder):
     if termin_time == 0:
       LOG.info("NSI_MNGR_TERMINATE: Selected to Terminate NOW!!!")
       NSI.terminateTime = str(datetime.datetime.now().isoformat())
-      requestsUUID_list = NSI.netServInstance_Uuid
+      netServInstancesUUID_list = NSI.netServInstance_Uuid
       if NSI.nsiState == "INSTANTIATED":
         LOG.info("NSI_MNGR_TERMINATE: Everything ready to send terminate request")
         #termination requests to all NetServiceInstances belonging to the NetSlice
-        for requestUuid_item in requestsUUID_list:
-          terminatedNetServ = mapper.net_serv_terminate(requestUuid_item)
+        requestsUUID_list = terminateNetServices(netServInstancesUUID_list)
       
         LOG.info("NSI_MNGR_TERMINATE: Terminate requests sent, cehcking if they are not READY anymore")
         #checks if all instantiations in Sonata SP are TERMINATED to delete the NSI
-        allInstantiationsReady = "READY"
-        while (allInstantiationsReady == "READY"):
-          allInstantiationsReady = checkTerminatesStatus(requestsUUID_list)
+        allInstantiationsReady = "NEW"
+        while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING"):
+          allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
           time.sleep(30)
         
         LOG.info("NSI_MNGR_TERMINATE: Updating the NSI information and sending it to the repos")
@@ -224,20 +228,18 @@ def terminateNSI(nsiId, TerminOrder):
       return (vars(NSI))
     else:
       return ("Please specify a correct termination: 0 to terminate inmediately or a time value later than: " + NSI.instantiateTime+ ", to terminate in the future.")
-
-def checkTerminatesStatus(requestsUUID_list):
-    counter=0
-    for resquestUUID_item in requestsUUID_list:
-      getRequest_response = mapper.getRequestedNetServInstance(resquestUUID_item)
-      if(getRequest_response['status'] == 'TERMINATED'):
-        counter=counter+1
-    if (counter == len(requestsUUID_list)):
-      return "TERMINATED"
-    elif getRequest_response['status'] == 'ERROR':
-      return "ERROR"
-    else:
-      return "READY"
       
+def terminateNetServices(NetServicesIDs):
+    #terminates NetServices by sending requests to Sonata SP
+    requestsID_list = []
+    logging.debug('NetServicesIDs: '+str(NetServicesIDs))   
+    for uuidNetServ_item in NetServicesIDs:
+      termination_response = mapper.net_serv_terminate(uuidNetServ_item)
+      LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
+      requestsID_list.append(termination_response['id'])
+    logging.debug('requestsID_list: '+str(requestsID_list))
+    return requestsID_list
+
 def removeNSIinNST(nsi_id, nsi_nstid):
     #looks for the right NetSlice Template info
     catalogue_response = nst_catalogue.get_saved_nst(nsi_nstid)
