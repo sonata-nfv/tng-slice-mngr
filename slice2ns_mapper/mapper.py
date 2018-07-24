@@ -100,10 +100,17 @@ def net_serv_instantiate(service_uuid):
 def net_serv_terminate(servInstance_uuid):
     LOG.info("MAPPER: Preparing the request to terminate NetServices")
     url = get_base_url() + "/requests"
-    data = '{"instance_uuid":'+ servInstance_uuid + ', "request_type":"TERMINATE_SERVICE"}'
-
+    #data = '{"instance_uuid":'+ servInstance_uuid + ', "request_type":"TERMINATE_SERVICE"}'
+    data = {}
+    data["instance_uuid"] = str(servInstance_uuid)
+    data["request_type"] = "TERMINATE_SERVICE"
+    data_json = json.dumps(data)
+    LOG.info("MAPPER: URL to terminate NetServices: " +str(url))
+    LOG.info("MAPPER: DATA to terminate NetServices: " +str(data))
+    
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
+      LOG.info("MAPPER: sending terminate request.")
       response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data)
       if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
           jsonresponse = json.loads(response.text)
