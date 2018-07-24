@@ -186,7 +186,7 @@ def terminateNSI(nsiId, TerminOrder):
     
     #depending on the termin_time executes one action or another
     if termin_time == 0:
-    LOG.info("NSI_MNGR_TERMINATE: Selected to Terminate NOW!!!")
+      LOG.info("NSI_MNGR_TERMINATE: Selected to Terminate NOW!!!")
       NSI.terminateTime = str(datetime.datetime.now().isoformat())
       requestsUUID_list = NSI.netServInstance_Uuid
       if NSI.nsiState == "INSTANTIATED":
