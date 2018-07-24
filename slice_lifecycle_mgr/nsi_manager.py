@@ -174,8 +174,10 @@ def terminateNSI(nsiId, TerminOrder):
                     jsonNSI['vendor'], jsonNSI['nstName'], jsonNSI['nstVersion'], jsonNSI['flavorId'], jsonNSI['sapInfo'], 
                     jsonNSI['nsiState'], jsonNSI['instantiateTime'], jsonNSI['terminateTime'], 
                     jsonNSI['scaleTime'], jsonNSI['updateTime'], jsonNSI['netServInstance_Uuid'])
+    LOG.info("NSI_MNGR_TERMINATE: The NSI to terminate: " +str(vars(NSI)))
     
     #prepares the datetime values to work with them
+    LOG.info("NSI_MNGR_TERMINATE: Checking terminatTime")
     instan_time = dateutil.parser.parse(NSI.instantiateTime)
     if TerminOrder['terminateTime'] == "0":
       termin_time = 0
@@ -184,24 +186,29 @@ def terminateNSI(nsiId, TerminOrder):
     
     #depending on the termin_time executes one action or another
     if termin_time == 0:
+      LOG.info("NSI_MNGR_TERMINATE: Selected to Terminate NOW!!!")
       NSI.terminateTime = str(datetime.datetime.now().isoformat())
       requestsUUID_list = NSI.netServInstance_Uuid
       if NSI.nsiState == "INSTANTIATED":
+        LOG.info("NSI_MNGR_TERMINATE: Everything ready to send terminate request")
         #termination requests to all NetServiceInstances belonging to the NetSlice
         for requestUuid_item in requestsUUID_list:
           terminatedNetServ = mapper.net_serv_terminate(requestUuid_item)
       
+        LOG.info("NSI_MNGR_TERMINATE: Terminate requests sent, cehcking if they are not READY anymore")
         #checks if all instantiations in Sonata SP are TERMINATED to delete the NSI
         allInstantiationsReady = "READY"
         while (allInstantiationsReady == "READY"):
           allInstantiationsReady = checkTerminatesStatus(requestsUUID_list)
           time.sleep(30)
         
+        LOG.info("NSI_MNGR_TERMINATE: Updating the NSI information and sending it to the repos")
         #repo_responseStatus = nsi_repo.delete_nsi(NSI.id)
         NSI.nsiState = "TERMINATED"
         update_NSI = vars(NSI)
         repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
         
+        LOG.info("NSI_MNGR_TERMINATE: Updating the NST information and sending it to the catalogues")
         removeNSIinNST(NSI.id, NSI.nstId)                                         #TODO: uncomment the line inside the function when catalogues accept to update lists
         
       return (vars(NSI))
