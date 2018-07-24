@@ -111,8 +111,8 @@ def net_serv_terminate(servInstance_uuid):
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       LOG.info("MAPPER: sending terminate request.")
-      response = requests.post(url, headers=JSON_CONTENT_HEADER, data=data)
-      if (response.status_code == 200) or (response.status_code == 201)or (response.status_code == 204):
+      response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+      if (response.status_code == 200) or (response.status_code == 201) or (response.status_code == 204):
           jsonresponse = json.loads(response.text)
           LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED: "  + str(jsonresponse))
       else:
