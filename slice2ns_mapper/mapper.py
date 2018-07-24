@@ -89,7 +89,6 @@ def net_serv_instantiate(service_uuid):
           jsonresponse = error
           LOG.info('MAPPER: error when instantiating NetService: ' + str(error))
       return jsonresponse
-
     else:
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data))
       #Generates a RANDOM (uuid4) UUID for this emulated NSI
@@ -114,7 +113,6 @@ def net_serv_terminate(servInstance_uuid):
           jsonresponse = error
           LOG.info('MAPPER: error when terminating NetService instantiation: ' + str(error))
       return jsonresponse
-      
     else:
       jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
       return jsonresponse
@@ -134,8 +132,7 @@ def getAllNetServInstances():
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
           LOG.info('MAPPER: error when receiving all NS instantiations info: ' + str(error))
-      return jsonresponse
-      
+      return jsonresponse  
     else:
       jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
       LOG.info(jsonresponse)
@@ -157,13 +154,13 @@ def getRequestedNetServInstance(request_uuid):
           jsonresponse = error
           LOG.info('MAPPER: error when receiving the NS instantiation info: ' + str(error))
       return jsonresponse
-    
     else:
       print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER))
       uuident = uuid.uuid4()
-      example_json_result='{"began_at": "2017-09-15","callback": "http://localhost:5400/serv-instan-time","created_at": "2017-09-15","id": "de0d4c7e-9450-4c3f-8add-5f9531303c65","request_type": "CREATE","service_instance_uuid": "'+str(uuident)+'","service_uuid": "233cb9b2-5575-4ddd-8bd6-6c32396afe02","status": "READY","updated_at": "2017-09-15"}'
+      example_json_result='{"blacklist": "[]","callback": "","created_at": "2018-07-23T08:38:10.544Z","customer_uuid": null,"egresses": "[]","id": "1f5c8d55-651c-49cf-853d-c281dbef5639","ingresses": "[]","instance_uuid": "'+str(uuident)+'","request_type": "CREATE_SERVICE","service": {"name": "myns","uuid": "9ce92c4a-5355-47e0-9ed8-e008c201fdfc","vendor": "eu.5gtango","version": "0.1"},"sla_id": null,"status": "READY","updated_at": "2018-07-23T08:39:17.074Z"}'
       jsonresponse = json.loads(example_json_result)
       return jsonresponse 
+      
       
    
 ########################################## /services ##########################################
@@ -191,7 +188,6 @@ def getListNetServices():
           service_response = error
           LOG.info('MAPPER: error when deceiving the SP services information: ' + str(error))  
       return service_response
-    
     else:
       URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(JSON_CONTENT_HEADER)
       print (URL_response)

@@ -43,7 +43,7 @@ class nsi_content:
         self.nstName=nstName
         self.nstVersion=nstVersion
         self.flavorId=flavorId
-        self.sapInfo=sapInfo
+        self.sapInfo=sapInfo                                      #this is used only when the instantiation has an error
         self.nsiState=nsiState                                    #values are Instantiated/Terminated TODO: check if there are there more
         self.instantiateTime=instantiateTime
         self.terminateTime=terminateTime
