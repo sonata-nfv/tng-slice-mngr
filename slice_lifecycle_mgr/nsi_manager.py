@@ -68,7 +68,8 @@ def checkRequestsStatus(requestsUUID_list):
     elif (counter_error > 0):
       return "ERROR"
     else:
-      return "INSTANTIATING"
+      #TODO: when termination is being carried one the status is TERMINATING, improve this code to add LOGS to differenciate when is one or the other process going on.
+      return "INSTANTIATING"            
 
 
 #################### CREATE NSI SECTION ####################
@@ -106,7 +107,10 @@ def createNSI(nsi_jsondata):
         NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
     #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters)
-    updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
+    #updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id) #TODO uncomment (delete next 3 lines) when catalogues allows list update
+    if (nst_json['usageState'] == "NOT_IN_USE"):
+      nstParameter2update = "usageState=IN_USE"
+      updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
     
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
@@ -150,21 +154,19 @@ def addNSIinNST(nstId, nst_json, nsi_id):
     #Updates the usageState parameter
     if (nst_json['usageState'] == "NOT_IN_USE"):
       nstParameter2update = "usageState=IN_USE"
-      updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-      
-#TODO: use it when catalogues accept to update lists
-#    #Updates (adds) the list of NSIref of original NST
-#    nst_refnsi_list = nst_json['NSI_list_ref']
-#    LOG.info("NSI_MNGR: Looking the list BEFORE ADDING: " + str(nst_refnsi_list))
-#    nst_refnsi_list.append(nsi_id)
-#    LOG.info("NSI_MNGR: Looking the list AFTER ADDING: " + str(nst_refnsi_list))
-#    nst_refnsi_string = (', '.join(nst_refnsi_list))
-#    LOG.info("NSI_MNGR: Looking the list CONVERTED TO STRING: " + str(nst_refnsi_string))
-#    nstParameter2update = "NSI_list_ref="+str(nst_refnsi_string)
-#    LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + nstParameter2update)
-#    LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + str(type(nstParameter2update)))
-#    updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-    
+      updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)      
+
+    #Updates (adds) the list of NSIref of original NST
+    nst_refnsi_list = nst_json['NSI_list_ref']
+    LOG.info("NSI_MNGR: Looking the list BEFORE ADDING: " + str(nst_refnsi_list))
+    nst_refnsi_list.append(nsi_id)
+    LOG.info("NSI_MNGR: Looking the list AFTER ADDING: " + str(nst_refnsi_list))
+    nst_refnsi_string = (', '.join(nst_refnsi_list))
+    LOG.info("NSI_MNGR: Looking the list CONVERTED TO STRING: " + str(nst_refnsi_string))
+    nstParameter2update = "NSI_list_ref="+str(nst_refnsi_string)
+    LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + nstParameter2update)
+    LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + str(type(nstParameter2update)))
+    updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
     return updatedNST_jsonresponse
 
 
@@ -224,7 +226,8 @@ def terminateNSI(nsiId, TerminOrder):
       update_NSI = vars(NSI)
       repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
       
-      removeNSIinNST(NSI.id, NSI.nstId)                                           #TODO: uncomment the line inside the function when catalogues accept to update lists
+      #TODO uncomment when catalogues allows list update
+      #removeNSIinNST(NSI.id, NSI.nstId)                                           #TODO: uncomment the line inside the function when catalogues accept to update lists
       return (vars(NSI))
     else:
       return ("Please specify a correct termination: 0 to terminate inmediately or a time value later than: " + NSI.instantiateTime+ ", to terminate in the future.")
