@@ -24,7 +24,7 @@ This component is design with two main components:
 This behaviour might involve automatic generation of a new NSD, which might be explored in future releases. Slice2NS Mapper is responsible for interacting with SP MANO Framework.
 
 ### Basic API information
-Each boject has its API definition, here we present the basic information but please reffer to *[add SWAGGER LINK]* or to the wiki pages for each object for further information on how to use the API.
+Each boject has its API definition, here we present the basic information but please reffer to the wiki pages for each object for further information on how to use the API.
 
 #### Network Slice Template APIs
 | Action  | HTTP method  | Endpoint |
