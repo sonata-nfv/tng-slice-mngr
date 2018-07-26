@@ -17,6 +17,8 @@ A Network Slice Instance (NSI) is defined in by Mschner K. et all Hedmar, P. in 
 Here there is the deocumentatio about the Network Slice Manager module belonging to SONATA (by 5GTango), both in terms of its internal design and usage.
 
 ### Component Design
+<p align="center"><img src="https://github.com/rvilalta/tng-slice-mngr/blob/master/doc/images/architecture.JPG" /></p>
+
 This component is design with two main components:
 * **Slice Lifecycle Manager:** It is the responsible for the entire lifecycle management of the created network slice instance, until it is terminated. Subsequent lifecycle events are likely to have an impact on the lifecycle of the underlying NSs, but not systematically. The Slice Lifecycle Manager  function  is  responsible  for  the  definition  and  update  of  Network Slice Templates (NST).
 
