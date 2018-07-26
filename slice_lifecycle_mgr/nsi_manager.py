@@ -95,7 +95,7 @@ def createNSI(nsi_jsondata):
     
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     LOG.info("NSI_MNGR: List of requests uuid: " +str(requestsUUID_list))
-    LOG.info("NSI_MNGR: List of netServiceInstances in the NSI BEFORE: " +str(NSI.netServInstance_Uuid)
+    LOG.info("NSI_MNGR: List of netServiceInstances in the NSI BEFORE: " +str(NSI.netServInstance_Uuid))
     for request_uuid_item in requestsUUID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       LOG.info("NSI_MNGR: This is the instance_uuid to add: " +str(instantiation_response['instance_uuid']))
