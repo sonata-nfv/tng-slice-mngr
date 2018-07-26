@@ -1,5 +1,5 @@
 [![Build Status](https://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-slice-mngr/master)](https://jenkins.sonata-nfv.eu/job/tng-slice-mngr/master)
-[![Join the chat at https://gitter.im/5gtango/tango-schema](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/5gtango/tango-schema)
+[![Join the chat at https://gitter.im/sonata-nfv/](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/5gtango/tango-schema)
 
 <p align="center"><img src="https://github.com/sonata-nfv/tng-api-gtw/wiki/images/sonata-5gtango-logo-500px.png" /></p>
 
@@ -8,13 +8,13 @@
 * Version: 1.0
 * Features:
     * Network Slice Tempalte Management (create, check, update, delete).
-    * Network Slice Instatiation Management (create, check, update, terminate).
+    * Network Slice Instantiation Management (create, check, update, terminate).
 
 ## Network Slice Theory
-A Network Slice Instance (NSI) is defined in by Mschner K. et all Hedmar, P. in _Description of network slicing concept._ (NGMN  Alliance  document, January 2016) as a set of network functions and the resources for these network functions which are arranged and configured, forming a complete logical network, which meets certain characteristics in terms of available bandwidth, latency, or QoS, among others described in 5QI (5G QoS Indicator).
+A Network Slice Instance (NSI) is defined in by Mschner K. et all Hedmar, P. in _Description of network slicing concept._ (NGMN  Alliance  document, January 2016) as a set of network functions and the resources for these network functions which are arranged and configured, forming a complete logical network, which meets certain characteristics in terms of available bandwidth, latency, or QoS, among others described in 5QI (5G QoS Indicator). Our component follows ETSI EVE 012 approach to combine 3GPP Network Slices and ETSI NFV network services. More information is provided at the wiki.
 
 ## Network Slice Manager Information
-Here there is the deocumentatio about the Network Slice Manager module belonging to SONATA (by 5GTango), both in terms of its internal design and usage.
+Here there is the documentation about the Network Slice Manager module belonging to SONATA (by 5GTango), both in terms of its internal design and usage.
 
 ### Component Design
 This component is design with two main components:
