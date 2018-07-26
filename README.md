@@ -1,5 +1,5 @@
 [![Build Status](https://jenkins.sonata-nfv.eu/buildStatus/icon?job=tng-slice-mngr/master)](https://jenkins.sonata-nfv.eu/job/tng-slice-mngr/master)
-[![Join the chat at https://gitter.im/sonata-nfv/](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/5gtango/tango-schema)
+[![Join the chat at https://gitter.im/sonata-nfv/](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sonata-nfv/)
 
 <p align="center"><img src="https://github.com/sonata-nfv/tng-api-gtw/wiki/images/sonata-5gtango-logo-500px.png" /></p>
 
@@ -27,6 +27,8 @@ This behaviour might involve automatic generation of a new NSD, which might be e
 Each boject has its API definition, here we present the basic information but please reffer to the wiki pages for each object for further information on how to use the API.
 
 #### Network Slice Template APIs
+Available OpenAPI description: [slice-mngr_NST.json](https://github.com/rvilalta/tng-slice-mngr/blob/master/doc/slice-mngr_NST.json)
+
 | Action  | HTTP method  | Endpoint |
 |---|---|---|
 | CREATE NST  | POST  | /api/nst/v1/descriptors  |
@@ -35,6 +37,8 @@ Each boject has its API definition, here we present the basic information but pl
 | DELETE NST  | DELETE  | /api/nst/v1/descriptors/{nst_uuid}|
 
 #### Network Slice Instance APIs
+Available OpenAPI description: [slice-mngr_NSI.json](https://github.com/rvilalta/tng-slice-mngr/blob/master/doc/slice-mngr_NSI.jsonn)
+
 | Action  | HTTP method  | Endpoint |
 |---|---|---|
 | CREATE NSI  | POST  | /api/nsilcm/v1/nsi |
