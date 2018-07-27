@@ -136,7 +136,7 @@ def parseNewNSI(nst_json, nsi_json):
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    #netServInstance_Uuid = []                                                                               #values given when services are instantiated by the SP
+    netServInstance_Uuid = []                                                                               #values given when services are instantiated by the SP
     
     NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstName, nstVersion, flavorId, 
                   sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime)
