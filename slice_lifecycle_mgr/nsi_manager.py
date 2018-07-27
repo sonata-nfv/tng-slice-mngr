@@ -107,7 +107,7 @@ def createNSI(nsi_jsondata):
         NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
     #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters)
-    updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id) #TODO uncomment (delete next 3 lines) when catalogues allows list update
+    updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
     
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
@@ -144,7 +144,7 @@ def instantiateNetServices(NetServicesIDs):
       instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
       LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: " + str(instantiation_response))
       requestsID_list.append(instantiation_response['id'])
-    logging.debug('ID list of the requests done on this instantiation: '+str(requestsID_list))
+    logging.debug('NSI_MNGR: ID list of the requests done on this instantiation: '+str(requestsID_list))
     return requestsID_list
       
 def addNSIinNST(nstId, nst_json, nsiId):
@@ -158,7 +158,9 @@ def addNSIinNST(nstId, nst_json, nsiId):
     #nst_refnsi_list.append(nsi_id)
     #nst_refnsi_string = (', '.join(nst_refnsi_list))
     nstParameter2update = "NSI_list_ref.append="+str(nsiId)
+    logging.debug('NSI_MNGR: NSI into the NST_ref-list BEFORE: '+str(nstParameter2update))
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+    logging.debug('NSI_MNGR: response when updating the NST_ref_list: '+str(updatedNST_jsonresponse))
     return updatedNST_jsonresponse
 
 
