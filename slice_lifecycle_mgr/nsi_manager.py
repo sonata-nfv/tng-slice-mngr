@@ -95,7 +95,6 @@ def createNSI(nsi_jsondata):
     
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     LOG.info("NSI_MNGR: List of requests uuid: " +str(requestsUUID_list))
-    LOG.info("NSI_MNGR: List of netServiceInstances in the NSI BEFORE: " +str(NSI.netServInstance_Uuid))
     for request_uuid_item in requestsUUID_list:
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       LOG.info("NSI_MNGR: This is the instance_uuid to add: " +str(instantiation_response['instance_uuid']))
@@ -104,10 +103,8 @@ def createNSI(nsi_jsondata):
         NSI.netServInstance_Uuid.append(failed_service)
         NSI.nsiState = "ERROR"
         NSI.sapInfo = "NO instance uuid due to ERROR when instantiating the service. Check in the list, the instantiation Error to know the service id."
-        LOG.info("NSI_MNGR: List of netServiceInstances in the NSI AFTER: " +str(NSI.netServInstance_Uuid))
       else:
         NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
-        LOG.info("NSI_MNGR: List of netServiceInstances in the NSI AFTER: " +str(NSI.netServInstance_Uuid))
     
     #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters)
     #updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id) #TODO uncomment (delete next 3 lines) when catalogues allows list update
