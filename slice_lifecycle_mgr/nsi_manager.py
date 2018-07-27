@@ -107,10 +107,7 @@ def createNSI(nsi_jsondata):
         NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
     #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters)
-    #updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id) #TODO uncomment (delete next 3 lines) when catalogues allows list update
-    if (nst_json['usageState'] == "NOT_IN_USE"):
-      nstParameter2update = "usageState=IN_USE"
-      updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+    updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id) #TODO uncomment (delete next 3 lines) when catalogues allows list update
     
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
@@ -150,26 +147,19 @@ def instantiateNetServices(NetServicesIDs):
     logging.debug('ID list of the requests done on this instantiation: '+str(requestsID_list))
     return requestsID_list
       
-def addNSIinNST(nstId, nst_json, nsi_id):
+def addNSIinNST(nstId, nst_json, nsiId):
     #Updates the usageState parameter
     if (nst_json['usageState'] == "NOT_IN_USE"):
       nstParameter2update = "usageState=IN_USE"
       updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)      
 
     #Updates (adds) the list of NSIref of original NST
-    nst_refnsi_list = nst_json['NSI_list_ref']
-    LOG.info("NSI_MNGR: Looking the list BEFORE ADDING: " + str(nst_refnsi_list))
-    nst_refnsi_list.append(nsi_id)
-    LOG.info("NSI_MNGR: Looking the list AFTER ADDING: " + str(nst_refnsi_list))
-    nst_refnsi_string = (', '.join(nst_refnsi_list))
-    LOG.info("NSI_MNGR: Looking the list CONVERTED TO STRING: " + str(nst_refnsi_string))
-    nstParameter2update = "NSI_list_ref="+str(nst_refnsi_string)
-    LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + nstParameter2update)
-    LOG.info("NSI_MNGR: Updating NST_nsiId_RefList: " + str(type(nstParameter2update)))
+    #nst_refnsi_list = nst_json['NSI_list_ref']
+    #nst_refnsi_list.append(nsi_id)
+    #nst_refnsi_string = (', '.join(nst_refnsi_list))
+    nstParameter2update = "NSI_list_ref.append="+str(nsiId)
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
     return updatedNST_jsonresponse
-
-
 
 
 #################### TERMINATE NSI SECTION ####################
@@ -243,18 +233,20 @@ def terminateNetServices(NetServicesIDs):
     logging.debug('requestsID_list: '+str(requestsID_list))
     return requestsID_list
 
-def removeNSIinNST(nsi_id, nsi_nstid):
-    #looks for the right NetSlice Template info
-    catalogue_response = nst_catalogue.get_saved_nst(nsi_nstid)
-    nst_json = catalogue_response['nstd']
-
-#TODO: use it when catalogues accept to update lists    
+def removeNSIinNST(nsiId, nstId):
+#    #looks for the right NetSlice Template info
+#    catalogue_response = nst_catalogue.get_saved_nst(nstId)
+#    nst_json = catalogue_response['nstd']
+#
 #    #deletes the terminated NetSlice instance uuid 
 #    nst_refnsi_list = nst_json['NSI_list_ref']
 #    nst_refnsi_list.remove(nsi_id)
 #    nst_refnsi_string = (', '.join(nst_refnsi_list))
 #    nstParameter2update = "NSI_list_ref="+nst_refnsi_string
-#    updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nsi_nstid)  
+#    updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nsi_nstid)
+    
+    nstParameter2update = "NSI_list_ref.append="+str(nsiId)
+    updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
    
     #if there are no more NSI assigned to the NST, updates usageState parameter
     if not nst_json['NSI_list_ref']:
