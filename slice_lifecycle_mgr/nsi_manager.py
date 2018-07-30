@@ -154,9 +154,6 @@ def addNSIinNST(nstId, nst_json, nsiId):
       updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)      
 
     #Updates (adds) the list of NSIref of original NST
-    #nst_refnsi_list = nst_json['NSI_list_ref']
-    #nst_refnsi_list.append(nsi_id)
-    #nst_refnsi_string = (', '.join(nst_refnsi_list))
     nstParameter2update = "NSI_list_ref.append="+str(nsiId)
     logging.debug('NSI_MNGR: NSI into the NST_ref-list BEFORE: '+str(nstParameter2update))
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
@@ -207,19 +204,14 @@ def terminateNSI(nsiId, TerminOrder):
         repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
         
         LOG.info("NSI_MNGR_TERMINATE: Updating the NST information and sending it to the catalogues")
-        removeNSIinNST(NSI.id, NSI.nstId)                                         #TODO: uncomment the line inside the function when catalogues accept to update lists
-        
+        removeNSIinNST(NSI.id, NSI.nstId)
       return (vars(NSI))
     
     elif instan_time < termin_time:                                               #TODO: manage future termination orders
       NSI.terminateTime = str(termin_time)
       NSI.nsiState = "TERMINATED"
-      
       update_NSI = vars(NSI)
       repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
-      
-      #TODO uncomment when catalogues allows list update
-      #removeNSIinNST(NSI.id, NSI.nstId)                                           #TODO: uncomment the line inside the function when catalogues accept to update lists
       return (vars(NSI))
     else:
       return ("Please specify a correct termination: 0 to terminate inmediately or a time value later than: " + NSI.instantiateTime+ ", to terminate in the future.")
@@ -236,18 +228,12 @@ def terminateNetServices(NetServicesIDs):
     return requestsID_list
 
 def removeNSIinNST(nsiId, nstId):
-#    #looks for the right NetSlice Template info
-#    catalogue_response = nst_catalogue.get_saved_nst(nstId)
-#    nst_json = catalogue_response['nstd']
-#
-#    #deletes the terminated NetSlice instance uuid 
-#    nst_refnsi_list = nst_json['NSI_list_ref']
-#    nst_refnsi_list.remove(nsi_id)
-#    nst_refnsi_string = (', '.join(nst_refnsi_list))
-#    nstParameter2update = "NSI_list_ref="+nst_refnsi_string
-#    updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nsi_nstid)
-    
-    nstParameter2update = "NSI_list_ref.append="+str(nsiId)
+    #looks for the right NetSlice Template info
+    catalogue_response = nst_catalogue.get_saved_nst(nstId)
+    nst_json = catalogue_response['nstd']
+
+    #deletes the terminated NetSlice instance uuid
+    nstParameter2update = "NSI_list_ref.pop="+str(nsiId)
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
    
     #if there are no more NSI assigned to the NST, updates usageState parameter
