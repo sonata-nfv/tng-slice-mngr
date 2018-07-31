@@ -228,14 +228,16 @@ def terminateNetServices(NetServicesIDs):
     return requestsID_list
 
 def removeNSIinNST(nsiId, nstId):
-    #looks for the right NetSlice Template info
+    #gets the saved info fo the template saved in catalogues
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
     nst_json = catalogue_response['nstd']
-
     #deletes the terminated NetSlice instance uuid
     nstParameter2update = "NSI_list_ref.pop="+str(nsiId)
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-   
+    
+    #gets the latest updated info of the template saved in catalogues to updated the "usageState" to "NOT_IN_USE" if no instance of this Template is running.
+    catalogue_response = nst_catalogue.get_saved_nst(nstId)
+    nst_json = catalogue_response['nstd'] 
     #if there are no more NSI assigned to the NST, updates usageState parameter
     if not nst_json['NSI_list_ref']:
       if (nst_json['usageState'] == "IN_USE"):  

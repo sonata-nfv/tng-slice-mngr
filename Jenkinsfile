@@ -6,7 +6,7 @@ pipeline {
         stage('Slice Manager') {
           steps {
             echo 'Building Slice Manager container'
-            sh 'docker build -t registry.sonata-nfv.eu:5000/tng-slice-mngr .'
+            sh 'docker build -t registry.sonata-nfv.eu:5000/tng-slice-mngr:v4.0 .'
           }
         }
       }
@@ -43,12 +43,12 @@ pipeline {
         }
       }
     }
-    stage('Publish to :latest') {
+    stage('Publish to :v4.0') {
       parallel {
         stage('Slice Manager') {
           steps {
             echo 'Publishing Slice Manager container'
-            sh 'docker push registry.sonata-nfv.eu:5000/tng-slice-mngr'
+            sh 'docker push registry.sonata-nfv.eu:5000/tng-slice-mngr:v4.0'
           }
         }
       }
@@ -63,7 +63,7 @@ pipeline {
         sh 'rm -rf tng-devops || true'
         sh 'git clone https://github.com/sonata-nfv/tng-devops.git'
         dir(path: 'tng-devops') {
-          sh 'ansible-playbook roles/sp.yml -i environments -e "target=pre-int-sp component=slice-manager"'
+          sh 'ansible-playbook roles/sp.yml -i environments -e "target=sta-sp-v4.0 component=slice-manager"'
         }
       }
     }
@@ -75,23 +75,23 @@ pipeline {
         stage('Slice Manager') {
           steps {
             echo 'Publishing Slice Manager container'
-            sh 'docker tag registry.sonata-nfv.eu:5000/tng-slice-mngr:latest registry.sonata-nfv.eu:5000/tng-slice-mngr:int'
-            sh 'docker push registry.sonata-nfv.eu:5000/tng-slice-mngr:int'
+            sh 'docker tag registry.sonata-nfv.eu:5000/tng-slice-mngr:v4.0 registry.sonata-nfv.eu:5000/tng-slice-mngr:v4.0'
+            sh 'docker push registry.sonata-nfv.eu:5000/tng-slice-mngr:v4.0'
           }
         }
       }
     }
-    stage('Deploying in integration') {
+    stage('Deploying in v4.0') {
       when{
         branch 'master'
       }      
       steps {
-        sh 'docker tag registry.sonata-nfv.eu:5000/tng-slice-mngr:latest registry.sonata-nfv.eu:5000/tng-slice-mngr:int'
-        sh 'docker push registry.sonata-nfv.eu:5000/tng-slice-mngr:int'
+        sh 'docker tag registry.sonata-nfv.eu:5000/tng-slice-mngr:v4.0 registry.sonata-nfv.eu:5000/tng-slice-mngr:v4.0'
+        sh 'docker push registry.sonata-nfv.eu:5000/tng-slice-mngr:v4.0'
         sh 'rm -rf tng-devops || true'
         sh 'git clone https://github.com/sonata-nfv/tng-devops.git'
         dir(path: 'tng-devops') {
-          sh 'ansible-playbook roles/sp.yml -i environments -e "target=int-sp component=slice-manager"'
+          sh 'ansible-playbook roles/sp.yml -i environments -e "target=sta-sp-v4.0 component=slice-manager"'
         }
       }
     }
