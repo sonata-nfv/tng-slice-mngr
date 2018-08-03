@@ -72,14 +72,16 @@ def checkRequestsStatus(requestsUUID_list):
       return "INSTANTIATING"            
 
 
-#################### CREATE NSI SECTION ####################
+#################### CREATE NSI SECTION #################### ------> TODO: improve the portal waiting time giving back a 201 "Creating Instance" with a callback to give the final result (ok/error)
 def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
     nstId = nsi_jsondata['nstId']
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
     logging.debug('catalogue_response '+str(catalogue_response))
     nst_json = catalogue_response['nstd']
-        
+    
+    #TODO: validate received fields (if one missing return error)
+     
     #creates NSI with the received information
     NSI = parseNewNSI(nst_json, nsi_jsondata)
       
@@ -130,7 +132,7 @@ def parseNewNSI(nst_json, nsi_json):
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    netServInstance_Uuid = []                                                                               #values given when services are instantiated by the SP
+    netServInstance_Uuid = []      #values given when services are instantiated by the SP
     
     NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstName, nstVersion, flavorId, 
                   sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime, netServInstance_Uuid)
@@ -235,10 +237,12 @@ def removeNSIinNST(nsiId, nstId):
     #deletes the terminated NetSlice instance uuid
     nstParameter2update = "NSI_list_ref.pop="+str(nsiId)
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-   
+    
+    #catalogue_response = nst_catalogue.get_saved_nst(nstId)
+    #nst_json = catalogue_response['nstd']
     #if there are no more NSI assigned to the NST, updates usageState parameter
-    if not nst_json['NSI_list_ref']:
-      if (nst_json['usageState'] == "IN_USE"):  
+    #if not nst_json['NSI_list_ref']:
+    if ((len(llista_elements) == 1) and (nst_json['usageState'] == "IN_USE")):  
         nstParameter2update = "usageState=NOT_IN_USE"
         updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nsi_nstid)    
     
