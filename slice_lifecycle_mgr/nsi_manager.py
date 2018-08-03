@@ -72,14 +72,16 @@ def checkRequestsStatus(requestsUUID_list):
       return "INSTANTIATING"            
 
 
-#################### CREATE NSI SECTION ####################
+#################### CREATE NSI SECTION #################### ------> TODO: improve the portal waiting time giving back a 201 "Creating Instance" with a callback to give the final result (ok/error)
 def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
     nstId = nsi_jsondata['nstId']
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
     logging.debug('catalogue_response '+str(catalogue_response))
     nst_json = catalogue_response['nstd']
-        
+    
+    #TODO: validate received fiedls (if one missing return error)
+     
     #creates NSI with the received information
     NSI = parseNewNSI(nst_json, nsi_jsondata)
       
@@ -130,7 +132,7 @@ def parseNewNSI(nst_json, nsi_json):
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    netServInstance_Uuid = []                                                                               #values given when services are instantiated by the SP
+    netServInstance_Uuid = []      #values given when services are instantiated by the SP
     
     NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstName, nstVersion, flavorId, 
                   sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime, netServInstance_Uuid)
