@@ -95,20 +95,20 @@ pipeline {
         }
       }
     }
-//    stage('Checking Swagger Documentation'){
-//      parallel {
-//        stage('NST_API swagger validation'){
-//          steps {
-//            sh 'swagger-cli validate swagger_definitions/slice-mngr_NST.json'
-//          }
-//        }
-//        stage('NSI_API swagger validation'){
-//          steps {
-//            sh 'swagger-cli validate swagger_definitions/slice-mngr_NSI.json'
-//          }
-//        }
-//      }
-//    }
+    stage('Checking Swagger Documentation'){
+      parallel {
+        stage('NST_API swagger validation'){
+          steps {
+            sh 'swagger-cli validate doc/slice-mngr_NST.json'
+          }
+        }
+        stage('NSI_API swagger validation'){
+          steps {
+            sh 'swagger-cli validate doc/slice-mngr_NSI.json'
+          }
+        }
+      }
+    }
   }
   post {
     always {
