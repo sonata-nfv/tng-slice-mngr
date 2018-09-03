@@ -239,7 +239,6 @@ def removeNSIinNST(nsiId, nstId):
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
     
     #if there are no more NSI assigned to the NST, updates usageState parameter
-    #if (len(llista_elements) == 1) and (nst_json['usageState'] == "IN_USE"):
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
     nst_json = catalogue_response['nstd']
     if not nst_json['NSI_list_ref']:
