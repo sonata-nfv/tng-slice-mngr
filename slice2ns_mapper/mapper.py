@@ -68,13 +68,11 @@ def use_sonata():
 
 ########################################## /requests ##########################################
 #POST /requests to INSTANTIATE Network Service instance
-def net_serv_instantiate(service_uuid):
+def net_serv_instantiate(service_data):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
-    data = {}
-    data["service_uuid"] = str(service_uuid)
-    data_json = json.dumps(data)
-    #data_json = {"uuid":" + service_uuid + '", "ingresses"':[], '"egresses"':[], '"blacklist"':[]}            #TODO: create function to add ingresses/egresses/blacklist
+    data_json = json.dumps(service_data)
+    #{"uuid":"service_uuid", "ingresses"':[], '"egresses"':[], '"blacklist"':[], "sla_uuid":"sla_uuid"}
     LOG.info("MAPPER: URL is: " + str(url))
     LOG.info("MAPPER: data sent to instantiateNS: " +str(data_json))
     
@@ -90,7 +88,7 @@ def net_serv_instantiate(service_uuid):
           LOG.info('MAPPER: error when instantiating NetService: ' + str(error))
       return jsonresponse
     else:
-      print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data))
+      print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data_json))
       #Generates a RANDOM (uuid4) UUID for this emulated NSI
       uuident = uuid.uuid4()
       jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')

@@ -68,8 +68,8 @@ def checkRequestsStatus(requestsUUID_list):
     elif (counter_error > 0):
       return "ERROR"
     else:
-      #TODO: when termination is being carried one the status is TERMINATING, improve this code to add LOGS to differenciate when is one or the other process going on.
-      return "INSTANTIATING"            
+      #TODO: when termination is being carried on, the status is TERMINATING, improve this code to add LOGS to differenciate when is one or the other process going on.
+      return "INSTANTIATING/TERMINATING"            
 
 
 #################### CREATE NSI SECTION #################### ------> TODO: improve the portal waiting time giving back a 201 "Creating Instance" with a callback to give the final result (ok/error)
@@ -91,9 +91,9 @@ def createNSI(nsi_jsondata):
 
     #keeps requesting if all instantiations in Sonata SP are READY (or ERROR) to store the NSI object
     allInstantiationsReady = "NEW"
-    while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING"):
+    while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING/TERMINATING"):
       allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
-      time.sleep(30)
+      time.sleep(30)    #gives time to the gatekeeper to manage all the requests and processes
     
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     LOG.info("NSI_MNGR: List of requests uuid: " +str(requestsUUID_list))
@@ -143,9 +143,16 @@ def instantiateNetServices(NetServicesIDs):
     requestsID_list = []
     logging.debug('NetServicesIDs: '+str(NetServicesIDs))   
     for uuidNetServ_item in NetServicesIDs:
-      instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
+      data = {}
+      data["service_uuid"] = uuidNetServ_item["servID"]
+      data["ingresses"] = []
+      data["egresses"] = []
+      data["blacklist"] = []
+      data["sla_uuid"] = uuidNetServ_item["slaID"]
+      instantiation_response = mapper.net_serv_instantiate(data)
       LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: " + str(instantiation_response))
       requestsID_list.append(instantiation_response['id'])
+      
     logging.debug('NSI_MNGR: ID list of the requests done on this instantiation: '+str(requestsID_list))
     return requestsID_list
       
@@ -195,7 +202,7 @@ def terminateNSI(nsiId, TerminOrder):
         LOG.info("NSI_MNGR_TERMINATE: Terminate requests sent, cehcking if they are not READY anymore")
         #checks if all instantiations in Sonata SP are TERMINATED to delete the NSI
         allInstantiationsReady = "NEW"
-        while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING"):
+        while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING/TERMINATING"):
           allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
           time.sleep(30)
         
