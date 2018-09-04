@@ -104,12 +104,13 @@ def createNSI(nsi_jsondata):
         failed_service = instantiation_response['service']['uuid']
         NSI.netServInstance_Uuid.append(failed_service)
         NSI.nsiState = "ERROR"
-        NSI.sapInfo = "NO instance uuid due to ERROR when instantiating the service. Check in the list, the instantiation Error to know the service id."
+        NSI.description = "NO instance uuid due to ERROR service instantiation with ID: " + str(failed_service)
       else:
         NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
-    #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters)
-    updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
+    #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters) if any service got ERROR
+    if (NSI.nsiState == "INSTANTIATED"):
+      updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
     
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
