@@ -145,7 +145,7 @@ def instantiateNetServices(NetServicesIDs):
     logging.debug('NetServicesIDs: '+str(NetServicesIDs))   
     for uuidNetServ_item in NetServicesIDs:
       data = {}
-      data["service_uuid"] = uuidNetServ_item["servID"]
+      data["service_uuid"] = uuidNetServ_item["nsdID"]
       data["ingresses"] = []
       data["egresses"] = []
       data["blacklist"] = []
