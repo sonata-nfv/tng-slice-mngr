@@ -80,13 +80,13 @@ def createNSI(nsi_jsondata):
     logging.debug('catalogue_response '+str(catalogue_response))
     nst_json = catalogue_response['nstd']
     
-    #TODO: validate received fields (if one missing return error)
+                                                                                              #TODO: validate received fields, if serv_id missing return error (sla_id is optional)
      
     #creates NSI with the received information
     NSI = parseNewNSI(nst_json, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
-    requestsUUID_list = instantiateNetServices(nst_json['nstNsdIds'])
+    requestsUUID_list = instantiateNetServices(nst_json['nstNsdIds'], NSI.name)
     logging.debug('requestsID_list: '+str(requestsUUID_list))
 
     #keeps requesting if all instantiations in Sonata SP are READY (or ERROR) to store the NSI object
@@ -104,7 +104,7 @@ def createNSI(nsi_jsondata):
         failed_service = instantiation_response['service']['uuid']
         NSI.netServInstance_Uuid.append(failed_service)
         NSI.nsiState = "ERROR"
-        NSI.description = "NO instance uuid due to ERROR service instantiation with ID: " + str(failed_service)
+        NSI.description = "NO instance uuid due to ERROR service instantiation with ID: " + str(failed_service)                  #TODO: improve the details to know which service failed (better json): inst_uuid,state
       else:
         NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
@@ -139,20 +139,27 @@ def parseNewNSI(nst_json, nsi_json):
                   sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime, netServInstance_Uuid)
     return NSI
 
-def instantiateNetServices(NetServicesIDs):
+def instantiateNetServices(NetServicesIDs, nsi_name):
     #instantiates required NetServices by sending requests to Sonata SP
     requestsID_list = []
-    logging.debug('NetServicesIDs: '+str(NetServicesIDs))   
+    logging.debug('NetServicesIDs: '+str(NetServicesIDs))
+    LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: starting to instantiate.")
+    sleep(0.1)
+    serv_seq = 1
     for uuidNetServ_item in NetServicesIDs:
       data = {}
+      #TODO: improve the name to follow this structure: <slice_name>-service-<sequence_number_of_service_in_slice (proxyslice-service-1) NSI.name-
+      data["name"] = nsi_name + "-" + str(serv_seq)
       data["service_uuid"] = uuidNetServ_item["nsdID"]
       #data["ingresses"] = []
       #data["egresses"] = []
       #data["blacklist"] = []
       data["sla_id"] = uuidNetServ_item["slaID"]
+      
       instantiation_response = mapper.net_serv_instantiate(data)
       LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: " + str(instantiation_response))
       requestsID_list.append(instantiation_response['id'])
+      serv_seq = serv_seq + 1
       
     logging.debug('NSI_MNGR: ID list of the requests done on this instantiation: '+str(requestsID_list))
     return requestsID_list
