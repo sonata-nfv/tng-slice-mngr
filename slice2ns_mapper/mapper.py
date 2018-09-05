@@ -72,7 +72,7 @@ def net_serv_instantiate(service_data):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
     data_json = json.dumps(service_data)
-    #{"uuid":"service_uuid", "ingresses"':[], '"egresses"':[], '"blacklist"':[], "sla_uuid":"sla_uuid"}
+    #{"uuid":"service_uuid", "ingresses"':[], "egresses":[], "blacklist":[], "sla_uuid":"sla_uuid"}
     LOG.info("MAPPER: URL is: " + str(url))
     LOG.info("MAPPER: data sent to instantiateNS: " +str(data_json))
     

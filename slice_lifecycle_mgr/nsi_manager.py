@@ -149,7 +149,7 @@ def instantiateNetServices(NetServicesIDs):
       #data["ingresses"] = []
       #data["egresses"] = []
       #data["blacklist"] = []
-      data["sla_uuid"] = uuidNetServ_item["slaID"]
+      data["sla_id"] = uuidNetServ_item["slaID"]
       instantiation_response = mapper.net_serv_instantiate(data)
       LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: " + str(instantiation_response))
       requestsID_list.append(instantiation_response['id'])
