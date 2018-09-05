@@ -143,8 +143,8 @@ def instantiateNetServices(NetServicesIDs, nsi_name):
     #instantiates required NetServices by sending requests to Sonata SP
     requestsID_list = []
     logging.debug('NetServicesIDs: '+str(NetServicesIDs))
-    LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: starting to instantiate.")
-    sleep(0.1)
+    LOG.info("NSI_MNGR: SLICE_INSTANTIATION: preparing the data to sent the request.")
+    time.sleep(.2)
     serv_seq = 1
     for uuidNetServ_item in NetServicesIDs:
       data = {}
@@ -155,6 +155,7 @@ def instantiateNetServices(NetServicesIDs, nsi_name):
       #data["egresses"] = []
       #data["blacklist"] = []
       data["sla_id"] = uuidNetServ_item["slaID"]
+      LOG.info("NSI_MNGR: SLICE_INSTANTIATION: data to sent the request: " + str(data))
       
       instantiation_response = mapper.net_serv_instantiate(data)
       LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: " + str(instantiation_response))
