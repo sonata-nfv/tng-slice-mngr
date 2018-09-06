@@ -105,11 +105,15 @@ def net_serv_terminate(servInstance_uuid):
     data_json = json.dumps(data)
     LOG.info("MAPPER: URL to terminate NetServices: " +str(url))
     LOG.info("MAPPER: DATA to terminate NetServices: " +str(data))
+    LOG.info("MAPPER: HEADER to terminate NetServices: " +str(JSON_CONTENT_HEADER))
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       LOG.info("MAPPER: sending terminate request.")
+      time.sleep(.1)
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+      LOG.info("MAPPER: checking the response satus_code: " + str(response.status_code))
+      LOG.info("MAPPER: checking the response content: " + str(response.text))
       if (response.status_code == 200) or (response.status_code == 201) or (response.status_code == 204):
           jsonresponse = json.loads(response.text)
           LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED: "  + str(jsonresponse))
