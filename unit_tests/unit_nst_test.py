@@ -29,12 +29,12 @@ class TestCase(unittest.TestCase):
     def test_create_NST(self, mock_createNST):
         #Mock answer for the request to the catalogues     
         mock_createNST.return_value.status_code = 201
-        mock_createNST.return_value.text = '{"created_at": "2018-06-08T10:36:53.425+00:00","md5": "5024cfde7637ab98f086ff51bd158bc9","nstd": {"NSI_list_ref": [],"author": "5GTango","name": "5gtango_NST_name","notificationTypes": "","sliceServices": [{"nsdID": "ae27790d-640f-4b8e-bdf4-04be24cb5335","slaID": "d8e6c985-1f5f-41f8-85d0-a402f51314cb"}],"onboardingState": "ENABLED","operationalState": "ENABLED","usageState": "NOT_IN_USE","userDefinedData": "","vendor": "tango","version": "0.1"},"signature": null,"status": "active","updated_at": "2018-06-08T10:36:53.425+00:00","username": null,"uuid": "096c26f9-6142-43d2-8521-57cea9e76c6c"}'
+        mock_createNST.return_value.text = '{"created_at": "2018-06-08T10:36:53.425+00:00","md5": "5024cfde7637ab98f086ff51bd158bc9","nstd": {"NSI_list_ref": [],"author": "5gTango","name": "5gtango_NST_name","notificationTypes": "","sliceServices": [{"nsdID": "ae27790d-640f-4b8e-bdf4-04be24cb5335","slaID": "d8e6c985-1f5f-41f8-85d0-a402f51314cb"}],"onboardingState": "ENABLED","operationalState": "ENABLED","usageState": "NOT_IN_USE","userDefinedData": "","vendor": "tango","version": "0.1"},"signature": null,"status": "active","updated_at": "2018-06-08T10:36:53.425+00:00","username": null,"uuid": "096c26f9-6142-43d2-8521-57cea9e76c6c"}'
         
         #Prepares received information from portal
         NetService_1_uuid = str(uuid.uuid4())
         NetService_2_uuid = str(uuid.uuid4())
-        mock_jsondata = {"name":"5gtango_NST_name", "version":"1.0", "author":"5gtango", "vendor":"5gTango", "sliceServices":[{"servname":"Y1-demo","nsdID": "ae27790d-640f-4b8e-bdf4-04be24cb5335","slaID": "d8e6c985-1f5f-41f8-85d0-a402f51314cb"}]}
+        mock_jsondata = {"name":"5gtango_NST_name", "version":"1.0", "author":"5gTango", "vendor":"5gTango", "sliceServices":[{"servname":"Y1-demo","nsdID": "ae27790d-640f-4b8e-bdf4-04be24cb5335","slaID": "d8e6c985-1f5f-41f8-85d0-a402f51314cb"}]}
         
         #Testing the function to create NST
         response = createNST(mock_jsondata)
