@@ -86,7 +86,7 @@ def createNSI(nsi_jsondata):
     NSI = parseNewNSI(nst_json, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
-    requestsUUID_list = instantiateNetServices(nst_json['nstNsdIds'], NSI.name)
+    requestsUUID_list = instantiateNetServices(nst_json['sliceServices'], NSI.name)
     logging.debug('requestsID_list: '+str(requestsUUID_list))
 
     #keeps requesting if all instantiations in Sonata SP are READY (or ERROR) to store the NSI object
@@ -108,7 +108,7 @@ def createNSI(nsi_jsondata):
       else:
         NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
-    #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters) if any service got ERROR
+    #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters) unless any service_instance within the slice got ERROR
     if (NSI.nsiState == "INSTANTIATED"):
       updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
     
@@ -139,17 +139,16 @@ def parseNewNSI(nst_json, nsi_json):
                   sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime, netServInstance_Uuid)
     return NSI
 
-def instantiateNetServices(NetServicesIDs, nsi_name):
+def instantiateNetServices(SliceServices, nsi_name):
     #instantiates required NetServices by sending requests to Sonata SP
     requestsID_list = []
-    logging.debug('NetServicesIDs: '+str(NetServicesIDs))
+    logging.debug('SliceServices: '+str(SliceServices))
     LOG.info("NSI_MNGR: SLICE_INSTANTIATION: preparing the data to sent the request.")
     time.sleep(.2)
     serv_seq = 1
-    for uuidNetServ_item in NetServicesIDs:
+    for uuidNetServ_item in SliceServices:
       data = {}
-      #TODO: improve the name to follow this structure: <slice_name>-service-<sequence_number_of_service_in_slice (proxyslice-service-1) NSI.name-
-      data["name"] = nsi_name + "-" + str(serv_seq)
+      data["name"] = nsi_name + "-" + uuidNetServ_item["servname"] + "-" + str(serv_seq)
       data["service_uuid"] = uuidNetServ_item["nsdID"]
       #data["ingresses"] = []
       #data["egresses"] = []

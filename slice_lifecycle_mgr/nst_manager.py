@@ -48,9 +48,9 @@ def createNST(jsondata):
     NST.version = jsondata['version']
     NST.author = jsondata['author']
     NST.vendor = jsondata ['vendor']
-    nstNsdIds_array = jsondata['nstNsdIds']
-    for nsiId_item in nstNsdIds_array:       
-        NST.nstNsdIds.append(nsiId_item)
+    sliceServices_array = jsondata['sliceServices']
+    for nsiId_item in sliceServices_array:       
+        NST.sliceServices.append(nsiId_item)
     NST.onboardingState = "ENABLED"
     NST.operationalState = "ENABLED"
     NST.usageState = "NOT_IN_USE"
