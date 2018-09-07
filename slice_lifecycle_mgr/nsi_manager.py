@@ -173,9 +173,8 @@ def addNSIinNST(nstId, nst_json, nsiId):
 
     #Updates (adds) the list of NSIref of original NST
     nstParameter2update = "NSI_list_ref.append="+str(nsiId)
-    logging.debug('NSI_MNGR: NSI into the NST_ref-list BEFORE: '+str(nstParameter2update))
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-    logging.debug('NSI_MNGR: response when updating the NST_ref_list: '+str(updatedNST_jsonresponse))
+    logging.debug('NSI_MNGR: updated NSI reference list of the NST: '+str(updatedNST_jsonresponse))
     return updatedNST_jsonresponse
 
 
