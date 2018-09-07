@@ -41,7 +41,7 @@ import database.database as db
 
 #Creates a NST and sends it to catalogues
 def createNST(jsondata):
-    logging.info("NST_MNGR: Ceating a new NST")
+    logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
     NST = nst.nst_content()
     #NST.id = nst_uuid                            #given by the catalogues
     NST.name = jsondata['name']
@@ -49,8 +49,8 @@ def createNST(jsondata):
     NST.author = jsondata['author']
     NST.vendor = jsondata ['vendor']
     nstNsdIds_array = jsondata['nstNsdIds']
-    for nsiId_item in nstNsdIds_array:
-        NST.nstNsdIds.append(nsiId_item['NsdId'])
+    for nsiId_item in nstNsdIds_array:       
+        NST.nstNsdIds.append(nsiId_item)
     NST.onboardingState = "ENABLED"
     NST.operationalState = "ENABLED"
     NST.usageState = "NOT_IN_USE"
