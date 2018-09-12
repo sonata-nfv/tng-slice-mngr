@@ -68,30 +68,32 @@ def checkRequestsStatus(requestsUUID_list):
     elif (counter_error > 0):
       return "ERROR"
     else:
-      #TODO: when termination is being carried one the status is TERMINATING, improve this code to add LOGS to differenciate when is one or the other process going on.
-      return "INSTANTIATING"            
+      #TODO: when termination is being carried on, the status is TERMINATING, improve this code to add LOGS to differenciate when is one or the other process going on.
+      return "INSTANTIATING/TERMINATING"            
 
 
-#################### CREATE NSI SECTION ####################
+#################### CREATE NSI SECTION #################### ------> TODO: improve the portal waiting time giving back a 201 "Creating Instance" with a callback to give the final result (ok/error)
 def createNSI(nsi_jsondata):
     LOG.info("NSI_MNGR: Creating a new NSI")
     nstId = nsi_jsondata['nstId']
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
     logging.debug('catalogue_response '+str(catalogue_response))
     nst_json = catalogue_response['nstd']
-        
+    
+                                                                                              #TODO: validate received fields, if serv_id missing return error (sla_id is optional)
+     
     #creates NSI with the received information
     NSI = parseNewNSI(nst_json, nsi_jsondata)
       
     #instantiates required NetServices by sending requests to Sonata SP
-    requestsUUID_list = instantiateNetServices(nst_json['nstNsdIds'])
+    requestsUUID_list = instantiateNetServices(nst_json['sliceServices'], NSI.name)
     logging.debug('requestsID_list: '+str(requestsUUID_list))
 
     #keeps requesting if all instantiations in Sonata SP are READY (or ERROR) to store the NSI object
     allInstantiationsReady = "NEW"
-    while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING"):
+    while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING/TERMINATING"):
       allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
-      time.sleep(30)
+      time.sleep(30)    #gives time to the gatekeeper to manage all the requests and processes
     
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     LOG.info("NSI_MNGR: List of requests uuid: " +str(requestsUUID_list))
@@ -102,12 +104,13 @@ def createNSI(nsi_jsondata):
         failed_service = instantiation_response['service']['uuid']
         NSI.netServInstance_Uuid.append(failed_service)
         NSI.nsiState = "ERROR"
-        NSI.sapInfo = "NO instance uuid due to ERROR when instantiating the service. Check in the list, the instantiation Error to know the service id."
+        NSI.description = "NO instance uuid due to ERROR service instantiation with ID: " + str(failed_service)                  #TODO: improve the details to know which service failed (better json): inst_uuid,state
       else:
         NSI.netServInstance_Uuid.append(instantiation_response['instance_uuid'])
     
-    #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters)
-    updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
+    #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters) unless any service_instance within the slice got ERROR
+    if (NSI.nsiState == "INSTANTIATED"):
+      updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
     
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
@@ -130,20 +133,34 @@ def parseNewNSI(nst_json, nsi_json):
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    netServInstance_Uuid = []                                                                               #values given when services are instantiated by the SP
+    netServInstance_Uuid = []      #values given when services are instantiated by the SP
     
     NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstName, nstVersion, flavorId, 
                   sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime, netServInstance_Uuid)
     return NSI
 
-def instantiateNetServices(NetServicesIDs):
+def instantiateNetServices(SliceServices, nsi_name):
     #instantiates required NetServices by sending requests to Sonata SP
     requestsID_list = []
-    logging.debug('NetServicesIDs: '+str(NetServicesIDs))   
-    for uuidNetServ_item in NetServicesIDs:
-      instantiation_response = mapper.net_serv_instantiate(uuidNetServ_item)
+    logging.debug('SliceServices: '+str(SliceServices))
+    LOG.info("NSI_MNGR: SLICE_INSTANTIATION: preparing the data to sent the request.")
+    time.sleep(.2)
+    serv_seq = 1
+    for uuidNetServ_item in SliceServices:
+      data = {}
+      data["name"] = nsi_name + "-" + uuidNetServ_item["servname"] + "-" + str(serv_seq)
+      data["service_uuid"] = uuidNetServ_item["nsdID"]
+      #data["ingresses"] = []
+      #data["egresses"] = []
+      #data["blacklist"] = []
+      data["sla_id"] = uuidNetServ_item["slaID"]
+      LOG.info("NSI_MNGR: SLICE_INSTANTIATION: data to sent the request: " + str(data))
+      
+      instantiation_response = mapper.net_serv_instantiate(data)
       LOG.info("NSI_MNGR: INSTANTIATION_RESPONSE: " + str(instantiation_response))
       requestsID_list.append(instantiation_response['id'])
+      serv_seq = serv_seq + 1
+      
     logging.debug('NSI_MNGR: ID list of the requests done on this instantiation: '+str(requestsID_list))
     return requestsID_list
       
@@ -155,15 +172,15 @@ def addNSIinNST(nstId, nst_json, nsiId):
 
     #Updates (adds) the list of NSIref of original NST
     nstParameter2update = "NSI_list_ref.append="+str(nsiId)
-    logging.debug('NSI_MNGR: NSI into the NST_ref-list BEFORE: '+str(nstParameter2update))
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-    logging.debug('NSI_MNGR: response when updating the NST_ref_list: '+str(updatedNST_jsonresponse))
+    logging.debug('NSI_MNGR: updated NSI reference list of the NST: '+str(updatedNST_jsonresponse))
     return updatedNST_jsonresponse
 
 
 #################### TERMINATE NSI SECTION ####################
 def terminateNSI(nsiId, TerminOrder):
     LOG.info("NSI_MNGR: Terminate NSI with id: " +str(nsiId))
+    time.sleep(.1)
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
     
     #prepares the NSI object to manage with the info coming from repositories
@@ -171,9 +188,11 @@ def terminateNSI(nsiId, TerminOrder):
                     jsonNSI['nstName'], jsonNSI['nstVersion'], jsonNSI['flavorId'], jsonNSI['sapInfo'], jsonNSI['nsiState'], 
                     jsonNSI['instantiateTime'], jsonNSI['terminateTime'], jsonNSI['scaleTime'], jsonNSI['updateTime'], jsonNSI['netServInstance_Uuid'])
     LOG.info("NSI_MNGR_TERMINATE: The NSI to terminate: " +str(vars(NSI)))
+    time.sleep(.1)
     
     #prepares the datetime values to work with them
     LOG.info("NSI_MNGR_TERMINATE: Checking terminatTime")
+    time.sleep(.1)
     instan_time = dateutil.parser.parse(NSI.instantiateTime)
     if TerminOrder['terminateTime'] == "0":
       termin_time = 0
@@ -183,27 +202,32 @@ def terminateNSI(nsiId, TerminOrder):
     #depending on the termin_time executes one action or another
     if termin_time == 0:
       LOG.info("NSI_MNGR_TERMINATE: Selected to Terminate NOW!!!")
+      time.sleep(.1)
       NSI.terminateTime = str(datetime.datetime.now().isoformat())
       netServInstancesUUID_list = NSI.netServInstance_Uuid
       if NSI.nsiState == "INSTANTIATED":
         LOG.info("NSI_MNGR_TERMINATE: Everything ready to send terminate request")
+        time.sleep(.1)
         #termination requests to all NetServiceInstances belonging to the NetSlice
         requestsUUID_list = terminateNetServices(netServInstancesUUID_list)
       
         LOG.info("NSI_MNGR_TERMINATE: Terminate requests sent, cehcking if they are not READY anymore")
+        time.sleep(.1)
         #checks if all instantiations in Sonata SP are TERMINATED to delete the NSI
         allInstantiationsReady = "NEW"
-        while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING"):
+        while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING/TERMINATING"):
           allInstantiationsReady = checkRequestsStatus(requestsUUID_list)
           time.sleep(30)
         
         LOG.info("NSI_MNGR_TERMINATE: Updating the NSI information and sending it to the repos")
+        time.sleep(.1)
         #repo_responseStatus = nsi_repo.delete_nsi(NSI.id)
         NSI.nsiState = "TERMINATED"
         update_NSI = vars(NSI)
         repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
         
         LOG.info("NSI_MNGR_TERMINATE: Updating the NST information and sending it to the catalogues")
+        time.sleep(.1)
         removeNSIinNST(NSI.id, NSI.nstId)
       return (vars(NSI))
     
@@ -219,30 +243,38 @@ def terminateNSI(nsiId, TerminOrder):
 def terminateNetServices(NetServicesIDs):
     #terminates NetServices by sending requests to Sonata SP
     requestsID_list = []
-    logging.debug('NetServicesIDs: '+str(NetServicesIDs))   
+    logging.debug('NetServicesIDs: '+str(NetServicesIDs))
+    LOG.info("NSI_MNGR_TERMINATE: NetServicesIDs to terminate: " +str(NetServicesIDs))
+    time.sleep(.1)  
     for uuidNetServ_item in NetServicesIDs:
       termination_response = mapper.net_serv_terminate(uuidNetServ_item)
       LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
+      time.sleep(.1)
       requestsID_list.append(termination_response['id'])
     logging.debug('requestsID_list: '+str(requestsID_list))
+    LOG.info("NSI_MNGR_TERMINATE: requestsID_list to check status: " +str(requestsID_list))
+    time.sleep(.1)
     return requestsID_list
 
 def removeNSIinNST(nsiId, nstId):
-    #gets the saved info fo the template saved in catalogues
+    #looks for the right NetSlice Template info
+    LOG.info("NSI_MNGR_removeNSIinNST: updating the internal info of the slice_template, instance_ref_list ")
+    time.sleep(.1)
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
     nst_json = catalogue_response['nstd']
     #deletes the terminated NetSlice instance uuid
     nstParameter2update = "NSI_list_ref.pop="+str(nsiId)
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
     
-    #gets the latest updated info of the template saved in catalogues to updated the "usageState" to "NOT_IN_USE" if no instance of this Template is running.
-    catalogue_response = nst_catalogue.get_saved_nst(nstId)
-    nst_json = catalogue_response['nstd'] 
+    LOG.info("NSI_MNGR_removeNSIinNST: updating the internal info of the slice_template, template_usagesState ")
+    time.sleep(.1)
     #if there are no more NSI assigned to the NST, updates usageState parameter
+    catalogue_response = nst_catalogue.get_saved_nst(nstId)
+    nst_json = catalogue_response['nstd']
     if not nst_json['NSI_list_ref']:
       if (nst_json['usageState'] == "IN_USE"):  
         nstParameter2update = "usageState=NOT_IN_USE"
-        updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nsi_nstid)    
+        updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)  
     
 
 
