@@ -116,6 +116,8 @@ def createNSI(nsi_jsondata):
     if (NSI.nsiState == "INSTANTIATED"):
       updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
     
+    time.sleep(.1)
+    LOG.info("NSI_MNGR: What do we send to repositories??: " +vars(NSI))
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
     nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
