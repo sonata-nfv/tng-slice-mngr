@@ -39,6 +39,7 @@ from configparser import ConfigParser
 
 import slice_lifecycle_mgr.nst_manager as nst_manager
 import slice_lifecycle_mgr.nsi_manager as nsi_manager
+import slice_lifecycle_mgr.validate_incoming_json as json_validator
 import slice2ns_mapper.mapper as mapper
 from database import database as db
 
@@ -84,9 +85,14 @@ def optionsOneNST(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
 def postNST():
     receivedNSTd = request.json
-    new_NST = nst_manager.createNST(receivedNSTd)
-    logging.info('NST created')
-    return jsonify(new_NST), 201
+    validationResponse = json_validator.validateCreateTemplate(receivedNSTd)    #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+    if (validationResponse[1] == 201):
+      new_NST = nst_manager.createNST(receivedNSTd)
+      logging.info('NST created')
+      return jsonify(new_NST), 201
+    else:
+      return jsonify(validationResponse[0]), validationResponse[1]            
+      
 
 #asks for all the NetSlice Templates (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
@@ -120,18 +126,26 @@ def deleteNST(nstId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def postNSIinstantiation():
     new_NSI = request.json
-    logging.debug(new_NSI)
-    instantiatedNSI = nsi_manager.createNSI(new_NSI)
-    logging.info('NSI Created and Instantiated')
-    return jsonify(instantiatedNSI), 201
+    validationResponse = json_validator.validateCreateInstantiation(new_NSI)  #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+    if (validationResponse[1] == 201):
+      logging.debug(new_NSI)
+      instantiatedNSI = nsi_manager.createNSI(new_NSI)
+      logging.info('NSI Created and Instantiated')
+      return jsonify(instantiatedNSI), 201
+    else:
+      return jsonify(validationResponse[0]), validationResponse[1]
 
 #terminates a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
 def postNSItermination(nsiId):
-    receivedTerminOrder = request.json
-    terminateNSI = nsi_manager.terminateNSI(nsiId, receivedTerminOrder)
-    logging.info('NSI Terminated')
-    return jsonify(terminateNSI), 200
+    terminate_json = request.json
+    validationResponse = json_validator.validateTerminateInstantiation(terminate_json)  #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+    if (validationResponse[1] == 200):
+      terminateNSI = nsi_manager.terminateNSI(nsiId, terminate_json)
+      logging.info('NSI Terminated')
+      return jsonify(terminateNSI), 200
+    else:
+      return jsonify(validationResponse[0]), validationResponse[1]
 
 #asks for all the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
