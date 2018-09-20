@@ -100,16 +100,16 @@ def createNSI(nsi_jsondata):
       LOG.info("NSI_MNGR: This is the instance_uuid to add: " +str(instantiation_response['instance_uuid']))
       #saving the information (uuid, status) of each service instantiation belonging to the slice instantiation
       serviceInstance = {}
-      serviceInstance[servId] = instantiation_response['service']['uuid']
-      serviceInstance[servName] = instantiation_response['service']['name']
+      serviceInstance['servId'] = instantiation_response['service']['uuid']
+      serviceInstance['servName'] = instantiation_response['service']['name']
       if(instantiation_response['status'] == "ERROR"):
-        serviceInstance["servInstanceId"] = "null"
-        serviceInstance["workingStatus"] = "ERROR"
+        serviceInstance['servInstanceId'] = "null"
+        serviceInstance['workingStatus'] = "ERROR"
         NSI.netServInstance_Uuid.append(serviceInstance)  #updates the netSlice instance information due to the error
         NSI.nsiState = "ERROR"
       else:
-        serviceInstance["servInstanceId"] = instantiation_response['instance_uuid']
-        serviceInstance["workingStatus"] = "INSTANTIATED"
+        serviceInstance['servInstanceId'] = instantiation_response['instance_uuid']
+        serviceInstance['workingStatus'] = "INSTANTIATED"
         NSI.netServInstance_Uuid.append(serviceInstance)
     
     #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters) unless any service_instance within the slice got ERROR
@@ -152,12 +152,12 @@ def instantiateNetServices(SliceServices, nsi_name):
     serv_seq = 1
     for uuidNetServ_item in SliceServices:
       data = {}
-      data["name"] = nsi_name + "-" + uuidNetServ_item["servname"] + "-" + str(serv_seq)
-      data["service_uuid"] = uuidNetServ_item["nsdID"]
-      #data["ingresses"] = []
-      #data["egresses"] = []
-      #data["blacklist"] = []
-      data["sla_id"] = uuidNetServ_item["slaID"]
+      data['name'] = nsi_name + "-" + uuidNetServ_item['servname'] + "-" + str(serv_seq)
+      data['service_uuid'] = uuidNetServ_item['nsdID']
+      #data['ingresses'] = []
+      #data['egresses'] = []
+      #data['blacklist'] = []
+      data['sla_id'] = uuidNetServ_item['slaID']
       LOG.info("NSI_MNGR: SLICE_INSTANTIATION: data to sent the request: " + str(data))
       
       instantiation_response = mapper.net_serv_instantiate(data)
