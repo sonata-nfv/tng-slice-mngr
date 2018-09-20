@@ -58,8 +58,8 @@ def is_valid_uuid(uuid_to_test, version=4):
 #CASE: Create NetSlice Template
 #jsonData = """{"name":"tango_NST", "version":"1.0", "author":"5gtango", "vendor":"5gTango", "nstNsdIds":[{"servname":"service_1","nsdID": "c3305e70-4e6a-4741-91d2-672f00cdd437","slaID": "75ecf965-1afd-4330-b883-8672c2563785"},{"servname":"service_2","nsdID": "be0e01fb-bd95-410e-9337-5f24d0c9a4f0","slaID": "f0c2e15e-b9f7-491d-8de4-d57e799bf7b2"},{"servname":"service_3","nsdID": "be0e01fb-bd95-410e-9337-5f24d0c9a4f0","slaID": "f0c2e15e-b9f7-491d-8de4-d57e799bf7b2"}]}"""
 def validateCreateTemplate (jsonData):
-  data = json.loads(jsonData)
-  for item in data['nstNsdIds']:
+  #data = json.loads(jsonData)
+  for item in jsonData['nstNsdIds']:
     if (is_valid_uuid (item['nsdID']) == True):
       if (is_valid_uuid (item['slaID']) == False and item['slaID'] != "null"):
         returnData["missing_field"] = "slaID"
@@ -73,8 +73,8 @@ def validateCreateTemplate (jsonData):
 #CASE: Create NetSlice instantiation 
 #jsonData = """{"name": "NSI_name", "description": "NSI_descriptor", "nstId": "26c540a8-1e70-4242-beef-5e77dfa05a41"}"""
 def validateCreateInstantiation (jsonData):
-  data = json.loads(jsonData)
-  if (is_valid_uuid(data['nstId']) == True):
+  #data = json.loads(jsonData)
+  if (is_valid_uuid(jsonData['nstId']) == True):
     returnData["missing_field"] = "Everything is OK!!"
     return (returnData, 201)
   else:
@@ -85,8 +85,8 @@ def validateCreateInstantiation (jsonData):
 #CASE: Terminate NetSlice Instantiation
 #jsonData = """{"terminateTime": "_time_"}""" _time_ --> instant_termination: 0 / future termination: 2019-07-16T14:01:31.447547
 def validateTerminateInstantiation (jsonData):
-  data = json.loads(jsonData)
-  incomingDateTime = data['terminateTime']
+  #data = json.loads(jsonData)
+  incomingDateTime = jsonData['terminateTime']
   if (incomingDateTime == "0"):
     #print("DateTime has the right structure!!")
     returnData["missing_field"] = "Everything is OK!!"
