@@ -59,7 +59,7 @@ def is_valid_uuid(uuid_to_test, version=4):
 #jsonData = """{"name":"tango_NST", "version":"1.0", "author":"5gtango", "vendor":"5gTango", "nstNsdIds":[{"servname":"service_1","nsdID": "c3305e70-4e6a-4741-91d2-672f00cdd437","slaID": "75ecf965-1afd-4330-b883-8672c2563785"},{"servname":"service_2","nsdID": "be0e01fb-bd95-410e-9337-5f24d0c9a4f0","slaID": "f0c2e15e-b9f7-491d-8de4-d57e799bf7b2"},{"servname":"service_3","nsdID": "be0e01fb-bd95-410e-9337-5f24d0c9a4f0","slaID": "f0c2e15e-b9f7-491d-8de4-d57e799bf7b2"}]}"""
 def validateCreateTemplate (jsonData):
   #data = json.loads(jsonData)
-  for item in jsonData['nstNsdIds']:
+  for item in jsonData['sliceServices']:
     if (is_valid_uuid (item['nsdID']) == True):
       if (is_valid_uuid (item['slaID']) == False and item['slaID'] != "null"):
         returnData["missing_field"] = "slaID"
