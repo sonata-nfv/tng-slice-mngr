@@ -117,7 +117,7 @@ def createNSI(nsi_jsondata):
       updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
     
     time.sleep(.1)
-    LOG.info("NSI_MNGR: What do we send to repositories??: " +vars(NSI))
+    LOG.info("NSI_MNGR: What do we send to repositories??: " +str(vars(NSI)))
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
     nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
