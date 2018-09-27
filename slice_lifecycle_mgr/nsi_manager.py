@@ -73,20 +73,22 @@ def checkRequestsStatus(requestsUUID_list):
 
 
 #################### CREATE NSI SECTION #################### ------> TODO: improve the portal waiting time giving back a 201 "Creating Instance" with a callback to give the final result (ok/error)
-def createNSI(nsi_jsondata):
+def createNSI(nsi_json):
     LOG.info("NSI_MNGR: Creating a new NSI")
-    nstId = nsi_jsondata['nstId']
+    nstId = nsi_json['nstId']
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
     logging.debug('catalogue_response '+str(catalogue_response))
     nst_json = catalogue_response['nstd']
      
     #creates NSI with the received information
-    NSI = parseNewNSI(nst_json, nsi_jsondata)
-      
+    NSI = parseNewNSI(nst_json, nsi_json)
+    
     #instantiates required NetServices by sending requests to Sonata SP
     requestsUUID_list = instantiateNetServices(nst_json['sliceServices'], NSI.name)
     logging.debug('requestsID_list: '+str(requestsUUID_list))
-
+    
+    #### STARTS THE SERVICE CALLBACK/ENDPOINT
+    ## ***** due to asynchronism evolution, this part out *****
     #keeps requesting if all instantiations in Sonata SP are READY (or ERROR) to store the NSI object
     allInstantiationsReady = "NEW"
     while (allInstantiationsReady == "NEW" or allInstantiationsReady == "INSTANTIATING/TERMINATING"):
@@ -96,6 +98,7 @@ def createNSI(nsi_jsondata):
     #with all Services instantiated, it gets their uuids and keeps them inside the NSI information.
     LOG.info("NSI_MNGR: List of requests uuid: " +str(requestsUUID_list))
     for request_uuid_item in requestsUUID_list:
+    ## ********************************************************
       instantiation_response = mapper.getRequestedNetServInstance(request_uuid_item)
       LOG.info("NSI_MNGR: This is the instance_uuid to add: " +str(instantiation_response['instance_uuid']))
       #saving the information (uuid, status) of each service instantiation belonging to the slice instantiation
@@ -112,11 +115,14 @@ def createNSI(nsi_jsondata):
         serviceInstance['workingStatus'] = "INSTANTIATED"
         NSI.netServInstance_Uuid.append(serviceInstance)
     
+    ##due to asynchronism evolution, here we must update the right NSI within the repository
+    
     #updates the used NetSlice template ("usageState" and "NSI_list_ref" parameters) unless any service_instance within the slice got ERROR
     if (NSI.nsiState == "INSTANTIATED"):
       updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
+      
+    #### FINISHES THE CALLBACK/ENDPOINT
     
-    time.sleep(.1)
     LOG.info("NSI_MNGR: What do we send to repositories??: " +str(vars(NSI)))
     #Saving the NSI into the repositories and returning it
     NSI_string = vars(NSI)
@@ -150,8 +156,7 @@ def instantiateNetServices(SliceServices, nsi_name):
     requestsID_list = []
     logging.debug('SliceServices: '+str(SliceServices))
     LOG.info("NSI_MNGR: SLICE_INSTANTIATION: preparing the data to sent the request.")
-    time.sleep(.2)
-    serv_seq = 1
+    serv_seq = 1      #to put in order the services within a slice
     for uuidNetServ_item in SliceServices:
       data = {}
       data['name'] = nsi_name + "-" + uuidNetServ_item['servname'] + "-" + str(serv_seq)

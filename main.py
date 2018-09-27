@@ -55,8 +55,8 @@ API_NSI="/nsi"
 
 
 
-########################################## NETWORK SERVICES Actions #########################################
-#asks all the available NetService Descriptors to the Sonata SP
+############################################# NETWORK SLICE PING ############################################
+#function to validate if the slice-docker is active
 @app.route('/pings', methods=['GET'])
 def getPings():
     ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC'}
@@ -85,6 +85,7 @@ def optionsOneNST(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
 def postNST():
     receivedNSTd = request.json
+    logging.info("SLICE_MAIN: received json from portal: " + str(receivedNSTd))
     validationResponse = json_validator.validateCreateTemplate(receivedNSTd)    #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
     if (validationResponse[1] == 201):
       new_NST = nst_manager.createNST(receivedNSTd)
@@ -126,6 +127,7 @@ def deleteNST(nstId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def postNSIinstantiation():
     new_NSI = request.json
+    logging.info("SLICE_MAIN: received json from portal: " + str(new_NSI))
     validationResponse = json_validator.validateCreateInstantiation(new_NSI)  #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
     if (validationResponse[1] == 201):
       logging.debug(new_NSI)
@@ -135,10 +137,19 @@ def postNSIinstantiation():
     else:
       return jsonify(validationResponse[0]), validationResponse[1]
 
+
+#@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/update_nsi', methods=['POST'])
+#def updateSliceInstance():
+#
+#@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/update_nsi_servinstances', methods=['POST'])
+#def updateSliceServInstances():
+
+
 #terminates a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
 def postNSItermination(nsiId):
     terminate_json = request.json
+    logging.info("SLICE_MAIN: received json from portal: " + str(terminate_json))
     validationResponse = json_validator.validateTerminateInstantiation(terminate_json)  #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
     if (validationResponse[1] == 200):
       terminateNSI = nsi_manager.terminateNSI(nsiId, terminate_json)
