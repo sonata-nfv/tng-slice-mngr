@@ -61,15 +61,16 @@ def validateCreateTemplate (jsonData):
   #data = json.loads(jsonData)
   for item in jsonData['sliceServices']:
     if (is_valid_uuid (item['nsdID']) == True):
-      if (is_valid_uuid (item['slaID']) == False and item['slaID'] != "null"):
+      if (is_valid_uuid (item['slaID']) == False and item['slaID'] != "None"):
         returnData["missing_field"] = "The Service Level Agreement (SLA) ID format is wrong, please check it."
         return (returnData, 400)
+      else:
+        returnData["missing_field"] = "Everything is OK!!"
+        return (returnData, 201)
     else:
       returnData["missing_field"] = "The Network Service Descriptor ID format is wrong, please check it."
       LOG.info('FormValidator NST_Error: ' + str(returnData))
       return (returnData, 400)
-  returnData["missing_field"] = "Everything is OK!!"
-  return (returnData, 201)
 
 #CASE: Create NetSlice instantiation 
 #jsonData = """{"name": "NSI_name", "description": "NSI_descriptor", "nstId": "26c540a8-1e70-4242-beef-5e77dfa05a41"}"""
