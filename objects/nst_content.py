@@ -40,6 +40,7 @@ class nst_content:
         self.version = ""
         self.author = ""
         self.vendor = ""
+        self.description = ""
         self.sliceServices = []
         self.onboardingState = ""         #values are ENABLED/DISABLED in string format
         self.operationalState = ""        #values are ENABLED/DISABLED in string format

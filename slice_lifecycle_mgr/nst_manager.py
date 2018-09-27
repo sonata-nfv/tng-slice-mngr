@@ -47,7 +47,8 @@ def createNST(jsondata):
     NST.name = jsondata['name']
     NST.version = jsondata['version']
     NST.author = jsondata['author']
-    NST.vendor = jsondata ['vendor']
+    NST.vendor = jsondata['vendor']
+    NST.description = jsondata['description']
     sliceServices_array = jsondata['sliceServices']
     for nsiId_item in sliceServices_array:       
         NST.sliceServices.append(nsiId_item)
