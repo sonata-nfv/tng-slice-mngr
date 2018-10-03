@@ -72,9 +72,7 @@ def net_serv_instantiate(service_data):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
     data_json = json.dumps(service_data)
-    #{"uuid":"service_uuid", "ingresses"':[], "egresses":[], "blacklist":[], "sla_uuid":"sla_uuid"}
-    LOG.info("MAPPER: URL is: " + str(url))
-    LOG.info("MAPPER: data sent to instantiateNS: " +str(data_json))
+    LOG.info("MAPPER: URL --> " + str(url) + ", DATA --> " +str(data_json))
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
@@ -88,9 +86,8 @@ def net_serv_instantiate(service_data):
           LOG.info('MAPPER: error when instantiating NetService: ' + str(error))
       return jsonresponse
     else:
-      print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data_json))
-      #Generates a RANDOM (uuid4) UUID for this emulated NSI
-      uuident = uuid.uuid4()
+      print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
+      uuident = uuid.uuid4()                                                                          #Generates a RANDOM (uuid4) UUID for this emulated NSI
       jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
       return jsonresponse
 
@@ -98,22 +95,18 @@ def net_serv_instantiate(service_data):
 def net_serv_terminate(servInstance_uuid):
     LOG.info("MAPPER: Preparing the request to terminate NetServices")
     url = get_base_url() + "/requests"
-    #data = '{"instance_uuid":'+ servInstance_uuid + ', "request_type":"TERMINATE_SERVICE"}'
     data = {}
     data["instance_uuid"] = str(servInstance_uuid)
     data["request_type"] = "TERMINATE_SERVICE"
     data_json = json.dumps(data)
-    LOG.info("MAPPER: URL to terminate NetServices: " +str(url))
-    LOG.info("MAPPER: DATA to terminate NetServices: " +str(data))
-    LOG.info("MAPPER: HEADER to terminate NetServices: " +str(JSON_CONTENT_HEADER))
+    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data) ", HEADER -->" +str(JSON_CONTENT_HEADER))
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       LOG.info("MAPPER: sending terminate request.")
       time.sleep(.1)
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-      LOG.info("MAPPER: checking the response satus_code: " + str(response.status_code))
-      LOG.info("MAPPER: checking the response content: " + str(response.text))
+      LOG.info("MAPPER: STATUS_CODE --> " +str(response.status_code)+ ", RESPONSE_CONTENT --> " + str(response.text))
       if (response.status_code == 200) or (response.status_code == 201) or (response.status_code == 204):
           jsonresponse = json.loads(response.text)
           LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED: "  + str(jsonresponse))
@@ -169,8 +162,27 @@ def getRequestedNetServInstance(request_uuid):
       example_json_result='{"blacklist": "[]","callback": "","created_at": "2018-07-23T08:38:10.544Z","customer_uuid": null,"egresses": "[]","id": "1f5c8d55-651c-49cf-853d-c281dbef5639","ingresses": "[]","instance_uuid": "'+str(uuident)+'","request_type": "CREATE_SERVICE","service": {"name": "myns","uuid": "9ce92c4a-5355-47e0-9ed8-e008c201fdfc","vendor": "eu.5gtango","version": "0.1"},"sla_id": null,"status": "READY","updated_at": "2018-07-23T08:39:17.074Z"}'
       jsonresponse = json.loads(example_json_result)
       return jsonresponse 
-      
-      
+
+
+########################################## /requests ##########################################
+#POST to call the Gk when a slice is READY
+def sliceInstantiated(request_id, slice_data):
+    LOG.info("MAPPER: Slice READY, let's call the GK")
+    url = get_base_url()+ '/'+ str(request_id) + '/on-change'                                                            #TODO: change XXXXXXXXX with the right PATH
+    data_json = json.dumps(slice_data)
+    LOG.info("MAPPER: URL --> " + str(url) + ", DATA --> " +str(data_json))
+    
+    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    
+    if (response.status_code == 201):                                                            #TODO: ensure GK returns 201
+        jsonresponse = json.loads(response.text)
+        LOG.info("MAPPER: GK got the Slice Information")
+    else:
+        error = {'http_code': response.status_code,'message': response.json()}
+        jsonresponse = error
+        LOG.info('MAPPER: error when instantiating NetService: ' + str(error))
+
+    
    
 ########################################## /services ##########################################
 #GET /services to pull all Network Services information

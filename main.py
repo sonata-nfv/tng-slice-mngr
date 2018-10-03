@@ -60,6 +60,7 @@ API_NSI="/nsi"
 @app.route('/pings', methods=['GET'])
 def getPings():
     ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC'}
+    
     return jsonify(ping_response), 200
 
 
@@ -69,16 +70,19 @@ def getPings():
 def getAllNetServ():
     ServDict = mapper.getListNetServices()
     logging.info('Returning all network services')
+    
     return jsonify(ServDict), 200
 
 
 ######################################### NETSLICE TEMPLATE Actions #########################################
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['OPTIONS'])
 def optionsAllNST():
+   
    return "Allow: OPTIONS, GET, HEAD, POST", 200
 
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['OPTIONS']) 
 def optionsOneNST(nstId):
+   
    return "Allow: OPTIONS, GET, HEAD, POST", 200
 
 #creates a NetSlice template(NST)
@@ -90,8 +94,11 @@ def postNST():
     if (validationResponse[1] == 201):
       new_NST = nst_manager.createNST(receivedNSTd)
       logging.info('NST created')
+      
       return jsonify(new_NST), 201
+    
     else:
+      
       return jsonify(validationResponse[0]), validationResponse[1]            
       
 
@@ -100,6 +107,7 @@ def postNST():
 def getAllNST():
     listNST = nst_manager.getAllNst()    
     logging.info('Returning all NST')
+    
     return jsonify(listNST), 200
 
 #asks for a specific NetSlice Template (NST) information
@@ -107,6 +115,7 @@ def getAllNST():
 def getNST(nstId):
     returnedNST = nst_manager.getNST(nstId)   
     logging.info('Returning the desired NST')
+   
     return jsonify(returnedNST), 200
 
 #deletes a NetSlice Template
@@ -116,9 +125,12 @@ def deleteNST(nstId):
     if deleted_NSTid == 403:
       returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
       logging.info(returnMessage)
+      
       return jsonify(returnMessage), 403
+    
     else: 
       logging.info("The NST was deleted successfully.")
+      
       return 204
 
 
@@ -133,16 +145,22 @@ def postNSIinstantiation():
       logging.debug(new_NSI)
       instantiatedNSI = nsi_manager.createNSI(new_NSI)
       logging.info('NSI Created and Instantiated')
+      
       return jsonify(instantiatedNSI), 201
+    
     else:
+      
       return jsonify(validationResponse[0]), validationResponse[1]
 
-
-#@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/update_nsi', methods=['POST'])
-#def updateSliceInstance():
-#
-#@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/update_nsi_servinstances', methods=['POST'])
-#def updateSliceServInstances():
+#updates a NetSlice instance (NSI) being instantiated
+#INFORMATION: if the endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that mast have the same URL.
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/on-change', methods=['POST'])
+def updateSliceInstance():
+    updatedService = request.json
+    logging.info("SLICE_MAIN: received json to update an instantiating NSI: " + str(updatedService))
+    sliceUpdated = nsi_manager.updateInstantiatingNSI(updatedService)
+      
+    return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
 
 
 #terminates a NetSlice instance (NSI)
@@ -154,8 +172,11 @@ def postNSItermination(nsiId):
     if (validationResponse[1] == 200):
       terminateNSI = nsi_manager.terminateNSI(nsiId, terminate_json)
       logging.info('NSI Terminated')
+      
       return jsonify(terminateNSI), 200
+   
     else:
+      
       return jsonify(validationResponse[0]), validationResponse[1]
 
 #asks for all the NetSlice instances (NSI) information
@@ -163,6 +184,7 @@ def postNSItermination(nsiId):
 def getALLNSI():
     allNSI = nsi_manager.getAllNsi()
     logging.info('Returning all NSI')
+    
     return jsonify(allNSI), 200
 
 #asks for a specific NetSlice instances (NSI) information
@@ -170,6 +192,7 @@ def getALLNSI():
 def getNSI(nsiId):
     returnedNSI = nsi_manager.getNSI(nsiId)
     logging.info('Returning the NSI with id:' +str(nsiId))
+    
     return jsonify(returnedNSI), 200
 
 
