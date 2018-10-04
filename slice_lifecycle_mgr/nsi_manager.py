@@ -132,7 +132,7 @@ def parseNewNSI(nst_json, nsi_json):
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    sliceReadyCallback = nsi_json['callback']
+    sliceReadyCallback = nsi_json['callback']                                          #URL used to call back the GK when the slice instance is READY/ERROR
     netServInstance_Uuid = []                                                          #values given when services are instantiated by the SP
     
     NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstName, nstVersion, flavorId, 
@@ -165,18 +165,20 @@ def updateInstantiatingNSI(request_json):
       if (service_item['servInstanceId'] == request_json['id']):
         service_item['servInstanceId'] == request_json['instance_uuid']                #changes the id for the instance_uuid (the usage of id was temporal until this moment)
         service_item['workingStatus'] == request_json['status']
+        jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
         break
     
     LOG.info("NSI_MNGR: Checkin if the slice has all services ready/error or instantiating")
     allServicesReady == True                                                           #checks if all services are READY/ERROR to update the slice_status
     for service_item in jsonNSI['netServInstance_Uuid']:
-      if (service_item['workingStatus'] == "INSTANTIATING"):
+      if (service_item['workingStatus'] == "NEW" or service_item['workingStatus'] == "INSTANTIATING"):
         allServicesReady == False
         break;
     
     if (allServicesReady == True):
       LOG.info("NSI_MNGR: All service instantiated, updating slice_status and reference in template")
       jsonNSI['nsiState'] = "INSTANTIATED"                                             #updates the slice status
+      jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)                    #updates NetSlice template list of slice_instances based on that template
      
     repo_responseStatus = nsi_repo.update_nsi(jsonNSI, slice_id)                       #sends the updated NetSlice instance to the repositories                              
