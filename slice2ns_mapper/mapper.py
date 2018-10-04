@@ -166,15 +166,15 @@ def getRequestedNetServInstance(request_uuid):
 
 ########################################## /requests ##########################################
 #POST to call the Gk when a slice is READY
-def sliceInstantiated(request_id, slice_data):
+def sliceInstantiated(callback_endpoint, nsi_json):
     LOG.info("MAPPER: Slice READY, let's call the GK")
-    url = get_base_url()+ '/'+ str(request_id) + '/on-change'                                                            #TODO: change XXXXXXXXX with the right PATH
-    data_json = json.dumps(slice_data)
-    LOG.info("MAPPER: URL --> " + str(url) + ", DATA --> " +str(data_json))
+    url = str(callback_endpoint)
+    data_json = json.dumps(nsi_json)
+    LOG.info("MAPPER: URL --> " + str(url) + ", DATA --> " +str(data_json)+ ", HEADER -->" +str(JSON_CONTENT_HEADER))
     
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
     
-    if (response.status_code == 201):                                                            #TODO: ensure GK returns 201
+    if (response.status_code == 201):
         jsonresponse = json.loads(response.text)
         LOG.info("MAPPER: GK got the Slice Information")
     else:
