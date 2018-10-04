@@ -79,11 +79,11 @@ def net_serv_instantiate(service_data):
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 201):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: INSTANTIATING NetServices belonging to the NetSlice: " + str(jsonresponse))
+          LOG.info("MAPPER: INSTANTIATING NetServices belonging to the NetSlice: " +str(jsonresponse))
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
-          LOG.info('MAPPER: error when instantiating NetService: ' + str(error))
+          LOG.info('MAPPER: error when instantiating NetService: ' +str(error))
       return jsonresponse
     else:
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
@@ -99,21 +99,21 @@ def net_serv_terminate(servInstance_uuid):
     data["instance_uuid"] = str(servInstance_uuid)
     data["request_type"] = "TERMINATE_SERVICE"
     data_json = json.dumps(data)
-    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data) ", HEADER -->" +str(JSON_CONTENT_HEADER))
+    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data)+ ", HEADER --> " +str(JSON_CONTENT_HEADER))
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       LOG.info("MAPPER: sending terminate request.")
       time.sleep(.1)
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-      LOG.info("MAPPER: STATUS_CODE --> " +str(response.status_code)+ ", RESPONSE_CONTENT --> " + str(response.text))
+      LOG.info("MAPPER: STATUS_CODE --> " +str(response.status_code)+ ", RESPONSE_CONTENT --> " +str(response.text))
       if (response.status_code == 200) or (response.status_code == 201) or (response.status_code == 204):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED: "  + str(jsonresponse))
+          LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED: "  +str(jsonresponse))
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
-          LOG.info('MAPPER: error when terminating NetService instantiation: ' + str(error))
+          LOG.info('MAPPER: error when terminating NetService instantiation: ' +str(error))
       return jsonresponse
     else:
       jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
@@ -129,11 +129,11 @@ def getAllNetServInstances():
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: Information of all instantiated netService received: " + str(jsonresponse))
+          LOG.info("MAPPER: Information of all instantiated netService received: " +str(jsonresponse))
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
-          LOG.info('MAPPER: error when receiving all NS instantiations info: ' + str(error))
+          LOG.info('MAPPER: error when receiving all NS instantiations info: ' +str(error))
       return jsonresponse  
     else:
       jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
@@ -150,11 +150,11 @@ def getRequestedNetServInstance(request_uuid):
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: Information of the instantiated netService received: " + str(jsonresponse))
+          LOG.info("MAPPER: Information of the instantiated netService received: " +str(jsonresponse))
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
-          LOG.info('MAPPER: error when receiving the NS instantiation info: ' + str(error))
+          LOG.info('MAPPER: error when receiving the NS instantiation info: ' +str(error))
       return jsonresponse
     else:
       print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER))
@@ -170,7 +170,7 @@ def sliceInstantiated(callback_endpoint, nsi_json):
     LOG.info("MAPPER: Slice READY, let's call the GK")
     url = str(callback_endpoint)
     data_json = json.dumps(nsi_json)
-    LOG.info("MAPPER: URL --> " + str(url) + ", DATA --> " +str(data_json)+ ", HEADER -->" +str(JSON_CONTENT_HEADER))
+    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data_json)+ ", HEADER -->" +str(JSON_CONTENT_HEADER))
     
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
     
@@ -180,7 +180,7 @@ def sliceInstantiated(callback_endpoint, nsi_json):
     else:
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
-        LOG.info('MAPPER: error when instantiating NetService: ' + str(error))
+        LOG.info('MAPPER: error when instantiating NetService: ' +str(error))
 
     
    
@@ -207,10 +207,10 @@ def getListNetServices():
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           service_response = error
-          LOG.info('MAPPER: error when deceiving the SP services information: ' + str(error))  
+          LOG.info('MAPPER: error when deceiving the SP services information: ' +str(error))  
       return service_response
     else:
-      URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " + str(JSON_CONTENT_HEADER)
+      URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
       print (URL_response)
       return URL_response
       
