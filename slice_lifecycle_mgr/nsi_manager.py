@@ -212,9 +212,9 @@ class Notify_Slice_Ready(Thread):
       self.callback_endpoint = callback_endpoint
       self.nsi_json = nsi_json
     def run(self):
-      logging.debug('NSI_MNGR: Starts thread to call the GK slice is ready.)
+      logging.debug('NSI_MNGR: Starts thread to call the GK slice is ready.')
       mapper.sliceInstantiated(self.callback_endpoint, self.nsi_json) 
-      logging.debug('NSI_MNGR: Finishes thread to call the GK slice is ready.)
+      logging.debug('NSI_MNGR: Finishes thread to call the GK slice is ready.')
     
     
 #################### TERMINATE NSI SECTION ####################
