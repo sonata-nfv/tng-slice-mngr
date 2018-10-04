@@ -150,7 +150,7 @@ def updateInstantiatingNSI(request_json):
     for slice_item in nsi_list:
       servInstances_list = slice_item['netServInstance_Uuid']
       for servInstance_item in servInstances_list:
-        if (servInstance_item['servInstanceId'] == request_json['id'])
+        if (servInstance_item['servInstanceId'] == request_json['id']):
           slice_id = slice_item['uuid']
           if_found = True
           break                                                                        #stops the second FOR loop if found
