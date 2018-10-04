@@ -41,7 +41,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(NSI_name, "tango_NSI")
         self.assertEqual(NSI_vendor, "5gTango")
         self.assertEqual(NSI_description, "5gTango_descriptor")
-        self.assertEqual(NSI_nsiState, "INSTANTIATED")
+        self.assertEqual(NSI_nsiState, "INSTANTIATING")
         self.assertEqual(NSI_nstId, "096c26f9-6142-43d2-8521-57cea9e76c6c")
         
     
