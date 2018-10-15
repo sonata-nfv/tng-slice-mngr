@@ -87,7 +87,7 @@ def optionsOneNST(nstId):
 
 #creates a NetSlice template(NST)
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
-def postNST():
+def NST_creation():
     receivedNSTd = request.json
     logging.info("SLICE_MAIN: received json from portal: " + str(receivedNSTd))
     validationResponse = json_validator.validateCreateTemplate(receivedNSTd)    #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
@@ -120,7 +120,7 @@ def getNST(nstId):
 
 #deletes a NetSlice Template
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
-def deleteNST(nstId):
+def delete_NST(nstId):
     deleted_NSTid = nst_manager.deleteNST(nstId)
     if deleted_NSTid == 403:
       returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
@@ -135,9 +135,9 @@ def deleteNST(nstId):
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
-#creates and instantiates a NetSlice instance (NSI)
+#CREATES/INSTANTIATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
-def postNSIinstantiation():
+def NSI_instantiation():
     new_NSI = request.json
     logging.info("SLICE_MAIN: received json from portal: " + str(new_NSI))
     validationResponse = json_validator.validateCreateInstantiation(new_NSI)  #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
@@ -152,20 +152,20 @@ def postNSIinstantiation():
       
       return jsonify(validationResponse[0]), validationResponse[1]
 
-#updates a NetSlice instance (NSI) being instantiated
-#INFORMATION: if the endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that mast have the same URL.
-@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/on-change', methods=['POST'])
-def updateSliceInstance():
+#INSTANTIATION UPDATE
+#INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that mast have the same URL.
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
+def updateSliceInstance(nsiId):
     updatedService = request.json
     logging.info("SLICE_MAIN: received json to update an instantiating NSI: " + str(updatedService))
-    sliceUpdated = nsi_manager.updateInstantiatingNSI(updatedService)
+    sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
       
     return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
 
 
-#terminates a NetSlice instance (NSI)
+#TERMINATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
-def postNSItermination(nsiId):
+def NSI_termination(nsiId):
     terminate_json = request.json
     logging.info("SLICE_MAIN: received json from portal: " + str(terminate_json))
     validationResponse = json_validator.validateTerminateInstantiation(terminate_json)  #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
@@ -178,6 +178,17 @@ def postNSItermination(nsiId):
     else:
       
       return jsonify(validationResponse[0]), validationResponse[1]
+
+#TERMINATE UPDATE
+#INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "terminateNSI" that mast have the same URL.
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
+def updateSliceInstance(nsiId):
+    updatedService = request.json
+    logging.info("SLICE_MAIN: received json to update a terminating NSI: " + str(updatedService))
+    sliceUpdated = nsi_manager.updateTerminatingNSI(nsiId, updatedService)
+      
+    return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
+
 
 #asks for all the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])

@@ -72,7 +72,7 @@ def net_serv_instantiate(service_data):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
     data_json = json.dumps(service_data)
-    LOG.info("MAPPER: URL --> " + str(url) + ", DATA --> " +str(data_json))
+    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data_json))
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
@@ -92,21 +92,15 @@ def net_serv_instantiate(service_data):
       return jsonresponse
 
 #POST /requests to TERMINATE Network Service instance
-def net_serv_terminate(servInstance_uuid):
+def net_serv_terminate(service_data):
     LOG.info("MAPPER: Preparing the request to terminate NetServices")
     url = get_base_url() + "/requests"
-    data = {}
-    data["instance_uuid"] = str(servInstance_uuid)
-    data["request_type"] = "TERMINATE_SERVICE"
-    data_json = json.dumps(data)
-    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data)+ ", HEADER --> " +str(JSON_CONTENT_HEADER))
+    data_json = json.dumps(service_data)
+    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data_json))
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
-      LOG.info("MAPPER: sending terminate request.")
-      time.sleep(.1)
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-      LOG.info("MAPPER: STATUS_CODE --> " +str(response.status_code)+ ", RESPONSE_CONTENT --> " +str(response.text))
       if (response.status_code == 200) or (response.status_code == 201) or (response.status_code == 204):
           jsonresponse = json.loads(response.text)
           LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED: "  +str(jsonresponse))
@@ -166,11 +160,11 @@ def getRequestedNetServInstance(request_uuid):
 
 ########################################## /requests ##########################################
 #POST to call the Gk when a slice is READY
-def sliceInstantiated(callback_endpoint, nsi_json):
-    LOG.info("MAPPER: Slice READY, let's call the GK")
+def sliceUpdated(callback_endpoint, nsi_json):
+    LOG.info("MAPPER: Slice UPDATED, let's call the GK")
     url = str(callback_endpoint)
     data_json = json.dumps(nsi_json)
-    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data_json)+ ", HEADER -->" +str(JSON_CONTENT_HEADER))
+    LOG.info("MAPPER_Thread: URL --> " +str(url)+ ", DATA --> " +str(data_json)+ ", HEADER -->" +str(JSON_CONTENT_HEADER))
     
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
     

@@ -34,7 +34,7 @@
 #!/usr/bin/python
 
 class nsi_content:
-    def __init__(self, id="", name="", description="", nstId="", vendor="", nstName="", nstVersion="", flavorId="", sapInfo="", nsiState="", instantiateTime="", terminateTime="", scaleTime="", updateTime="", sliceReadyCallback="", netServInstance_Uuid=[]):
+    def __init__(self, id="", name="", description="", nstId="", vendor="", nstName="", nstVersion="", flavorId="", sapInfo="", nsiState="", instantiateTime="", terminateTime="", scaleTime="", updateTime="", sliceCallback="", netServInstance_Uuid=[]):
         self.id=id
         self.name=name
         self.description=description
@@ -49,7 +49,7 @@ class nsi_content:
         self.terminateTime=terminateTime
         self.scaleTime=scaleTime
         self.updateTime=updateTime
-        self.sliceReadyCallback=sliceReadyCallback
+        self.sliceCallback=sliceCallback
         self.netServInstance_Uuid=netServInstance_Uuid
     
     def __str__(self):
@@ -67,7 +67,7 @@ class nsi_content:
                     + self.terminateTime \
                     + self.scaleTime \
                     + self.updateTime \
-                    + self.sliceReadyCallback \
+                    + self.sliceCallback \
                     + self.netServInstance_Uuid
                     
         return str_result
