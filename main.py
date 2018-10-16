@@ -182,7 +182,7 @@ def NSI_termination(nsiId):
 #TERMINATE UPDATE
 #INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "terminateNSI" that mast have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
-def updateSliceInstance(nsiId):
+def updateSliceTerminate(nsiId):
     updatedService = request.json
     logging.info("SLICE_MAIN: received json to update a terminating NSI: " + str(updatedService))
     sliceUpdated = nsi_manager.updateTerminatingNSI(nsiId, updatedService)
