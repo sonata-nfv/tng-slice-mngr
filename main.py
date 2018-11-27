@@ -100,7 +100,6 @@ def NST_creation():
     else:
       
       return jsonify(validationResponse[0]), validationResponse[1]            
-      
 
 #asks for all the NetSlice Templates (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
@@ -162,7 +161,6 @@ def updateSliceInstance(nsiId):
       
     return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
 
-
 #TERMINATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
 def NSI_termination(nsiId):
@@ -188,7 +186,6 @@ def updateSliceTerminate(nsiId):
     sliceUpdated = nsi_manager.updateTerminatingNSI(nsiId, updatedService)
       
     return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
-
 
 #asks for all the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
