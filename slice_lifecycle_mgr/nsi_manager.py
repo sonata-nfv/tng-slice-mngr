@@ -63,6 +63,7 @@ class Notify_Slice(Thread):
       LOG.info("NSI_MNGR_Thread: calling back the GK.")
       mapper.sliceUpdated(self.callback_endpoint, self.nsi_json) 
 
+
 #################### CREATE NSI SECTION ####################
 def createNSI(nsi_json):
     LOG.info("NSI_MNGR: Creating a new NSI")
@@ -71,21 +72,25 @@ def createNSI(nsi_json):
     nst_json = catalogue_response['nstd']
     
     LOG.info("NSI_MNGR: parsing the NSI object")
-    NSI = parseNewNSI(nst_json, nsi_json)                                                             #creates NSI with the received information
+    # creates NSI with the received information
+    NSI = parseNewNSI(nst_json, nsi_json)
     
     LOG.info("NSI_MNGR: Sending request to instantiate services within the NST")
-    serv_seq = 1                                                                                      #to order the services within a slice in the protal
+    # to put in order the services within a slice in the protal
+    serv_seq = 1
     for NetServ_item in nst_json['sliceServices']:
       data = {}
       data['name'] = nsi_name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
       data['service_uuid'] = NetServ_item['nsdID']
-      data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"     #passing endpoint to GK, later will send the updates about the slice instantiation
+      # passing endpoint to GK, later will send the updates about the slice instantiation
+      data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
       #data['ingresses'] = []
       #data['egresses'] = []
       #data['blacklist'] = []
       data['sla_id'] = NetServ_item['slaID']
       
-      instantiation_response = mapper.net_serv_instantiate(data)                                      #requests to instantiate NSI services to the SP
+      # requests to instantiate NSI services to the SP
+      instantiation_response = mapper.net_serv_instantiate(data)
       LOG.info("NSI_MNGR: INSTANTIATION_response: " + str(instantiation_response))
       
       serviceInstance = {}
@@ -94,13 +99,15 @@ def createNSI(nsi_json):
       serviceInstance['servInstanceId'] = " "
       serviceInstance['workingStatus'] = "INSTANTIATING"
       serviceInstance['requestID'] = instantiation_response['id']
-      NSI.netServInstance_Uuid.append(serviceInstance)                                                #adds the service instance into the NSI json
+      # adds the service instance into the NSI json
+      NSI.netServInstance_Uuid.append(serviceInstance)
             
       serv_seq = serv_seq + 1
     
     LOG.info("NSI_MNGR: saving the slice instance information")
+    # saving the NSI into the repositories
     NSI_string = vars(NSI)
-    nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)                                              #saving the NSI into the repositories
+    nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
     
     return nsirepo_jsonresponse
 
@@ -135,7 +142,8 @@ def updateInstantiatingNSI(nsiId, request_json):
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
     
     LOG.info("NSI_MNGR: Modifies the specific service with ther incoming service_request: " +str(request_json))
-    for service_item in jsonNSI['netServInstance_Uuid']:                               #looks for the right service within the slice and updates it with the new data
+    # looks for the right service within the slice and updates it with the new data
+    for service_item in jsonNSI['netServInstance_Uuid']:
       if (service_item['requestId'] == request_json['id']):
         service_item['servInstanceId'] = request_json['servinstance_uuid']
         service_item['workingStatus'] = request_json['status']
@@ -143,7 +151,8 @@ def updateInstantiatingNSI(nsiId, request_json):
         break;
     
     LOG.info("NSI_MNGR: Checking if the slice has all services ready/error or instantiating")
-    allServicesDone = True                                                            #checks if all services are READY/ERROR to update the slice_status
+    # checks if all services are READY/ERROR to update the slice_status
+    allServicesDone = True
     for service_item in jsonNSI['netServInstance_Uuid']:
       if (service_item['workingStatus'] == "NEW" or service_item['workingStatus'] == "INSTANTIATING"):
         allServicesDone = False
@@ -153,36 +162,38 @@ def updateInstantiatingNSI(nsiId, request_json):
       LOG.info("NSI_MNGR: All services instantiated, updating slice_status and adding its Id to the NST.")
       jsonNSI['nsiState'] = "INSTANTIATED"
       
-      for service_item in jsonNSI['netServInstance_Uuid']:                             #validates if any service has error status to apply it to the slice status
+      # validates if any service has error status to apply it to the slice status
+      for service_item in jsonNSI['netServInstance_Uuid']:
         if (service_item['workingStatus'] == "ERROR"):
           jsonNSI['nsiState'] = "ERROR"
           break;
-      
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       
       if(jsonNSI['nsiState'] == "INSTANTIATED"):
-        updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)                  #updates NetSlice template list of slice_instances based on that template
-     
-    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, slice_id)                       #sends the updated NetSlice instance to the repositories                              
+        # updates NetSlice template list of slice_instances based on that template
+        updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
+    # sends the updated NetSlice instance to the repositories
+    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, slice_id)                              
     
-    #INFO: leave it here (do not join with the previous IF, as...
-    #... the multiple "return" depend on this order of the code.
+    #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
     if (allServicesDone == True):
       LOG.info("NSI_MNGR: Notifying the GK that a slice is READY")
-      thread_notify = Notify_Slice(jsonNSI['sliceCallback'], jsonNSI)       #creates a thread with the callback URL to advise the GK this slice is READY
+      # creates a thread with the callback URL to advise the GK this slice is READY
+      thread_notify = Notify_Slice(jsonNSI['sliceCallback'], jsonNSI)
       thread_notify.start()
       
-      return (repo_responseStatus, 201)    #201 - Created
-    
-    return (repo_responseStatus, 200)      #200 - OK
+      return (repo_responseStatus, 201)
+    return (repo_responseStatus, 200)
 
-
-def addNSIinNST(nstId, nst_json, nsiId):                                               #updates the NST info: usageState and the list of NSI usign that NST
-    if (nst_json['usageState'] == "NOT_IN_USE"):                                       #updates the usageState parameter
+# updates the NST info: usageState and the list of NSI usign that NST
+def addNSIinNST(nstId, nst_json, nsiId):
+    # updates the usageState parameter
+    if (nst_json['usageState'] == "NOT_IN_USE"):
       nstParameter2update = "usageState=IN_USE"
       updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)      
 
-    nstParameter2update = "NSI_list_ref.append="+str(nsiId)                            #updates (adds) the list of NSIref of original NST
+    # updates (adds) the list of NSIref of original NST
+    nstParameter2update = "NSI_list_ref.append="+str(nsiId)
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
     logging.debug('NSI_MNGR: updated NSI reference list of the NST: '+str(updatedNST_jsonresponse))
     
@@ -200,21 +211,25 @@ def terminateNSI(nsiId, TerminOrder):
                     jsonNSI['sliceCallback'], jsonNSI['netServInstance_Uuid'])
     LOG.info("NSI_MNGR_TERMINATE: The NSI to terminate: " +str(vars(NSI)))
     
-    instan_time = dateutil.parser.parse(NSI.instantiateTime)                           #prepares the datetime values to work with them
+    # prepares the datetime values to work with them 
+    instan_time = dateutil.parser.parse(NSI.instantiateTime)
     if (TerminOrder['terminateTime'] == "0"):
       termin_time = 0
     else:
       termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
     
     LOG.info("NSI_MNGR: Looking if therminate is now or in the future.")
-    if termin_time == 0:                                                               #depending on the termin_time executes one action or another
+    # depending on the termin_time executes one action or another
+    if termin_time == 0:
       LOG.info("NSI_MNGR_TERMINATE: Selected to Terminate NOW!!!")
       NSI.terminateTime = str(datetime.datetime.now().isoformat())
-      NSI.sliceCallback = TerminOrder['callback']                                      #updates the callback for the new termination request
+      # updates the callback for the new termination request
+      NSI.sliceCallback = TerminOrder['callback']
         
       if (NSI.nsiState == "INSTANTIATED"):
         LOG.info("NSI_MNGR_TERMINATE: Sends terminate requests")
-        for uuidNetServ_item in NSI.netServInstance_Uuid:                              #updates the specific service_instance information
+        # updates the specific service_instance information
+        for uuidNetServ_item in NSI.netServInstance_Uuid:
           if (uuidNetServ_item['workingStatus'] != "ERROR"):
             data = {}
             data["instance_uuid"] = str(uuidNetServ_item["servInstanceId"])
@@ -235,7 +250,7 @@ def terminateNSI(nsiId, TerminOrder):
       
       return (vars(NSI))
     
-    elif (instan_time < termin_time):             #TODO: manage future termination orders
+    elif (instan_time < termin_time):                                           #TODO: manage future termination orders
       NSI.terminateTime = str(termin_time)
       #NSI.nsiState = "TERMINATED"
       update_NSI = vars(NSI)
@@ -255,14 +270,16 @@ def updateTerminatingNSI(nsiId, request_json):
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
     
     LOG.info("NSI_MNGR_UpdateTerminate: Updating the right NSI record.")
-    for service_item in jsonNSI['netServInstance_Uuid']:                               #looks for the right service within the slice and updates it with the new data
+    # looks for the right service within the slice and updates it with the new data
+    for service_item in jsonNSI['netServInstance_Uuid']:
       if (service_item['requestId'] == request_json['id']):
         service_item['workingStatus'] = request_json['status']
         #jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
         break;
     
     LOG.info("NSI_MNGR_UpdateTerminate: Checking if all services are updated.")
-    allServicesDone = True                                                            #checks if all services are READY/ERROR to update the slice_status
+    # checks if all services are READY/ERROR to update the slice_status
+    allServicesDone = True
     for service_item in jsonNSI['netServInstance_Uuid']:
       if (service_item['workingStatus'] == "READY" or service_item['workingStatus'] == "NEW" or service_item['workingStatus'] == "TERMINATING"):
         allServicesDone = False
@@ -273,7 +290,8 @@ def updateTerminatingNSI(nsiId, request_json):
       jsonNSI['nsiState'] = "TERMINATED"
       
       LOG.info("NSI_MNGR_UpdateTerminate: Checks if status has to be error.")
-      for service_item in jsonNSI['netServInstance_Uuid']:                             #validates if any service has error status to apply it to the slice status
+      # validates if any service has error status to apply it to the slice status
+      for service_item in jsonNSI['netServInstance_Uuid']:
         if (service_item['workingStatus'] == "ERROR"):
           jsonNSI['nsiState'] = "ERROR"
           break; 
@@ -281,40 +299,44 @@ def updateTerminatingNSI(nsiId, request_json):
       jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
       
       if(jsonNSI['nsiState'] == "TERMINATED"):
-        updateNST_jsonresponse = removeNSIinNST(jsonNSI['id'], jsonNSI['nstId'])       #updates NetSlice template list of slice_instances based on that template
+        # updates NetSlice template list of slice_instances based on that template
+        updateNST_jsonresponse = removeNSIinNST(jsonNSI['id'], jsonNSI['nstId'])
     
     LOG.info("NSI_MNGR_UpdateTerminate: Updated the NSI information in repositories.")
-    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, slice_id)                       #sends the updated NetSlice instance to the repositories                              
+    # sends the updated NetSlice instance to the repositories
+    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, slice_id)                              
     
     #INFO: leave it here (do not join with the previous IF, as...
     #... the multiple "return" depend on this order of the code.
     if (allServicesDone == True):
       LOG.info("NSI_MNGR_UpdateTerminate: Sends the thread_notification to the GK as slice is TERMINATED|ERROR.")
-      thread_notify = Notify_Slice(jsonNSI['sliceCallback'], jsonNSI)            #creates a thread with the callback URL to advise the GK this slice is READY
+      # creates a thread with the callback URL to advise the GK this slice is READY
+      thread_notify = Notify_Slice(jsonNSI['sliceCallback'], jsonNSI)
       thread_notify.start()
       
       return (repo_responseStatus, 202)  #202 - Accepted
     
     return (repo_responseStatus, 200)    #200 - OK
     
-
 def removeNSIinNST(nsiId, nstId):
 #    LOG.info("NSI_MNGR_removeNSIinNST: updates NST info: instance_ref_list ")
-#    catalogue_response = nst_catalogue.get_saved_nst(nstId)                            #looks for the right NetSlice Template info
+#    # looks for the right NetSlice Template info
+#    catalogue_response = nst_catalogue.get_saved_nst(nstId)
 #    nst_json = catalogue_response['nstd']
 
-    nstParameter2update = "NSI_list_ref.pop="+str(nsiId)                               #deletes the terminated NetSlice instance uuid
+    # deletes the terminated NetSlice instance uuid
+    nstParameter2update = "NSI_list_ref.pop="+str(nsiId)
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
     
     LOG.info("NSI_MNGR_removeNSIinNST: updates NST info: template_usagesState ")
-    catalogue_response = nst_catalogue.get_saved_nst(nstId)                            #if there are no more NSI assigned to the NST, updates usageState parameter
+    # if there are no more NSI assigned to the NST, updates usageState parameter
+    catalogue_response = nst_catalogue.get_saved_nst(nstId)
     nst_json = catalogue_response['nstd']
     if not nst_json['NSI_list_ref']:
       if (nst_json['usageState'] == "IN_USE"):  
         nstParameter2update = "usageState=NOT_IN_USE"
         updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)  
     
-
 
 #################### GET NSI SECTION ####################
 def getNSI(nsiId):

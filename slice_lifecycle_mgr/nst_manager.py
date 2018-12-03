@@ -43,7 +43,7 @@ import database.database as db
 def createNST(jsondata):
     logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
     NST = nst.nst_content()
-    #NST.id = nst_uuid                            #given by the catalogues
+    #NST.id = nst_uuid                            # given by the catalogues
     NST.name = jsondata['name']
     NST.version = jsondata['version']
     NST.author = jsondata['author']
@@ -55,7 +55,7 @@ def createNST(jsondata):
     NST.onboardingState = "ENABLED"
     NST.operationalState = "ENABLED"
     NST.usageState = "NOT_IN_USE"
-    #NST.NSI_list_ref = []                       #empty until a NetSlice instance is created
+    #NST.NSI_list_ref = []                       # empty until a NetSlice instance is created
     
     NST_string = vars(NST)
     nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)

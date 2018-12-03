@@ -46,8 +46,6 @@ JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 #################################### Sonata SP information #####################################
 #Prepare the URL to ask for the available network services to create NST.
 def get_base_url_NetService_info():
-    #ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK_COMMON')
-    #port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_COMMON_PORT')
     ip_address = os.environ.get("SONATA_GTK_COMMON")
     port = os.environ.get("SONATA_GTK_COMMON_PORT")
     base_url = 'http://'+ip_address+':'+port
@@ -55,15 +53,12 @@ def get_base_url_NetService_info():
     
 #Prepares the URL_requests to manage Network Services instantiations belonging to the NST/NSI
 def get_base_url():
-    #ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP')
-    #port = db.settings.get('SONATA_COMPONENTS','SONATA_GTK_SP_PORT')
     ip_address = os.environ.get("SONATA_GTK_SP")
     port = os.environ.get("SONATA_GTK_SP_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
 
 def use_sonata():
-    #return db.settings.get('USE_SONATA')  
     return os.environ.get("USE_SONATA")
 
 ########################################## /requests ##########################################
@@ -87,7 +82,7 @@ def net_serv_instantiate(service_data):
       return jsonresponse
     else:
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
-      uuident = uuid.uuid4()                                                                          #Generates a RANDOM (uuid4) UUID for this emulated NSI
+      uuident = uuid.uuid4()
       jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
       return jsonresponse
 
@@ -183,7 +178,8 @@ def sliceUpdated(callback_endpoint, nsi_json):
 #curl -X GET tng-gtk-common:5000/services
 def getListNetServices():
     LOG.info("MAPPER: Preparing the request to get the NetServices Information")
-    del db.nsInfo_list[:]                                #cleans the current nsInfo_list to have the information updated
+    # cleans the current nsInfo_list to have the information updated
+    del db.nsInfo_list[:]
     url = get_base_url_NetService_info() + "/services"
  
     #SONATA SP or EMULATED Mode 
@@ -194,9 +190,11 @@ def getListNetServices():
           LOG.info("MAPPER: Services from the SP received.")
           services_array = json.loads(response.text)
           for service_item in services_array:
-            nsd=parseNetworkService(service_item)            #Each element of the list is a dictionary
+            # each element of the list is a dictionary
+            nsd=parseNetworkService(service_item)
             nsd_string = vars(nsd)
-            db.nsInfo_list.append(nsd_string)                #Adds the dictionary element into the list
+            # adds the dictionary element into the list
+            db.nsInfo_list.append(nsd_string)
           service_response = db.nsInfo_list
       else:
           error = {'http_code': response.status_code,'message': response.json()}
