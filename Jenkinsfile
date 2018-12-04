@@ -21,6 +21,7 @@ pipeline {
         stage('Performing NST Unit Tests') {
           steps {
             dir(path: 'unit_tests'){
+              sh 'rm -rf spec || true'
               sh './nstapi.sh'
             }
           }
@@ -28,6 +29,7 @@ pipeline {
         stage('Performing NSI Unit Tests') {
           steps {
             dir(path: 'unit_tests'){
+              sh 'rm -rf spec || true'
               sh './nsiapi.sh'
             }
           }
