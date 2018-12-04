@@ -83,7 +83,9 @@ def createNSI(nsi_json):
       data['name'] = nsi_name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
       data['service_uuid'] = NetServ_item['nsdID']
       # passing endpoint to GK, later will send the updates about the slice instantiation
-      data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
+      callbacGK = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
+      LOG.info("CALLBACK: " + callbacGK)
+      data['callback'] = callbacGK
       #data['ingresses'] = []
       #data['egresses'] = []
       #data['blacklist'] = []
