@@ -14,6 +14,7 @@ pipeline {
     stage('Unit Test Dependencies') {
       steps {
         echo 'If needed, add unit test dependencies in the future'
+        sh 'rm -rf unit_tests/spec || true'
       }
     }
     stage('Unit Test Execution'){
@@ -21,7 +22,6 @@ pipeline {
         stage('Performing NST Unit Tests') {
           steps {
             dir(path: 'unit_tests'){
-              sh 'rm -rf spec || true'
               sh './nstapi.sh'
             }
           }
@@ -29,7 +29,6 @@ pipeline {
         stage('Performing NSI Unit Tests') {
           steps {
             dir(path: 'unit_tests'){
-              sh 'rm -rf spec || true'
               sh './nsiapi.sh'
             }
           }
