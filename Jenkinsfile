@@ -14,6 +14,7 @@ pipeline {
     stage('Unit Test Dependencies') {
       steps {
         echo 'If needed, add unit test dependencies in the future'
+        sh 'sudo rm -rf unit_tests/spec || true'
       }
     }
     stage('Unit Test Execution'){
