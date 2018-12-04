@@ -116,8 +116,16 @@ def createNSI(nsi_json):
 def parseNewNSI(nst_json, nsi_json):
     LOG.info("NSI_MNGR: Parsing a new NSI from the user_info and the reference NST")
     uuid_nsi = str(uuid.uuid4())
-    name = nsi_json['name']
-    description = nsi_json['description']
+    if nsi_json['name']:
+      name = nsi_json['name']
+    else:
+      name = "Mocked_Name"
+    
+    if nsi_json['description']:
+      description = nsi_json['description']
+    else:
+      description = "Mocked_Description"
+    
     nstId = nsi_json['nstId']
     vendor = nst_json['vendor']
     nstName = nst_json['name']
