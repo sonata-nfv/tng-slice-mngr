@@ -119,12 +119,12 @@ def parseNewNSI(nst_json, nsi_json):
     if nsi_json['name']:
       name = nsi_json['name']
     else:
-      name = "Mocked_Name"
+      name = "Mock_Name"
     
     if nsi_json['description']:
       description = nsi_json['description']
     else:
-      description = "Mocked_Description"
+      description = "Mock_Description"
     
     nstId = nsi_json['nstId']
     vendor = nst_json['vendor']
