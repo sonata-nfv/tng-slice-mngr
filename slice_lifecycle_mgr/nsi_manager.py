@@ -66,7 +66,7 @@ class Notify_Slice(Thread):
 
 #################### CREATE NSI SECTION ####################
 def createNSI(nsi_json):
-    LOG.info("NSI_MNGR: Creating a new NSI")
+    LOG.info("NSI_MNGR: Creating a new NSI: " + str(nsi_json))
     nstId = nsi_json['nstId']
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
     nst_json = catalogue_response['nstd']
@@ -83,7 +83,9 @@ def createNSI(nsi_json):
       data['name'] = nsi_name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
       data['service_uuid'] = NetServ_item['nsdID']
       # passing endpoint to GK, later will send the updates about the slice instantiation
-      data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
+      callbacGK = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
+      LOG.info("CALLBACK: " + callbacGK)
+      data['callback'] = callbacGK
       #data['ingresses'] = []
       #data['egresses'] = []
       #data['blacklist'] = []
@@ -127,8 +129,8 @@ def parseNewNSI(nst_json, nsi_json):
     terminateTime = ""
     scaleTime = ""
     updateTime = ""
-    sliceCallback = nsi_json['callback']                                          #URL used to call back the GK when the slice instance is READY/ERROR
-    netServInstance_Uuid = []                                                          #values given when services are instantiated by the SP
+    sliceCallback = nsi_json['callback']                    #URL used to call back the GK when the slice instance is READY/ERROR
+    netServInstance_Uuid = []                               #values given when services are instantiated by the SP
     
     NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstName, nstVersion, flavorId, 
                   sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime, sliceCallback, netServInstance_Uuid)
