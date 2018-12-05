@@ -55,11 +55,12 @@ API_NSI="/nsi"
 
 
 
-########################################## NETWORK SERVICES Actions #########################################
-#asks all the available NetService Descriptors to the Sonata SP
+############################################# NETWORK SLICE PING ############################################
+#function to validate if the slice-docker is active
 @app.route('/pings', methods=['GET'])
 def getPings():
     ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC'}
+    
     return jsonify(ping_response), 200
 
 
@@ -69,36 +70,44 @@ def getPings():
 def getAllNetServ():
     ServDict = mapper.getListNetServices()
     logging.info('Returning all network services')
+    
     return jsonify(ServDict), 200
 
 
 ######################################### NETSLICE TEMPLATE Actions #########################################
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['OPTIONS'])
 def optionsAllNST():
+   
    return "Allow: OPTIONS, GET, HEAD, POST", 200
 
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['OPTIONS']) 
 def optionsOneNST(nstId):
+   
    return "Allow: OPTIONS, GET, HEAD, POST", 200
 
 #creates a NetSlice template(NST)
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
-def postNST():
+def NST_creation():
     receivedNSTd = request.json
-    validationResponse = json_validator.validateCreateTemplate(receivedNSTd)    #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+    logging.info("SLICE_MAIN: received json from portal: " + str(receivedNSTd))
+    # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+    validationResponse = json_validator.validateCreateTemplate(receivedNSTd)
     if (validationResponse[1] == 201):
       new_NST = nst_manager.createNST(receivedNSTd)
       logging.info('NST created')
-      return jsonify(new_NST), 201
-    else:
-      return jsonify(validationResponse[0]), validationResponse[1]            
       
+      return jsonify(new_NST), 201
+    
+    else:
+      
+      return jsonify(validationResponse[0]), validationResponse[1]            
 
 #asks for all the NetSlice Templates (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
 def getAllNST():
     listNST = nst_manager.getAllNst()    
     logging.info('Returning all NST')
+    
     return jsonify(listNST), 200
 
 #asks for a specific NetSlice Template (NST) information
@@ -106,52 +115,88 @@ def getAllNST():
 def getNST(nstId):
     returnedNST = nst_manager.getNST(nstId)   
     logging.info('Returning the desired NST')
+   
     return jsonify(returnedNST), 200
 
 #deletes a NetSlice Template
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
-def deleteNST(nstId):
+def delete_NST(nstId):
     deleted_NSTid = nst_manager.deleteNST(nstId)
     if deleted_NSTid == 403:
       returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
       logging.info(returnMessage)
+      
       return jsonify(returnMessage), 403
+    
     else: 
       logging.info("The NST was deleted successfully.")
+      
       return 204
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
-#creates and instantiates a NetSlice instance (NSI)
+#CREATES/INSTANTIATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
-def postNSIinstantiation():
+def NSI_instantiation():
     new_NSI = request.json
-    validationResponse = json_validator.validateCreateInstantiation(new_NSI)  #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+    logging.info("SLICE_MAIN: received json from portal: " + str(new_NSI))
+    # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+    validationResponse = json_validator.validateCreateInstantiation(new_NSI)
     if (validationResponse[1] == 201):
       logging.debug(new_NSI)
       instantiatedNSI = nsi_manager.createNSI(new_NSI)
       logging.info('NSI Created and Instantiated')
+      
       return jsonify(instantiatedNSI), 201
+    
     else:
+      
       return jsonify(validationResponse[0]), validationResponse[1]
 
-#terminates a NetSlice instance (NSI)
+#INSTANTIATION UPDATE
+#INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that must have the same URL.
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
+def updateSliceInstance(nsiId):
+    updatedService = request.json
+    logging.info("SLICE_MAIN: received json to update an instantiating NSI: " + str(updatedService))
+    sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
+      
+    return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
+
+#TERMINATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
-def postNSItermination(nsiId):
+def NSI_termination(nsiId):
     terminate_json = request.json
-    validationResponse = json_validator.validateTerminateInstantiation(terminate_json)  #Validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+    logging.info("SLICE_MAIN: received json from portal: " + str(terminate_json))
+    # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+    validationResponse = json_validator.validateTerminateInstantiation(terminate_json)
     if (validationResponse[1] == 200):
       terminateNSI = nsi_manager.terminateNSI(nsiId, terminate_json)
       logging.info('NSI Terminated')
+      
       return jsonify(terminateNSI), 200
+   
     else:
+      
       return jsonify(validationResponse[0]), validationResponse[1]
+
+#TERMINATE UPDATE
+#INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "terminateNSI" that must have the same URL.
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
+def updateSliceTerminate(nsiId):
+    updatedService = request.json
+    logging.info("SLICE_MAIN: received json to update a terminating NSI: " + str(updatedService))
+    sliceUpdated = nsi_manager.updateTerminatingNSI(nsiId, updatedService)
+
+    # [0] - error_message or valid_json, [1] - status code  
+    return (sliceUpdated[0], sliceUpdated[1])
 
 #asks for all the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
 def getALLNSI():
     allNSI = nsi_manager.getAllNsi()
     logging.info('Returning all NSI')
+    
     return jsonify(allNSI), 200
 
 #asks for a specific NetSlice instances (NSI) information
@@ -159,6 +204,7 @@ def getALLNSI():
 def getNSI(nsiId):
     returnedNSI = nsi_manager.getNSI(nsiId)
     logging.info('Returning the NSI with id:' +str(nsiId))
+    
     return jsonify(returnedNSI), 200
 
 

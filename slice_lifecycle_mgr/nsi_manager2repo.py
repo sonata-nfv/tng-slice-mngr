@@ -45,12 +45,11 @@ JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 #################################### Sonata Repositories information #####################################
 def get_base_url():
-    #ip_address=db.settings.get('SONATA_COMPONENTS','SONATA_REP')
-    #port = db.settings.get('SONATA_COMPONENTS','SONATA_REP_PORT')
     ip_address = os.environ.get("SONATA_REP")
     port = os.environ.get("SONATA_REP_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
+
 
 ####################################### /records/nsir/ns-instances #######################################
 #POST to send the NSI information to the repositories
@@ -69,7 +68,6 @@ def safe_nsi(NSI_string):
         LOG.info('NSI_MNGR2REPO: nsir to repo failed: ' + str(error))
     
     return jsonresponse
-
 
 #GET all NSI information from the repositories
 def getAll_saved_nsi():

@@ -26,7 +26,7 @@ class TestCase(unittest.TestCase):
     def test_create_NSI(self):
         #Prepares MOCK NST/NSI objects to send to the tested function      
         mock_nst_json ={"author": "5gTango","name": "5gtango_NST_name","notificationTypes": "","nstNsdIds": ["6a01afdc-9d42-4bc9-866c-a8a3868fdf5e"],"onboardingState": "ENABLED","operationalState": "ENABLED","usageState": "NOT_IN_USE","userDefinedData": "","vendor": "5gTango","version": "1.0"}
-        mock_nsi_json = {"name": "tango_NSI", "description": "5gTango_descriptor", "nstId": "096c26f9-6142-43d2-8521-57cea9e76c6c"}
+        mock_nsi_json = {"name": "tango_NSI", "description": "5gTango_descriptor", "nstId": "096c26f9-6142-43d2-8521-57cea9e76c6c", 'callback':''}
         
         #Creates NSI object and json (to send to the repositories in integration tests)
         response_NSI = parseNewNSI(mock_nst_json, mock_nsi_json)
@@ -41,7 +41,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(NSI_name, "tango_NSI")
         self.assertEqual(NSI_vendor, "5gTango")
         self.assertEqual(NSI_description, "5gTango_descriptor")
-        self.assertEqual(NSI_nsiState, "INSTANTIATED")
+        self.assertEqual(NSI_nsiState, "INSTANTIATING")
         self.assertEqual(NSI_nstId, "096c26f9-6142-43d2-8521-57cea9e76c6c")
         
     

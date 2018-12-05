@@ -61,14 +61,16 @@ def validateCreateTemplate (jsonData):
   #data = json.loads(jsonData)
   for item in jsonData['sliceServices']:
     if (is_valid_uuid (item['nsdID']) == True):
-      if (is_valid_uuid (item['slaID']) == False and item['slaID'] != "null"):
-        returnData["missing_field"] = "slaID"
+      if (is_valid_uuid (item['slaID']) == False and item['slaID'] != "None"):
+        returnData["missing_field"] = "The Service Level Agreement (SLA) ID format is wrong, please check it."
         return (returnData, 400)
+      else:
+        returnData["missing_field"] = "Everything is OK!!"
+        return (returnData, 201)
     else:
-      returnData["missing_field"] = "nsdID"
+      returnData["missing_field"] = "The Network Service Descriptor ID format is wrong, please check it."
+      LOG.info('FormValidator NST_Error: ' + str(returnData))
       return (returnData, 400)
-  returnData["missing_field"] = "Everything is OK!!"
-  return (returnData, 201)
 
 #CASE: Create NetSlice instantiation 
 #jsonData = """{"name": "NSI_name", "description": "NSI_descriptor", "nstId": "26c540a8-1e70-4242-beef-5e77dfa05a41"}"""
@@ -78,7 +80,8 @@ def validateCreateInstantiation (jsonData):
     returnData["missing_field"] = "Everything is OK!!"
     return (returnData, 201)
   else:
-    returnData["missing_field"] = "nstId"
+    returnData["missing_field"] = "The Network Service Template ID format is wrong, please check it."
+    LOG.info('FormValidator NSI_Error: ' + str(returnData))
     return (returnData, 400)
     
     
@@ -98,5 +101,6 @@ def validateTerminateInstantiation (jsonData):
       return (returnData, 200)
     except ValueError:
       #raise ValueError("Incorrect data format, should be YYYY-MM-DDTHH:MM:SS.ffff similar to this example: 2018-09-11T17:14:00.447547")
-      returnData["missing_field"] = "terminateTime"
+      returnData["missing_field"] = "The Date&Time value format is wrong. Please follow this structure YYYY-MM-DDTHH:MM:SS.ffff"
+      LOG.info('FormValidator Termination_Error: ' + str(returnData))
       return (returnData, 400)
