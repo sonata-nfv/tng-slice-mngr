@@ -139,7 +139,8 @@ def delete_NST(nstId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def NSI_instantiation():
     new_NSI = request.json
-    logging.info("SLICE_MAIN: received json from portal: " + str(new_NSI))
+    logging.info("SLICE_MAIN: received json from portal to instantiate: " + str(new_NSI))
+    time.sleep(0.1)
     # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
     validationResponse = json_validator.validateCreateInstantiation(new_NSI)
     if (validationResponse[1] == 201):
@@ -150,7 +151,6 @@ def NSI_instantiation():
       return jsonify(instantiatedNSI), 201
     
     else:
-      
       return jsonify(validationResponse[0]), validationResponse[1]
 
 #INSTANTIATION UPDATE
