@@ -42,7 +42,6 @@ import slice_lifecycle_mgr.nsi_manager as nsi_manager
 import slice_lifecycle_mgr.validate_incoming_json as json_validator
 import slice2ns_mapper.mapper as mapper
 from database import database as db
-from logger import TangoLogger
 
 app = Flask(__name__)
 
