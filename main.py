@@ -44,8 +44,6 @@ import slice2ns_mapper.mapper as mapper
 from database import database as db
 from logger import TangoLogger
 
-#LOG = TangoLogger.getLogger(__name__)
-LOG = TangoLogger.getLogger(__name__, log_level=logging.INFO, log_json=True)
 app = Flask(__name__)
 
 #/api/nst/v1/
@@ -73,7 +71,6 @@ def getPings():
 def getAllNetServ():
     ServDict = mapper.getListNetServices()
     logging.info('Returning all network services')
-    #LOG.info("Returning all network services")
     
     return jsonify(ServDict), 200
 
