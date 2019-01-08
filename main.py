@@ -34,7 +34,7 @@
 #!/usr/bin/python
 
 from flask import Flask, request, jsonify
-import os, sys, logging, json, argparse, time
+import os, sys, logging, json, argparse
 from configparser import ConfigParser
 
 import slice_lifecycle_mgr.nst_manager as nst_manager
@@ -139,14 +139,13 @@ def delete_NST(nstId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def NSI_instantiation():
     new_NSI = request.json
-    logging.info("SLICE_MAIN: received json from portal to instantiate: " + str(new_NSI))
-    time.sleep(0.1)
+    logging.info("SLICE_MAIN: received json with NST_uuid from portal to instantiate: " + str(new_NSI))
     # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
     validationResponse = json_validator.validateCreateInstantiation(new_NSI)
     if (validationResponse[1] == 201):
       logging.debug(new_NSI)
       instantiatedNSI = nsi_manager.createNSI(new_NSI)
-      logging.info('NSI Created and Instantiated')
+      logging.info('NSI Created and waiting to finish the instantiation...')
       
       return jsonify(instantiatedNSI), 201
     
@@ -160,6 +159,7 @@ def updateSliceInstance(nsiId):
     updatedService = request.json
     logging.info("SLICE_MAIN: received json to update an instantiating NSI: " + str(updatedService))
     sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
+    logging.info('NSI Instantiated')
       
     return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
 

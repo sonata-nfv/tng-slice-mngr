@@ -70,6 +70,7 @@ def createNSI(nsi_json):
     nstId = nsi_json['nstId']
     catalogue_response = nst_catalogue.get_saved_nst(nstId)
     nst_json = catalogue_response['nstd']
+    LOG.info("NSI_MNGR: Getting NST: " + str(nst_json))
     
     LOG.info("NSI_MNGR: parsing the NSI object")
     # creates NSI with the received information
@@ -80,7 +81,7 @@ def createNSI(nsi_json):
     serv_seq = 1
     for NetServ_item in nst_json['sliceServices']:
       data = {}
-      data['name'] = nsi_name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
+      data['name'] = NSI.name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
       data['service_uuid'] = NetServ_item['nsdID']
       # passing endpoint to GK, later will send the updates about the slice instantiation
       callbacGK = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
@@ -98,7 +99,7 @@ def createNSI(nsi_json):
       serviceInstance = {}
       serviceInstance['servId'] = instantiation_response['service']['uuid']
       serviceInstance['servName'] = instantiation_response['service']['name']
-      serviceInstance['servInstanceId'] = " "
+      serviceInstance['servInstanceId'] = "null"
       serviceInstance['workingStatus'] = "INSTANTIATING"
       serviceInstance['requestID'] = instantiation_response['id']
       # adds the service instance into the NSI json
@@ -150,8 +151,8 @@ def parseNewNSI(nst_json, nsi_json):
 def updateInstantiatingNSI(nsiId, request_json):
     LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
-    
-    LOG.info("NSI_MNGR: Modifies the specific service with ther incoming service_request: " +str(request_json))
+    LOG.info("NSI_MNGR: this is the jsonNSI to update: " +str(jsonNSI))
+    LOG.info("NSI_MNGR: Modifies the specific service with the incoming service_request: " +str(request_json))
     # looks for the right service within the slice and updates it with the new data
     for service_item in jsonNSI['netServInstance_Uuid']:
       if (service_item['requestId'] == request_json['id']):
