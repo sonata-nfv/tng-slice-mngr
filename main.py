@@ -72,8 +72,8 @@ def getPings():
 @app.route('/api/services', methods=['GET'])
 def getAllNetServ():
     ServDict = mapper.getListNetServices()
-    #logging.info('Returning all network services')
-    LOG.info('Returning all network services')
+    logging.info('Returning all network services')
+    #LOG.info("Returning all network services")
     
     return jsonify(ServDict), 200
 
