@@ -34,7 +34,7 @@
 #!/usr/bin/python
 
 from flask import Flask, request, jsonify
-import os, sys, logging, json, argparse
+import os, sys, logging, json, argparse, time
 from configparser import ConfigParser
 
 import slice_lifecycle_mgr.nst_manager as nst_manager
@@ -158,6 +158,7 @@ def NSI_instantiation():
 def updateSliceInstance(nsiId):
     updatedService = request.json
     logging.info("SLICE_MAIN: received json to update an instantiating NSI: " + str(updatedService))
+    time.sleep(0.1)
     sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
     logging.info('NSI Instantiated')
       

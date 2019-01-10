@@ -150,9 +150,12 @@ def parseNewNSI(nst_json, nsi_json):
 #updates a NSi being instantiated. If INSTANTIATED, calls the GK
 def updateInstantiatingNSI(nsiId, request_json):
     LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
+    time.sleep(0.1)
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
     LOG.info("NSI_MNGR: this is the jsonNSI to update: " +str(jsonNSI))
+    time.sleep(0.1)
     LOG.info("NSI_MNGR: Modifies the specific service with the incoming service_request: " +str(request_json))
+    time.sleep(0.1)
     # looks for the right service within the slice and updates it with the new data
     for service_item in jsonNSI['netServInstance_Uuid']:
       if (service_item['requestId'] == request_json['id']):
@@ -162,6 +165,7 @@ def updateInstantiatingNSI(nsiId, request_json):
         break;
     
     LOG.info("NSI_MNGR: Checking if the slice has all services ready/error or instantiating")
+    time.sleep(0.1)
     # checks if all services are READY/ERROR to update the slice_status
     allServicesDone = True
     for service_item in jsonNSI['netServInstance_Uuid']:
