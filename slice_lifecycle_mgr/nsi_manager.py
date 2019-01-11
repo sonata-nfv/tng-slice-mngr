@@ -200,7 +200,7 @@ def updateInstantiatingNSI(nsiId, request_json):
     # sends the updated NetSlice instance to the repositories
     LOG.info("NSI_MNGR: Updating the nsi in repositories.")
     time.sleep(0.1)
-    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, slice_id)
+    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
     LOG.info("NSI_MNGR: Repositories updated.")
     time.sleep(0.1)                             
     
@@ -337,7 +337,7 @@ def updateTerminatingNSI(nsiId, request_json):
     
     LOG.info("NSI_MNGR_UpdateTerminate: Updated the NSI information in repositories.")
     # sends the updated NetSlice instance to the repositories
-    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, slice_id)                              
+    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)                              
     
     #INFO: leave it here (do not join with the previous IF, as...
     #... the multiple "return" depend on this order of the code.
