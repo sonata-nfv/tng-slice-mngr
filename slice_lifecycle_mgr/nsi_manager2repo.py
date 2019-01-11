@@ -108,9 +108,12 @@ def get_saved_nsi(nsiId):
 
 #PUT update specific NSI information in repositories
 def update_nsi(update_NSI, nsiId):
-    LOG.info("NSI_MNGR2REPO: Updating NSI information, the updated info is: " +str(update_NSI))
+    LOG.info("NSI_MNGR2REPO: Updating NSI information")
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     data = json.dumps(update_NSI)
+    LOG.info("NSI_MNGR2REPO: Updating_URL: " +str(url))
+    LOG.info("NSI_MNGR2REPO: Updating_data: " +str(data))
+
     response = requests.put(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     

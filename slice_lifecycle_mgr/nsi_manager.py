@@ -152,6 +152,8 @@ def updateInstantiatingNSI(nsiId, request_json):
     LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
     time.sleep(0.1)
     jsonNSI = nsi_repo.get_saved_nsi(nsiId)
+    jsonNSI["id"] = jsonNSI["uuid"]
+    delete jsonNSI["uuid"]
     LOG.info("NSI_MNGR: this is the jsonNSI to update: " +str(jsonNSI))
     time.sleep(0.1)
     LOG.info("NSI_MNGR: Modifies the specific service with the incoming service_request: " +str(request_json))
