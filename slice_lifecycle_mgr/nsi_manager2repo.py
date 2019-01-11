@@ -91,12 +91,14 @@ def getAll_saved_nsi():
 #GET specific NSI information from the repositories
 def get_saved_nsi(nsiId):
     LOG.info("NSI_MNGR2REPO: Requesting NSI information from repositories")
+    time.sleep(0.1)
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
     if (response.status_code == 200):
         LOG.info("NSI_MNGR2REPO: NSIR received.")
+        time.sleep(0.1)
     else:
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
@@ -109,6 +111,9 @@ def update_nsi(update_NSI, nsiId):
     LOG.info("NSI_MNGR2REPO: Updating NSI information")
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     data = json.dumps(update_NSI)
+    LOG.info("NSI_MNGR2REPO: Updating_URL: " +str(url))
+    LOG.info("NSI_MNGR2REPO: Updating_data: " +str(data))
+
     response = requests.put(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
