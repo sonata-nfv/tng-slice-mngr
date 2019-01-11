@@ -169,22 +169,29 @@ def updateInstantiatingNSI(nsiId, request_json):
     # checks if all services are READY/ERROR to update the slice_status
     allServicesDone = True
     for service_item in jsonNSI['netServInstance_Uuid']:
+      LOG.info("NSI_MNGR: Checking service status: "+ str(service_item['workingStatus']))
+      time.sleep(0.1)
       if (service_item['workingStatus'] == "NEW" or service_item['workingStatus'] == "INSTANTIATING"):
         allServicesDone = False
         break;
     
     if (allServicesDone == True):
       LOG.info("NSI_MNGR: All services instantiated, updating slice_status and adding its Id to the NST.")
+      time.sleep(0.1)
       jsonNSI['nsiState'] = "INSTANTIATED"
       
       # validates if any service has error status to apply it to the slice status
       for service_item in jsonNSI['netServInstance_Uuid']:
+        LOG.info("NSI_MNGR: verifying if any service is in error for the slice status.")
+        time.sleep(0.1)
         if (service_item['workingStatus'] == "ERROR"):
           jsonNSI['nsiState'] = "ERROR"
           break;
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       
       if(jsonNSI['nsiState'] == "INSTANTIATED"):
+        LOG.info("NSI_MNGR: Adding the NSI_id into the NST register list of NSIS using it.")
+        time.sleep(0.1)
         # updates NetSlice template list of slice_instances based on that template
         updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
     # sends the updated NetSlice instance to the repositories
@@ -193,6 +200,7 @@ def updateInstantiatingNSI(nsiId, request_json):
     #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
     if (allServicesDone == True):
       LOG.info("NSI_MNGR: Notifying the GK that a slice is READY")
+      time.sleep(0.1)
       # creates a thread with the callback URL to advise the GK this slice is READY
       thread_notify = Notify_Slice(jsonNSI['sliceCallback'], jsonNSI)
       thread_notify.start()
