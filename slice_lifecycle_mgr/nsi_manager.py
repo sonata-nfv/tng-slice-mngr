@@ -173,6 +173,8 @@ def updateInstantiatingNSI(nsiId, request_json):
       time.sleep(0.1)
       if (service_item['workingStatus'] == "NEW" or service_item['workingStatus'] == "INSTANTIATING"):
         allServicesDone = False
+        LOG.info("NSI_MNGR: allServiceDone_value: "+ str(allServicesDone))
+        time.sleep(0.1)
         break;
     
     if (allServicesDone == True):
@@ -194,8 +196,13 @@ def updateInstantiatingNSI(nsiId, request_json):
         time.sleep(0.1)
         # updates NetSlice template list of slice_instances based on that template
         updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
+    
     # sends the updated NetSlice instance to the repositories
-    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, slice_id)                              
+    LOG.info("NSI_MNGR: Updating the nsi in repositories.")
+    time.sleep(0.1)
+    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, slice_id)
+    LOG.info("NSI_MNGR: Repositories updated.")
+    time.sleep(0.1)                             
     
     #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
     if (allServicesDone == True):
@@ -206,6 +213,9 @@ def updateInstantiatingNSI(nsiId, request_json):
       thread_notify.start()
       
       return (repo_responseStatus, 201)
+
+    LOG.info("NSI_MNGR: Returning 200")
+    time.sleep(0.1)
     return (repo_responseStatus, 200)
 
 # updates the NST info: usageState and the list of NSI usign that NST
