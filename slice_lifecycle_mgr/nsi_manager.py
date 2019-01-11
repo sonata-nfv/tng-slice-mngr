@@ -159,7 +159,10 @@ def updateInstantiatingNSI(nsiId, request_json):
     # looks for the right service within the slice and updates it with the new data
     for service_item in jsonNSI['netServInstance_Uuid']:
       if (service_item['requestID'] == request_json['id']):
-        service_item['servInstanceId'] = request_json['instance_uuid']
+        if(request_json['instance_uuid'] == None):
+          service_item['servInstanceId'] = "00000000-0000-0000-0000-000000000000"
+        else:
+          service_item['servInstanceId'] = request_json['instance_uuid']
         service_item['workingStatus'] = request_json['status']
         jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
         break;
