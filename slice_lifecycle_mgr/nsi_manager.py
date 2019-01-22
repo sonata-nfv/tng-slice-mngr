@@ -55,7 +55,7 @@ LOG.setLevel(logging.INFO)
 #used to inform about both slice instantiation or termination processes
 class Notify_Slice(Thread):
     def __init__(self, callback_endpoint, nsi_json):
-      Thread.__init-_(self)
+      Thread.__init__(self)
       LOG.info("NSI_MNGR_Thread: URL_callback: " +str(self.callback_endpoint))
       self.callback_endpoint = callback_endpoint
       self.nsi_json = nsi_json
