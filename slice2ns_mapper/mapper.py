@@ -170,6 +170,8 @@ def sliceUpdated(callback_endpoint, nsi_status_json):
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
         LOG.info('MAPPER: error when instantiating NetService: ' +str(error))
+    
+    return jsonresponse
 
 ########################################## /services ##########################################
 #GET /services to pull all Network Services information

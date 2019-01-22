@@ -67,7 +67,8 @@ class Notify_Slice(Thread):
       self.status = nsi_status_json
     def run(self):
       LOG.info("NSI_MNGR_Thread: calling back the GK.")
-      mapper.sliceUpdated(self.callback_endpoint, self.status) 
+      thread_response = mapper.sliceUpdated(self.callback_endpoint, self.status)
+      LOG.info("NSI_MNGR_Thread: thread_response." + str(thread_response))
 
 
 #################### CREATE NSI SECTION ####################
