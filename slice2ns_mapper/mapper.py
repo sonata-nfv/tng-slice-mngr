@@ -152,13 +152,13 @@ def getRequestedNetServInstance(request_uuid):
       jsonresponse = json.loads(example_json_result)
       return jsonresponse 
 
-
 ########################################## /requests ##########################################
 #POST to call the Gk when a slice is READY
-def sliceUpdated(callback_endpoint, nsi_json):
+def sliceUpdated(callback_endpoint, nsi_status_json):
     LOG.info("MAPPER: Slice UPDATED, let's call the GK")
     url = str(callback_endpoint)
-    data_json = json.dumps(nsi_json)
+    #data_json = json.dumps(nsi_status_json)
+    data_json = nsi_status_json
     LOG.info("MAPPER_Thread: URL --> " +str(url)+ ", DATA --> " +str(data_json)+ ", HEADER -->" +str(JSON_CONTENT_HEADER))
     
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
@@ -171,8 +171,6 @@ def sliceUpdated(callback_endpoint, nsi_json):
         jsonresponse = error
         LOG.info('MAPPER: error when instantiating NetService: ' +str(error))
 
-    
-   
 ########################################## /services ##########################################
 #GET /services to pull all Network Services information
 #curl -X GET tng-gtk-common:5000/services

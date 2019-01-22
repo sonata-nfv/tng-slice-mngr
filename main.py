@@ -160,7 +160,7 @@ def updateSliceInstance(nsiId):
     logging.info("SLICE_MAIN: received json to update an instantiating NSI: " + str(updatedService))
     time.sleep(0.1)
     sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
-    logging.info('NSI Instantiated')
+    logging.info('NSI Instantiation process finished.')
       
     return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
 

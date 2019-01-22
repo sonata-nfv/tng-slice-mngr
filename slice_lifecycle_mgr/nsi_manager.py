@@ -52,16 +52,22 @@ LOG.setLevel(logging.INFO)
 
 
 #################### THREAD TO NOTIFY UPDATES IN A SLICE ####################
-#used to inform about both slice instantiation or termination processes
+'''
+Objctive: used to inform about both slice instantiation or termination processes
+Params:
+  callback_endpoint --> the URL to call the Gatekeeper
+  nsi_json -----------> json with the last version of the NSI created sent to the Gatekeeper.
+'''
+
 class Notify_Slice(Thread):
-    def __init__(self, callback_endpoint, nsi_json):
+    def __init__(self, callback_endpoint, nsi_status_json):
       Thread.__init__(self)
       LOG.info("NSI_MNGR_Thread: URL_callback: " +str(callback_endpoint))
       self.callback_endpoint = callback_endpoint
-      self.nsi_json = nsi_json
+      self.status = nsi_status_json
     def run(self):
       LOG.info("NSI_MNGR_Thread: calling back the GK.")
-      mapper.sliceUpdated(self.callback_endpoint, self.nsi_json) 
+      mapper.sliceUpdated(self.callback_endpoint, self.status) 
 
 
 #################### CREATE NSI SECTION ####################
@@ -214,7 +220,9 @@ def updateInstantiatingNSI(nsiId, request_json):
       LOG.info("NSI_MNGR: Notifying the GK that a slice is READY")
       time.sleep(0.1)
       # creates a thread with the callback URL to advise the GK this slice is READY
-      thread_notify = Notify_Slice(jsonNSI['sliceCallback'], jsonNSI)
+      callback_json_slice_status = {}
+      callback_json_slice_status["status"] = jsonNSI["nsiState"]
+      thread_notify = Notify_Slice(jsonNSI['sliceCallback'], callback_json_slice_status)
       thread_notify.start()
       
       return (repo_responseStatus, 201)
