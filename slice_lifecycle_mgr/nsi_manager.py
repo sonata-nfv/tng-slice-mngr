@@ -56,7 +56,7 @@ LOG.setLevel(logging.INFO)
 class Notify_Slice(Thread):
     def __init__(self, callback_endpoint, nsi_json):
       Thread.__init__(self)
-      LOG.info("NSI_MNGR_Thread: URL_callback: " +str(self.callback_endpoint))
+      LOG.info("NSI_MNGR_Thread: URL_callback: " +str(callback_endpoint))
       self.callback_endpoint = callback_endpoint
       self.nsi_json = nsi_json
     def run(self):
