@@ -31,10 +31,6 @@
 ## acknowledge the contributions of their colleagues of the 5GTANGO
 ## partner consortium (www.5gtango.eu).
 """
-
-#CODE STRUCTURE INFORMATION
-#This python script is divided in 4 sections: common functions, create NSI, terminate NSI and get NSI.
-
 #!/usr/bin/python
 
 import os, sys, logging, datetime, uuid, time, json
@@ -51,7 +47,7 @@ LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
 
-#################### THREAD TO NOTIFY UPDATES IN A SLICE ####################
+################################## THREAD TO NOTIFY UPDATES IN A SLICE ############3####################
 ## Objctive: used to inform about both slice instantiation or termination processes
 ## Params:
 ##  callback_endpoint --> the URL to call the Gatekeeper
@@ -71,7 +67,8 @@ class Notify_Slice(Thread):
     time.sleep(0.1)
 
 
-#################### CREATE NSI SECTION ####################
+################################ NSI CREATION & INSTANTIATION SECTION ##################################
+# Does all the process to create the NSI object (gathering the information and sending orders to GK)
 def createNSI(nsi_json):
   LOG.info("NSI_MNGR: Creating a new NSI: " + str(nsi_json))
   nstId = nsi_json['nstId']
@@ -121,6 +118,7 @@ def createNSI(nsi_json):
 
   return nsirepo_jsonresponse
 
+# Creates the object for the previous function from the information gathered
 def parseNewNSI(nst_json, nsi_json):
   LOG.info("NSI_MNGR: Parsing a new NSI from the user_info and the reference NST")
   uuid_nsi = str(uuid.uuid4())
@@ -152,9 +150,7 @@ def parseNewNSI(nst_json, nsi_json):
                 sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime, sliceCallback, netServInstance_Uuid)
   return NSI
 
-
-#################### UPDATES NSI SERVICES READY SECTION ####################
-#updates a NSi being instantiated. If INSTANTIATED, calls the GK
+# Updates a NSI with the latest informationg coming from the MANO/GK
 def updateInstantiatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
   time.sleep(0.1)
@@ -233,7 +229,9 @@ def updateInstantiatingNSI(nsiId, request_json):
   time.sleep(0.1)
   return (repo_responseStatus, 200)
 
-# updates the NST info: usageState and the list of NSI usign that NST
+#TODO: change the point of view, when a NST has to be deleted, do not check internal list but look ...
+# ... for any NSI using that NST. Like this, we avoid to change NST information in running time.
+# Adds a NSI_id into the NST list of NSIs to keep track of them
 def addNSIinNST(nstId, nst_json, nsiId):
   # updates the usageState parameter
   if (nst_json['usageState'] == "NOT_IN_USE"):
@@ -248,7 +246,8 @@ def addNSIinNST(nstId, nst_json, nsiId):
   return updatedNST_jsonresponse
 
     
-#################### TERMINATE NSI SECTION ####################
+########################################## NSI TERMINATE SECTION #######################################
+# Does all the process to terminate the NSI
 def terminateNSI(nsiId, TerminOrder):
   LOG.info("NSI_MNGR: Terminate NSI with id: " +str(nsiId))
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
@@ -310,9 +309,7 @@ def terminateNSI(nsiId, TerminOrder):
 
     return ("Please specify a correct termination: 0 to terminate inmediately or a time value later than: " + NSI.instantiateTime+ ", to terminate in the future.")
 
-
-#################### UPDATES NSI SERVICES TERMINATE SECTION ####################
-#updates a NSI being terminated. If TERMINATED, calls the GK
+# Updates a NSI being terminated with the latest informationg coming from the MANO/GK.
 def updateTerminatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR_UpdateTerminate: Let's update the NSi with terminationg info.")
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
@@ -365,13 +362,11 @@ def updateTerminatingNSI(nsiId, request_json):
     return (repo_responseStatus, 202)  #202 - Accepted
 
   return (repo_responseStatus, 200)    #200 - OK
-    
+
+#TODO: change the point of view, when a NST has to be deleted, do not check internal list but look ...
+# ... for any NSI using that NST. Like this, we avoid to change NST information in running time.
+# Removes a NSI_id from the NST list of NSIs to keep track of them
 def removeNSIinNST(nsiId, nstId):
-#    LOG.info("NSI_MNGR_removeNSIinNST: updates NST info: instance_ref_list ")
-#    # looks for the right NetSlice Template info
-#    catalogue_response = nst_catalogue.get_saved_nst(nstId)
-#    nst_json = catalogue_response['nstd']
-# deletes the terminated NetSlice instance uuid
   nstParameter2update = "NSI_list_ref.pop="+str(nsiId)
   updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
 
@@ -385,13 +380,15 @@ def removeNSIinNST(nsiId, nstId):
       updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
 
 
-#################### GET NSI SECTION ####################
+############################################ NSI GET SECTION ############################################
+# Gets one single NSI item information
 def getNSI(nsiId):
   LOG.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))
   nsirepo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
 
   return nsirepo_jsonresponse
 
+# Gets all the existing NSI items
 def getAllNsi():
   LOG.info("NSI_MNGR: Retrieve all existing NSIs")
   nsirepo_jsonresponse = nsi_repo.getAll_saved_nsi()

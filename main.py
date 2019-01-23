@@ -56,7 +56,7 @@ API_NSI="/nsi"
 
 
 ############################################# NETWORK SLICE PING ############################################
-#function to validate if the slice-docker is active
+# PING function to validate if the slice-docker is active
 @app.route('/pings', methods=['GET'])
 def getPings():
   ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC'}
@@ -65,7 +65,7 @@ def getPings():
 
 
 ########################################## NETWORK SERVICES Actions #########################################
-#asks all the available NetService Descriptors to the Sonata SP
+# GETS all the available NetService Descriptors to the Sonata SP
 @app.route('/api/services', methods=['GET'])
 def getAllNetServ():
   ServDict = mapper.getListNetServices()
@@ -83,7 +83,7 @@ def optionsAllNST():
 def optionsOneNST(nstId):
   return "Allow: OPTIONS, GET, HEAD, POST", 200
 
-#creates a NetSlice template(NST)
+# CREATES a NetSlice template(NST)
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
 def NST_creation():
   receivedNSTd = request.json
@@ -100,7 +100,7 @@ def NST_creation():
 
     return jsonify(validationResponse[0]), validationResponse[1]            
 
-#asks for all the NetSlice Templates (NST) information
+# GETS for all the NetSlice Templates (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
 def getAllNST():
   listNST = nst_manager.getAllNst()
@@ -108,7 +108,7 @@ def getAllNST():
 
   return jsonify(listNST), 200
 
-#asks for a specific NetSlice Template (NST) information
+#GETS for a specific NetSlice Template (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['GET'])
 def getNST(nstId):
   returnedNST = nst_manager.getNST(nstId)
@@ -116,7 +116,7 @@ def getNST(nstId):
 
   return jsonify(returnedNST), 200
 
-#deletes a NetSlice Template
+# DELETES a NetSlice Template
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
 def delete_NST(nstId):
   deleted_NSTid = nst_manager.deleteNST(nstId)
@@ -133,7 +133,7 @@ def delete_NST(nstId):
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
-#CREATES/INSTANTIATES a NetSlice instance (NSI)
+# CREATES/INSTANTIATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def NSI_instantiation():
   new_NSI = request.json
@@ -150,8 +150,8 @@ def NSI_instantiation():
   else:
     return jsonify(validationResponse[0]), validationResponse[1]
 
-#INSTANTIATION UPDATE
-#INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that must have the same URL.
+# INSTANTIATION UPDATE
+# INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
 def updateSliceInstance(nsiId):
   updatedService = request.json
@@ -162,7 +162,7 @@ def updateSliceInstance(nsiId):
 
   return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
 
-#TERMINATES a NetSlice instance (NSI)
+# TERMINATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
 def NSI_termination(nsiId):
   terminate_json = request.json
@@ -179,8 +179,8 @@ def NSI_termination(nsiId):
 
     return jsonify(validationResponse[0]), validationResponse[1]
 
-#TERMINATE UPDATE
-#INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "terminateNSI" that must have the same URL.
+# TERMINATE UPDATE
+# INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "terminateNSI" that must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
 def updateSliceTerminate(nsiId):
   updatedService = request.json
@@ -190,7 +190,7 @@ def updateSliceTerminate(nsiId):
   # [0] - error_message or valid_json, [1] - status code
   return (sliceUpdated[0], sliceUpdated[1])
 
-#asks for all the NetSlice instances (NSI) information
+# GETS all the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
 def getALLNSI():
   allNSI = nsi_manager.getAllNsi()
@@ -198,7 +198,7 @@ def getALLNSI():
 
   return jsonify(allNSI), 200
 
-#asks for a specific NetSlice instances (NSI) information
+# GETS for a specific NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['GET'])
 def getNSI(nsiId):
   returnedNSI = nsi_manager.getNSI(nsiId)
@@ -207,7 +207,7 @@ def getNSI(nsiId):
   return jsonify(returnedNSI), 200
 
 
-#MAIN FUNCTION OF THE SERVER
+########################################## MAIN SERVER FUNCTION #########################################
 if __name__ == '__main__':
   #READ CONFIG
   conf_parser = argparse.ArgumentParser( description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=True )
