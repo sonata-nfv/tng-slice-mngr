@@ -50,9 +50,10 @@ def createNST(jsondata):
   NST.author = jsondata['author']
   NST.vendor = jsondata['vendor']
   NST.description = jsondata['description']
-  sliceServices_array = jsondata['sliceServices']
-  for nsiId_item in sliceServices_array:
-      NST.sliceServices.append(nsiId_item)
+  for nsiId_item in jsondata['sliceServices']:
+    if (item['slaID'] == "None"):
+      item['slaID'] == None
+    NST.sliceServices.append(nsiId_item)
   NST.onboardingState = "ENABLED"
   NST.operationalState = "ENABLED"
   NST.usageState = "NOT_IN_USE"
