@@ -43,26 +43,27 @@ LOG.setLevel(logging.INFO)
 
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
-#################################### Sonata SP information #####################################
-#Prepare the URL to ask for the available network services to create NST.
+#################################### GENERAL URLs TO THE GATEKEEPERS #####################################
+# Prepare the URL to ask for the available network services to create NST.
 def get_base_url_NetService_info():
     ip_address = os.environ.get("SONATA_GTK_COMMON")
     port = os.environ.get("SONATA_GTK_COMMON_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
     
-#Prepares the URL_requests to manage Network Services instantiations belonging to the NST/NSI
+# Prepares the URL_requests to manage Network Services instantiations belonging to the NST/NSI
 def get_base_url():
     ip_address = os.environ.get("SONATA_GTK_SP")
     port = os.environ.get("SONATA_GTK_SP_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
 
+# Defines wether if we are using sthe Sonata SP Emulator or not.
 def use_sonata():
     return os.environ.get("USE_SONATA")
 
-########################################## /requests ##########################################
-#POST /requests to INSTANTIATE Network Service instance
+##################################### REQUESTS TO THE GATEKEEPERS ########################################
+# POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(service_data):
     LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
@@ -86,7 +87,7 @@ def net_serv_instantiate(service_data):
       jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
       return jsonresponse
 
-#POST /requests to TERMINATE Network Service instance
+# POST /requests to TERMINATE Network Service instance
 def net_serv_terminate(service_data):
     LOG.info("MAPPER: Preparing the request to terminate NetServices")
     url = get_base_url() + "/requests"
@@ -108,7 +109,7 @@ def net_serv_terminate(service_data):
       jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
       return jsonresponse
 
-#GET /requests to pull the information of all Network Services INSTANCES
+# GET /requests to pull the information of all Network Services INSTANCES
 def getAllNetServInstances():
     LOG.info("MAPPER: Preparing the request to get all the NetServicesInstances")
     url = get_base_url() + "/requests"
@@ -129,7 +130,7 @@ def getAllNetServInstances():
       LOG.info(jsonresponse)
       return jsonresponse
 
-#GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
+# GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
 def getRequestedNetServInstance(request_uuid):
     LOG.info("MAPPER: Preparing the request to get desired NetServicesInstance")
     url = get_base_url() + "/requests/" + str(request_uuid)
@@ -152,8 +153,7 @@ def getRequestedNetServInstance(request_uuid):
       jsonresponse = json.loads(example_json_result)
       return jsonresponse 
 
-########################################## /requests ##########################################
-#POST to call the Gk when a slice is READY
+# POST to call the Gk when a slice is READY
 def sliceUpdated(callback_endpoint, nsi_status_json):
     LOG.info("MAPPER: Slice UPDATED, let's call the GK")
     time.sleep(0.1)
@@ -177,9 +177,8 @@ def sliceUpdated(callback_endpoint, nsi_status_json):
     
     return jsonresponse
 
-########################################## /services ##########################################
-#GET /services to pull all Network Services information
-#curl -X GET tng-gtk-common:5000/services
+################################## REQUEST TO CHECK EXISTING SERVICES ####################################
+# GET /services to pull all Network Services information
 def getListNetServices():
     LOG.info("MAPPER: Preparing the request to get the NetServices Information")
     # cleans the current nsInfo_list to have the information updated

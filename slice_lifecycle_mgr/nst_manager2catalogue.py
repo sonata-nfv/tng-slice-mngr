@@ -43,16 +43,14 @@ LOG.setLevel(logging.INFO)
 
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
-#################################### Sonata Catalogues information ###################################
+# Returns the last URL version to send reqauests to the Catalogues Docker
 def get_base_url():
     ip_address = os.environ.get("SONATA_CAT")
     port = os.environ.get("SONATA_CAT_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
 
-
-####################################### /api/catalogues/v2/nsts ######################################
-#POST to send the NST information to the catalogues
+# POST to send the NST information to the catalogues
 def safe_nst(nst_string):
     LOG.info("NST_MNGR2CAT: Sending information to the catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts'
@@ -68,7 +66,7 @@ def safe_nst(nst_string):
         LOG.info('NST_MNGR2CAT: nstd to catalogues failed: ' + str(error))
     return jsonresponse
        
-#GET all NST information from the catalogues
+# GET all NST information from the catalogues
 def getAll_saved_nst():
     LOG.info("NST_MNGR2CAT: Requesting all NSTD information from catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts'
@@ -84,9 +82,9 @@ def getAll_saved_nst():
         LOG.info('NSI_MNGR2CAT: nstd getAll from catalogues failed: ' + str(error))
     return jsonresponse
     
-#PUT to update specific NST parameter in catalogues
-#the url follows this rule(.../nsts/<nstId>/?nstParameter2update) where
-#nstParameter2update is a string following the structure: "<key>=<value>"
+# PUT to update specific NST parameter in catalogues
+# The url follows this rule(.../nsts/<nstId>/?nstParameter2update) where nstParameter2update is...
+# ... a string following the structure: "<key>=<value>"
 def update_nst(nstParameter2update, nstId):
     LOG.info("NST_MNGR2CAT: Updating NSTD information")
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId + '?' + nstParameter2update
@@ -100,9 +98,7 @@ def update_nst(nstParameter2update, nstId):
         LOG.info('NST_MNGR2CAT: nstd update action to catalogues failed: ' + str(error))
     return response
 
-
-#################################### /api/catalogues/v2/nsts/{id} ####################################
-#GET the specific NST information from the catalogues
+# GET the specific NST item from the catalogues
 def get_saved_nst(nstId):
     LOG.info("NST_MNGR2CAT: Requesting NST information from catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
@@ -117,7 +113,7 @@ def get_saved_nst(nstId):
         LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(error))
     return jsonresponse
     
-#DELETE the specific NST information from catalogues
+# DELETE the specific NST item from catalogues
 def delete_nst(nstId):
     LOG.info("NST_MNGR2CAT: Deleting NSTD")
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId

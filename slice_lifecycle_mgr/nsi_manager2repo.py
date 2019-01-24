@@ -43,16 +43,14 @@ LOG.setLevel(logging.INFO)
 
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
-#################################### Sonata Repositories information #####################################
+# Returns the last URL version to send reqauests to the Repositories Docker
 def get_base_url():
     ip_address = os.environ.get("SONATA_REP")
     port = os.environ.get("SONATA_REP_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
 
-
-####################################### /records/nsir/ns-instances #######################################
-#POST to send the NSI information to the repositories
+# POST to send the NSI information to the repositories
 def safe_nsi(NSI_string):
     LOG.info("NSI_MNGR2REPO: Sending information to the repositories")
     url = get_base_url() + '/records/nsir/ns-instances'
@@ -69,7 +67,7 @@ def safe_nsi(NSI_string):
     
     return jsonresponse
 
-#GET all NSI information from the repositories
+# GET all NSI items from the repositories
 def getAll_saved_nsi():
     LOG.info("NSI_MNGR2REPO: Requesting all NSIs information from repositories")
     url = get_base_url() + '/records/nsir/ns-instances'
@@ -86,9 +84,7 @@ def getAll_saved_nsi():
     
     return jsonresponse
 
-
-######################## /records/nsir/ns-instances/<service_instance_uuid> #############################
-#GET specific NSI information from the repositories
+# GET specific NSI item from the repositories
 def get_saved_nsi(nsiId):
     LOG.info("NSI_MNGR2REPO: Requesting NSI information from repositories")
     time.sleep(0.1)
@@ -106,7 +102,7 @@ def get_saved_nsi(nsiId):
     
     return jsonresponse
 
-#PUT update specific NSI information in repositories
+# PUT to update specific NSI information in repositories
 def update_nsi(update_NSI, nsiId):
     LOG.info("NSI_MNGR2REPO: Updating NSI information")
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
@@ -126,7 +122,7 @@ def update_nsi(update_NSI, nsiId):
     
     return jsonresponse
 
-#DELETE soecific NSI information in repositories
+# DELETE soecific NSI item in repositories
 def delete_nsi(nsiId):
     LOG.info("NSI_MNGR2REPO: Deleting NSI")
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
