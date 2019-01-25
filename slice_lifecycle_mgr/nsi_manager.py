@@ -233,7 +233,7 @@ def updateInstantiatingNSI(nsiId, request_json):
 # ... for any NSI using that NST. Like this, we avoid to change NST information in running time.
 # Adds a NSI_id into the NST list of NSIs to keep track of them
 def addNSIinNST(nstId, nsiId):
-  nst_json = nst_catalogue.get_saved_nst(nstId)
+  nst_json = nst_catalogue.get_saved_nst(nstId)['nstd']
 
   # updates the usageState parameter
   if (nst_json['usageState'] == "NOT_IN_USE"):
