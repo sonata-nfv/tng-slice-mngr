@@ -97,7 +97,6 @@ def NST_creation():
     return jsonify(new_NST), 201
 
   else:
-
     return jsonify(validationResponse[0]), validationResponse[1]            
 
 # GETS for all the NetSlice Templates (NST) information
@@ -128,7 +127,6 @@ def delete_NST(nstId):
 
   else:
     logging.info("The NST was deleted successfully.")
-    
     return 204
 
 
@@ -158,8 +156,10 @@ def updateSliceInstance(nsiId):
   logging.info("SLICE_MAIN: received json to update an instantiating NSI: " + str(updatedService))
   time.sleep(0.1)
   sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
-  logging.info('NSI Instantiation process finished.')
-
+  if (sliceUpdated[1] == 200):
+    logging.info('Instantiating your Network Slice Instance...')
+  if(sliceUpdated[1] == 201):
+    logging.info('Network Slice Instance READY.')
   return (sliceUpdated[0], sliceUpdated[1]) #[0] - error_message or valid_json, [1] - status code
 
 # TERMINATES a NetSlice instance (NSI)
@@ -176,7 +176,6 @@ def NSI_termination(nsiId):
     return jsonify(terminateNSI), 200
 
   else:
-
     return jsonify(validationResponse[0]), validationResponse[1]
 
 # TERMINATE UPDATE
@@ -187,8 +186,7 @@ def updateSliceTerminate(nsiId):
   logging.info("SLICE_MAIN: received json to update a terminating NSI: " + str(updatedService))
   sliceUpdated = nsi_manager.updateTerminatingNSI(nsiId, updatedService)
 
-  # [0] - error_message or valid_json, [1] - status code
-  return (sliceUpdated[0], sliceUpdated[1])
+  return (sliceUpdated[0], sliceUpdated[1])       # [0] error_message or valid_json, [1] status code
 
 # GETS all the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
