@@ -203,7 +203,7 @@ def updateInstantiatingNSI(nsiId, request_json):
       LOG.info("NSI_MNGR: Adding the NSI_id into the NST register list of NSIS using it.")
       time.sleep(0.1)
       # updates NetSlice template list of slice_instances based on that template
-      updateNST_jsonresponse = addNSIinNST(nstId, nst_json, NSI.id)
+      updateNST_jsonresponse = addNSIinNST(jsonNSI["nstId"], nsiId)
 
   # sends the updated NetSlice instance to the repositories
   LOG.info("NSI_MNGR: Updating the nsi in repositories.")
@@ -232,7 +232,9 @@ def updateInstantiatingNSI(nsiId, request_json):
 #TODO: change the point of view, when a NST has to be deleted, do not check internal list but look ...
 # ... for any NSI using that NST. Like this, we avoid to change NST information in running time.
 # Adds a NSI_id into the NST list of NSIs to keep track of them
-def addNSIinNST(nstId, nst_json, nsiId):
+def addNSIinNST(nstId, nsiId):
+  nst_json = nst_catalogue.get_saved_nst(nstId)
+
   # updates the usageState parameter
   if (nst_json['usageState'] == "NOT_IN_USE"):
     nstParameter2update = "usageState=IN_USE"
