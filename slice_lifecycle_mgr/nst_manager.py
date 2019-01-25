@@ -52,7 +52,7 @@ def createNST(jsondata):
   NST.description = jsondata['description']
   for nsiId_item in jsondata['sliceServices']:
     if (nsiId_item['slaID'] == "None"):
-      nsiId_item['slaID'] == None
+      nsiId_item['slaID'] = None
     NST.sliceServices.append(nsiId_item)
   NST.onboardingState = "ENABLED"
   NST.operationalState = "ENABLED"
