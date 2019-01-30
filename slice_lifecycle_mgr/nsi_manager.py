@@ -250,7 +250,7 @@ def terminateNSI(nsiId, TerminOrder):
     termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
     instan_time = dateutil.parser.parse(NSI.instantiateTime)
 
-  LOG.info("NSI_MNGR: Looking if therminate is now or in the future.")
+  LOG.info("NSI_MNGR: Looking if terminate is now or in the future.")
   time.sleep(0.1)
   # depending on the termin_time executes one action or another
   if termin_time == 0:
@@ -259,6 +259,8 @@ def terminateNSI(nsiId, TerminOrder):
     NSI.terminateTime = str(datetime.datetime.now().isoformat())
     # updates the callback for the new termination request
     NSI.sliceCallback = TerminOrder['callback']
+    LOG.info("NSI_MNGR_TERMINATE: The NSI to terminate: " +str(vars(NSI)))
+    time.sleep(0.1)
 
     if (NSI.nsiState == "INSTANTIATED"):
       LOG.info("NSI_MNGR_TERMINATE: Sends terminate requests")
@@ -274,17 +276,17 @@ def terminateNSI(nsiId, TerminOrder):
           termination_response = mapper.net_serv_terminate(data)
           LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
           time.sleep(0.1)
-        
           uuidNetServ_item['servInstanceId'] = " "
           uuidNetServ_item['workingStatus'] = "TERMINATING"
           uuidNetServ_item['requestID'] = termination_response['id']
-      
-      LOG.info("NSI_MNGR_TERMINATE: Updates NSI info and sends it to repos")
-      time.sleep(0.1)
+
       NSI.nsiState = "TERMINATING"
-      update_NSI = vars(NSI)
-      repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
-    
+
+    LOG.info("NSI_MNGR_TERMINATE: Updates NSI info and sends it to repos")
+    time.sleep(0.1)
+    update_NSI = vars(NSI)
+    repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
+
     return (vars(NSI), 200)
 
   #TODO: manage future termination orders
