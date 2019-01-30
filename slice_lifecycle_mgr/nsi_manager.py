@@ -244,11 +244,11 @@ def terminateNSI(nsiId, TerminOrder):
   time.sleep(0.1)
 
   # prepares the datetime values to work with them 
-  instan_time = dateutil.parser.parse(NSI.instantiateTime)
-  if (TerminOrder['terminateTime'] == "0"):
+  if (TerminOrder['terminateTime'] == "0" or TerminOrder['terminateTime'] == 0):
     termin_time = 0
   else:
     termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
+    instan_time = dateutil.parser.parse(NSI.instantiateTime)
 
   LOG.info("NSI_MNGR: Looking if therminate is now or in the future.")
   time.sleep(0.1)
@@ -285,7 +285,7 @@ def terminateNSI(nsiId, TerminOrder):
       update_NSI = vars(NSI)
       repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
     
-    return (vars(NSI))
+    return (vars(NSI), 200)
 
   #TODO: manage future termination orders
   # take into account to update the internal info of the NSi with the callback coming from GTK, which will be left...
@@ -297,9 +297,10 @@ def terminateNSI(nsiId, TerminOrder):
     update_NSI = vars(NSI)
     repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
 
-    return (vars(NSI))
+    return (vars(NSI), 200)
   else:
-    return ("Please specify a correct termination: 0 to terminate inmediately or a time value later than: " + NSI.instantiateTime+ ", to terminate in the future.")
+    msg = "Wrong value: 0 for instant termination or date time later than "+NSI.instantiateTime+", to terminate in the future."
+    return (msg, 400)
 
 # Updates a NSI being terminated with the latest informationg coming from the MANO/GK.
 def updateTerminatingNSI(nsiId, request_json):
