@@ -173,7 +173,7 @@ def NSI_termination(nsiId):
     terminateNSI = nsi_manager.terminateNSI(nsiId, terminate_json)
     logging.info('NSI Terminated')
 
-    return jsonify(terminateNSI), 200
+    return jsonify(terminateNSI[0]), terminateNSI[1]
 
   else:
     return jsonify(validationResponse[0]), validationResponse[1]
