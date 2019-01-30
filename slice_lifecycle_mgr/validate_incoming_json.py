@@ -90,23 +90,20 @@ def validateCreateInstantiation (jsonData):
     returnData["missing_field"] = "The Network Service Template ID format is wrong, please check it."
     LOG.info('FormValidator NSI_Error: ' + str(returnData))
     return (returnData, 400)
-    
-    
+
 # CASE: Terminate NetSlice Instantiation
 # Json_example: jsonData = {"terminateTime": <time>}
 # Possible values for <time> --> instant_termination: 0 / future termination: 2019-07-16T14:01:31.447547
 def validateTerminateInstantiation (jsonData):
-  incomingDateTime = jsonData['terminateTime']
-  if (incomingDateTime == "0"):
+  if (jsonData['terminateTime'] == 0 or jsonData['terminateTime'] == "0"):
     returnData["missing_field"] = "Everything is OK!!"
     return (returnData, 200)
   else:
     try:
-      datetime.datetime.strptime(incomingDateTime,'%Y-%m-%dT%H:%M:%S.%f')
+      datetime.datetime.strptime(jsonData['terminateTime'],'%Y-%m-%dT%H:%M:%S.%f')
       returnData["missing_field"] = "Everything is OK!!"
       return (returnData, 200)
     except ValueError:
-      #raise ValueError("Incorrect data format, should be YYYY-MM-DDTHH:MM:SS.ffff similar to this example: 2018-09-11T17:14:00.447547")
-      returnData["missing_field"] = "The Date&Time value format is wrong. Please follow this structure YYYY-MM-DDTHH:MM:SS.ffff"
+      returnData["missing_field"] = "Incorrect data format, give value 0 (instant termination) or follow this structure YYYY-MM-DDTHH:MM:SS.ffff"
       LOG.info('FormValidator Termination_Error: ' + str(returnData))
       return (returnData, 400)
