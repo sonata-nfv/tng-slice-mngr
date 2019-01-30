@@ -157,7 +157,6 @@ def getRequestedNetServInstance(request_uuid):
 def sliceUpdated(callback_endpoint, nsi_status_json):
     LOG.info("MAPPER: Slice UPDATED, let's call the GK")
     url = str(callback_endpoint)
-    #data_json = json.dumps(nsi_status_json)
     data_json = json.dumps(nsi_status_json)
     
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)

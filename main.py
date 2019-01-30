@@ -183,7 +183,7 @@ def NSI_termination(nsiId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
 def updateSliceTerminate(nsiId):
   updatedService = request.json
-  logging.info("SLICE_MAIN: received json to update a terminating NSI: " + str(updatedService))
+  logging.info("SLICE_MAIN: received json to update a TERMINATING NSI: " + str(updatedService))
   sliceUpdated = nsi_manager.updateTerminatingNSI(nsiId, updatedService)
 
   return (sliceUpdated[0], sliceUpdated[1])       # [0] error_message or valid_json, [1] status code
