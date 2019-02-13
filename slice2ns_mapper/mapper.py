@@ -99,7 +99,7 @@ def net_serv_terminate(service_data):
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200) or (response.status_code == 201) or (response.status_code == 204):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED: "  +str(jsonresponse))
+          LOG.info("MAPPER: Request belonging the NetSlice TERMINATED: "  +str(jsonresponse))
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error

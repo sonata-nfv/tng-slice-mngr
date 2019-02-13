@@ -136,7 +136,7 @@ def parseNewNSI(nst_json, nsi_json):
   instantiateTime = str(datetime.datetime.now().isoformat())
   terminateTime = ""
   scaleTime = ""
-  updateTime = ""
+  updateTime = instantiateTime
   sliceCallback = nsi_json['callback']                    #URL used to call back the GK when the slice instance is READY/ERROR
   netServInstance_Uuid = []                               #values given when services are instantiated by the SP
 
@@ -158,7 +158,6 @@ def updateInstantiatingNSI(nsiId, request_json):
       else:
         service_item['servInstanceId'] = request_json['instance_uuid']
       service_item['workingStatus'] = request_json['status']
-      jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       break;
 
   LOG.info("NSI_MNGR: Checking if the slice has all services ready/error or instantiating")
@@ -211,8 +210,8 @@ def updateInstantiatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR: Returning 200")
   return (repo_responseStatus, 200)
 
-#TODO: change the point of view, when a NST has to be deleted, do not check internal list but look ...
-# ... for any NSI using that NST. Like this, we avoid to change NST information in running time.
+#TODO: change the point of view, when a NST has to be deleted, do not check internal list but look for any NSI ...
+# ... using that NST. Like this, we avoid to change NST information in running time. This function will be removed.
 # Adds a NSI_id into the NST list of NSIs to keep track of them
 def addNSIinNST(nstId, nsiId):
   nst_json = nst_catalogue.get_saved_nst(nstId)['nstd']
@@ -319,7 +318,6 @@ def updateTerminatingNSI(nsiId, request_json):
   for service_item in jsonNSI['netServInstance_Uuid']:
     if (service_item['requestID'] == request_json['id']):
       service_item['workingStatus'] = request_json['status']
-      #jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       break;
 
   LOG.info("NSI_MNGR_UpdateTerminate: Checking if all services are updated.")
@@ -345,6 +343,7 @@ def updateTerminatingNSI(nsiId, request_json):
         break;
     
     jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
+    jsonNSI['updateTime'] = jsonNSI['terminateTime']
     
     if(jsonNSI['nsiState'] == "TERMINATED"):
       # updates NetSlice template list of slice_instances based on that template

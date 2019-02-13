@@ -85,7 +85,7 @@ def validateCreateTemplate (jsonData):
 def validateCreateInstantiation (jsonData):
   if (is_valid_uuid(jsonData['nstId']) == True):
     returnData["missing_field"] = "Everything is OK!!"
-    return (returnData, 201)
+    return (returnData, 200)
   else:
     returnData["missing_field"] = "The Network Service Template ID format is wrong, please check it."
     LOG.info('FormValidator NSI_Error: ' + str(returnData))
