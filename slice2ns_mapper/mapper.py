@@ -99,7 +99,7 @@ def net_serv_terminate(service_data):
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200) or (response.status_code == 201) or (response.status_code == 204):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: NetService belonging the NetSlice TERMINATED: "  +str(jsonresponse))
+          LOG.info("MAPPER: Request belonging the NetSlice TERMINATED: "  +str(jsonresponse))
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
@@ -157,7 +157,6 @@ def getRequestedNetServInstance(request_uuid):
 def sliceUpdated(callback_endpoint, nsi_status_json):
     LOG.info("MAPPER: Slice UPDATED, let's call the GK")
     url = str(callback_endpoint)
-    #data_json = json.dumps(nsi_status_json)
     data_json = json.dumps(nsi_status_json)
     
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
