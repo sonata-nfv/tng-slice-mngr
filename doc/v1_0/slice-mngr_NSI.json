@@ -1,9 +1,9 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.1",
-    "title": "Network Slice Template (NST) Management interface",
-    "description": "Network Slice Template (NST) interface: This interface is aligned with the ETSI NFV IFA0013/SOL005 specification, making the required changes to adapt it to the management of NSTs.\n",
+    "version": "1.0",
+    "title": "Network Slice Instance (NSI) LifeCycle Management (LCM) interface",
+    "description": "Network Slice Instance (NSI) Lifecycle Management interface: This interface is aligned with the ETSI NFV IFA0013/SOL005 specification, making the required changes to adapt it to the lifecycle management of NSIs.\n",
     "license": {
       "name": "H2020 5GTANGO copyright"
     },
@@ -11,7 +11,7 @@
       "name": "H2020 5GTANGO"
     }
   },
-  "basePath": "/api/nst/v1",
+  "basePath": "/api/nsilcm/v1",
   "schemes": [
     "https"
   ],
@@ -22,72 +22,45 @@
     "application/json"
   ],
   "paths": {
-    "/descriptors": {
+    "/nsi": {
       "post": {
-        "description": "**Create NST Info**: Create a NetSlice Template Info object and the whole NST item information presented as JSON. After NST creation, the Upload NST completes the on-boarding operation. \n",
+        "description": "**Create NSI Identifier**: Creates a NSI ID, creating a NSI Record (NSIR) in NOT_INSTANTIATED state. At this point no NSI instantiation have occurred. This step must be done before Instantiate NSI.\n",
         "parameters": [
           {
             "name": "userDefinedData",
-            "description": "Data associated to a NST.",
             "in": "body",
             "required": true,
             "schema": {
               "description": "User Info associated to the NST.",
               "type": "object",
               "properties": {
+                "nstId": {
+                  "description": "Reference to the NST.",
+                  "type": "integer",
+                  "format": "string"
+                },
                 "name": {
-                  "description": "Name of the NetSLice Template",
+                  "description": "Humam-readable NSI name.",
                   "type": "string",
                   "format": "string"
                 },
-                "version": {
-                  "description": "Version of the NetSLice Template",
+                "description": {
+                  "description": "Humam-readable NSI description.",
                   "type": "string",
                   "format": "string"
-                },
-                "author": {
-                  "description": "Author name of the NetSLice Template",
-                  "type": "string",
-                  "format": "string"
-                },
-                "vendor": {
-                  "description": "Vendor name of the NetSLice Template",
-                  "type": "string",
-                  "format": "string"
-                },
-                "nstNsdIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "NsdId": {
-                        "type": "string",
-                        "description": "Uuid of the Network Service to be in the Template"
-                      }
-                    }
-                  }
                 }
               },
               "example": {
-                "name": "Example_NST",
-                "version": 1.1,
-                "author": "5gTango NetSlicer",
-                "vendor": "5gTango",
-                "nstNsdIds": [
-                  {
-                    "NsdId": "66a1c857-76d7-48db-98a1-6674b531b010"
-                  },
-                  {
-                    "NsdId": "a365dd7e-42c7-4db1-947f-1e2de4e432cc"
-                  }
-                ]
+                "name": "Example_NSI",
+                "description_nsi": "Decription of the NSI_Example.",
+                "nstId": "e3476dd9-259c-42ae-816f-e891ddb4e8db"
               }
             }
           }
         ],
         "responses": {
           "201": {
-            "description": "Netslice Template structure.\n",
+            "description": "Unique identifier of the nstInfoId.\n",
             "headers": {
               "Content-Type": {
                 "description": "The MIME type of the body of the response (\"application/json\").",
@@ -102,37 +75,33 @@
                 "minimum": 0
               },
               "Location": {
-                "description": "The resource URI of the created NSI instance.",
+                "description": "The resource URI of the created NSI.",
                 "type": "string",
                 "format": "url"
               }
             },
             "schema": {
-              "description": "A unique identifier of the NST Info.\n",
+              "description": "A json of the created and instantiated NSi.\n",
               "example": {
-                "created_at": "2018-07-19T12:40:41.419+00:00",
-                "md5": "42510e3a015bd1468b85987763566376",
-                "nstd": {
-                  "name": "Example_NST",
-                  "version": 1.1,
-                  "author": "5gTango NetSlicer",
-                  "vendor": "5gTango",
-                  "nstNsdIds": [
-                    "6a1c857-76d7-48db-98a1-6674b531b010",
-                    "a365dd7e-42c7-4db1-947f-1e2de4e432cc"
-                  ],
-                  "notificationTypes": "",
-                  "onboardingState": "ENABLED",
-                  "operationalState": "ENABLED",
-                  "referencedNSIs": [],
-                  "usageState": "IN_USE",
-                  "userDefinedData": ""
-                },
-                "signature": null,
-                "status": "active",
-                "updated_at": "2018-07-19T12:43:06.691+00:00",
-                "username": null,
-                "uuid": "66a1c857-76d7-48db-98a1-6674b531b010"
+                "created_at": "2018-07-16T14:03:02.204+00:00",
+                "description": "Decription of the NSI_Example.",
+                "flavorId": "",
+                "instantiateTime": "2018-07-16T14:01:31.447547",
+                "name": "Example_NSI",
+                "netServInstance_Uuid": [
+                  "e1547f09-e954-4299-bd62-138045566872"
+                ],
+                "nsiState": "INSTANTIATED",
+                "nstId": "e3476dd9-259c-42ae-816f-e891ddb4e8db",
+                "nstName": "Example_NST",
+                "nstVersion": "1.0",
+                "sapInfo": "",
+                "scaleTime": "",
+                "terminateTime": "",
+                "updateTime": "",
+                "updated_at": "2018-07-16T14:03:02.204+00:00",
+                "uuid": "a75d1555-cc2c-4b96-864f-fa1ffe5c909a",
+                "vendor": "eu.5gTango"
               }
             }
           },
@@ -727,10 +696,10 @@
         }
       },
       "get": {
-        "description": "**Query NST**: Queries NST information (multiple NSTs).\n",
+        "description": "**Query NSI**: Queries NSIs information.\n",
         "responses": {
           "200": {
-            "description": "Results of the query (NSTs).\n",
+            "description": "Results of the query (NSIs).",
             "headers": {
               "Content-Type": {
                 "description": "The MIME type of the body of the response (\"application/json\").",
@@ -748,77 +717,98 @@
             "schema": {
               "type": "array",
               "items": {
-                "description": "Results of the query (NST).",
+                "description": "Results of the query (NsiInstance).",
                 "type": "object",
                 "properties": {
                   "uuid": {
-                    "description": "A unique identifier of the NST allocated by the Slice Manager.\n",
-                    "type": "string"
-                  },
-                  "created_at": {
-                    "description": "Describe the datetime when it was created.\n",
-                    "type": "string"
-                  },
-                  "updated_at": {
-                    "description": "Describe the datetime when it was updated.\n",
-                    "type": "string"
+                    "description": "The unique identifier of the NSI.",
+                    "type": "integer",
+                    "example": "a75d1555-cc2c-4b96-864f-fa1ffe5c909a"
                   },
                   "name": {
-                    "description": "NST Name.",
-                    "type": "string"
+                    "description": "The name of the NSI.",
+                    "type": "string",
+                    "example": "NSI_Example"
                   },
-                  "version": {
-                    "description": "NST Version.",
-                    "type": "string"
+                  "description": {
+                    "description": "A description of the NSI.",
+                    "type": "string",
+                    "example": "NSI_descriptor"
                   },
-                  "author": {
-                    "description": "NST author.",
-                    "type": "string"
+                  "nstId": {
+                    "description": "The Id of the NST used to instantiate the NSI.",
+                    "type": "integer",
+                    "example": "a7633ab5-bf8e-46af-a12d-4407479df863"
+                  },
+                  "flavorId": {
+                    "description": "The flavor identifier of the NSI.",
+                    "type": "string",
+                    "example": ""
+                  },
+                  "sapInfo": {
+                    "description": "SAP of the NSI.",
+                    "type": "string",
+                    "example": ""
+                  },
+                  "nsiState": {
+                    "description": "State of the NSI (possible values INSTANTIATED, NOT_INSTANTIATED).",
+                    "type": "string",
+                    "enum": [
+                      "INSTANTIATED",
+                      "NOT_INSTANTIATED"
+                    ]
+                  },
+                  "nstName": {
+                    "description": "Reference uuid to the NST the NSi is base on.",
+                    "type": "string",
+                    "example": "Example_NST"
+                  },
+                  "netsVersion": {
+                    "description": "Version of the NST used.",
+                    "type": "string",
+                    "example": "1.1"
                   },
                   "vendor": {
-                    "description": "NST vendor.",
-                    "type": "string"
-                  },
-                  "nstNsdIds": {
-                    "description": "List of underlying NSDs that comprise the NST.",
-                    "type": "string"
-                  },
-                  "onboardingState": {
-                    "description": "Operational state (ENABLE, DISABLED).",
+                    "description": "Vendor of the NST this NSi is base on.",
                     "type": "string",
-                    "enum": [
-                      "ENABLED",
-                      "DISABLED"
-                    ]
+                    "example": "eu.5gTango"
                   },
-                  "operationalState": {
-                    "description": "Operational state (ENABLE, DISABLED).",
+                  "netServInstance_Uuid": {
+                    "description": "uuid list of the service instantiations done from by the NSI.",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "e1547f09-e954-4299-bd62-138045566872"
+                    }
+                  },
+                  "created_at": {
+                    "description": "Datetime when this NSI is created..",
                     "type": "string",
-                    "enum": [
-                      "ENABLED",
-                      "DISABLED"
-                    ]
+                    "example": "2018-07-16T14:03:02.204+00:00"
                   },
-                  "usageState": {
-                    "description": "Usage state (IN_USE, NOT_IN_USE).",
+                  "instantiateTime": {
+                    "description": "Datetime when this NSIis instantiated.",
                     "type": "string",
-                    "enum": [
-                      "IN_USE",
-                      "NOT_IN_USE"
-                    ]
+                    "format": "date-time",
+                    "example": "2018-07-16T14:01:31.447547"
                   },
-                  "notificationTypes": {
-                    "description": "Permited values: NstOnboardingNotification, NStTChangeNotification and NstDeletionNotification.\n",
+                  "scaleTime": {
+                    "description": "Datetime of last scale operation done with this NSI.",
                     "type": "string",
-                    "enum": [
-                      "NstOnboardingNotification",
-                      "NstChangeNotification",
-                      "NstDeletionNotification"
-                    ]
+                    "format": "date-time",
+                    "example": ""
                   },
-                  "userDefinedData": {
-                    "description": "NST user defined data.",
-                    "type": "string"
+                  "terminateTime": {
+                    "description": "Datetime when this NSI is terminated.",
+                    "type": "string",
+                    "format": "date-time",
+                    "example": ""
+                  },
+                  "updateTime": {
+                    "description": "Datetime when this NSi was updated.",
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2018-07-16T14:03:02.204+00:00"
                   }
                 }
               }
@@ -1415,21 +1405,21 @@
         }
       }
     },
-    "/descriptors/{nstId}": {
+    "/nsi/{nsiId}": {
       "parameters": [
         {
-          "name": "nstId",
-          "description": "Uuid of the on-boarded NST.\n",
+          "name": "nsiId",
+          "description": "Unique identifier of the NSI.",
           "in": "path",
           "type": "string",
           "required": true
         }
       ],
       "get": {
-        "description": "**Query NST**: Get a particular NST information.\n",
+        "description": "**Query NSI**: Queries NSI information (multiple NSIs).\n",
         "responses": {
           "200": {
-            "description": "NST Information.\n",
+            "description": "Results of the query (NSIs).\n",
             "headers": {
               "Content-Type": {
                 "description": "The MIME type of the body of the response (\"application/json\").",
@@ -1438,84 +1428,106 @@
                 "minimum": 1
               },
               "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.",
                 "type": "string",
                 "maximum": 1,
                 "minimum": 0
               }
             },
             "schema": {
-              "description": "Results of the query (NST).",
+              "description": "Results of the query (NsiInstance).",
               "type": "object",
               "properties": {
                 "uuid": {
-                  "description": "A unique identifier of the NST allocated by the Slice Manager.\n",
-                  "type": "string"
-                },
-                "created_at": {
-                  "description": "Describe the datetime when it was created.\n",
-                  "type": "string"
-                },
-                "updated_at": {
-                  "description": "Describe the datetime when it was updated.\n",
-                  "type": "string"
+                  "description": "The unique identifier of the NSI.",
+                  "type": "integer",
+                  "example": "a75d1555-cc2c-4b96-864f-fa1ffe5c909a"
                 },
                 "name": {
-                  "description": "NST Name.",
-                  "type": "string"
+                  "description": "The name of the NSI.",
+                  "type": "string",
+                  "example": "NSI_Example"
                 },
-                "version": {
-                  "description": "NST Version.",
-                  "type": "string"
+                "description": {
+                  "description": "A description of the NSI.",
+                  "type": "string",
+                  "example": "NSI_descriptor"
                 },
-                "author": {
-                  "description": "NST author.",
-                  "type": "string"
+                "nstId": {
+                  "description": "The Id of the NST used to instantiate the NSI.",
+                  "type": "integer",
+                  "example": "a7633ab5-bf8e-46af-a12d-4407479df863"
+                },
+                "flavorId": {
+                  "description": "The flavor identifier of the NSI.",
+                  "type": "string",
+                  "example": ""
+                },
+                "sapInfo": {
+                  "description": "SAP of the NSI.",
+                  "type": "string",
+                  "example": ""
+                },
+                "nsiState": {
+                  "description": "State of the NSI (possible values INSTANTIATED, NOT_INSTANTIATED).",
+                  "type": "string",
+                  "enum": [
+                    "INSTANTIATED",
+                    "NOT_INSTANTIATED"
+                  ]
+                },
+                "nstName": {
+                  "description": "Reference uuid to the NST the NSi is base on.",
+                  "type": "string",
+                  "example": "Example_NST"
+                },
+                "netsVersion": {
+                  "description": "Version of the NST used.",
+                  "type": "string",
+                  "example": "1.1"
                 },
                 "vendor": {
-                  "description": "NST vendor.",
-                  "type": "string"
-                },
-                "nstNsdIds": {
-                  "description": "List of underlying NSDs that comprise the NST.",
-                  "type": "string"
-                },
-                "onboardingState": {
-                  "description": "Operational state (ENABLE, DISABLED).",
+                  "description": "Vendor of the NST this NSi is base on.",
                   "type": "string",
-                  "enum": [
-                    "ENABLED",
-                    "DISABLED"
-                  ]
+                  "example": "eu.5gTango"
                 },
-                "operationalState": {
-                  "description": "Operational state (ENABLE, DISABLED).",
+                "netServInstance_Uuid": {
+                  "description": "uuid list of the service instantiations done from by the NSI.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "e1547f09-e954-4299-bd62-138045566872"
+                  }
+                },
+                "created_at": {
+                  "description": "Datetime when this NSI is created..",
                   "type": "string",
-                  "enum": [
-                    "ENABLED",
-                    "DISABLED"
-                  ]
+                  "format": "date-time",
+                  "example": "2018-07-16T14:03:02.204+00:00"
                 },
-                "usageState": {
-                  "description": "Usage state (IN_USE, NOT_IN_USE).",
+                "instantiateTime": {
+                  "description": "Datetime when this NSIis instantiated.",
                   "type": "string",
-                  "enum": [
-                    "IN_USE",
-                    "NOT_IN_USE"
-                  ]
+                  "format": "date-time",
+                  "example": "2018-07-16T14:01:31.447547"
                 },
-                "notificationTypes": {
-                  "description": "Permited values: NstOnboardingNotification, NStTChangeNotification and NstDeletionNotification.\n",
+                "scaleTime": {
+                  "description": "Datetime of last scale operation done with this NSI.",
                   "type": "string",
-                  "enum": [
-                    "NstOnboardingNotification",
-                    "NstChangeNotification",
-                    "NstDeletionNotification"
-                  ]
+                  "format": "date-time",
+                  "example": ""
                 },
-                "userDefinedData": {
-                  "description": "NST user defined data.",
-                  "type": "string"
+                "terminateTime": {
+                  "description": "Datetime when this NSI is terminated.",
+                  "type": "string",
+                  "format": "date-time",
+                  "example": ""
+                },
+                "updateTime": {
+                  "description": "Datetime when this NSi was updated.",
+                  "type": "string",
+                  "format": "date-time",
+                  "example": "2018-07-16T14:03:02.204+00:00"
                 }
               }
             }
@@ -1962,10 +1974,10 @@
             }
           },
           "422": {
-            "description": "If the payload body of a request contains syntactically correct data (e.g. well-formed JSON) but the data cannot be processed (e.g. because it fails validation against a schema).\n",
+            "description": "If the payload body of a request contains syntactically correct data (e.g. well-formed JSON) but the data cannot be processed (e.g. because it fails validation against a schema), the API producer shall respond with this response code. The \"ProblemDetails\" structure shall be provided, and should include in the \"detail\" attribute more information about the source of the problem. NOTE 2: This error response code is only applicable for methods that have a request body.\n",
             "headers": {
               "Content-Type": {
-                "description": "The MIME type of the body of the response.",
+                "description": "The MIME type of the body of the response (\"application/json\").",
                 "type": "string",
                 "maximum": 1,
                 "minimum": 1
@@ -2109,18 +2121,83 @@
             }
           }
         }
-      },
-      "delete": {
-        "description": "**Delete NST**: Delete a NST. After deletion, there is no possible anymore to create Network Slice Instances (NSIs).\n",
+      }
+    },
+    "/nsi/{nsiId}/terminate": {
+      "parameters": [
+        {
+          "name": "nsiId",
+          "description": "Identifier of the NSI.",
+          "in": "path",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "post": {
+        "description": "**Instantiate NSI**: Instantiate a NSI (in NOT_INSTANTIATED state). Before this, a NSI ID creation needs to be done (Create NSI ID).\n",
+        "parameters": [
+          {
+            "name": "InstantiateNsiRequest",
+            "description": "Data associated to a NSI instantiation.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "description": "Data associated to the NSI.",
+              "type": "object",
+              "properties": {
+                "terminateTime": {
+                  "description": "Timestamp indicating when the instantiation will be tigerred (0 means immediatly).",
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
-          "204": {
-            "description": "The NST was deleted successfully.\n",
+          "202": {
+            "description": "A json with the information of the terminated NSI.\n",
             "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
               "WWW-Authenticate": {
                 "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
                 "type": "string",
                 "maximum": 1,
                 "minimum": 0
+              },
+              "Location": {
+                "description": "The resource URI of the created NSI.",
+                "type": "string",
+                "format": "url"
+              }
+            },
+            "schema": {
+              "description": "A unique identifier of lifecycle occurrence.\n",
+              "example": {
+                "created_at": "2018-07-16T14:03:02.204+00:00",
+                "description": "Decription of the NSI_Example.",
+                "flavorId": "",
+                "instantiateTime": "2018-07-16T14:01:31.447547",
+                "name": "Example_NSI",
+                "netServInstance_Uuid": [
+                  "e1547f09-e954-4299-bd62-138045566872"
+                ],
+                "nsiState": "TERMINATED",
+                "nstId": "e3476dd9-259c-42ae-816f-e891ddb4e8db",
+                "nstName": "Example_NST",
+                "nstVersion": "1.0",
+                "sapInfo": "",
+                "scaleTime": "",
+                "terminateTime": "2018-07-20T17:52:12.204+00:00",
+                "updateTime": "",
+                "updated_at": "2018-07-16T14:03:02.204+00:00",
+                "uuid": "a75d1555-cc2c-4b96-864f-fa1ffe5c909a",
+                "vendor": "eu.5gTango"
               }
             }
           },
@@ -2569,7 +2646,7 @@
             "description": "If the payload body of a request contains syntactically correct data (e.g. well-formed JSON) but the data cannot be processed (e.g. because it fails validation against a schema).\n",
             "headers": {
               "Content-Type": {
-                "description": "The MIME type of the body of the response.",
+                "description": "The MIME type of the body of the response (\"application/json\").",
                 "type": "string",
                 "maximum": 1,
                 "minimum": 1
@@ -2664,7 +2741,7 @@
             }
           },
           "503": {
-            "description": "If the API producer encounters an internal overload situation of itself or of a system it relies on.\n",
+            "description": "If there is an application error not related to the client's input that cannot be easily mapped to any other HTTP response code (\"catch all error\").\n",
             "headers": {
               "Content-Type": {
                 "description": "The MIME type of the body of the response (\"application/problem+json\").",
