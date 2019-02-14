@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: "0.1"
+  version: "1.0"
   title: Network Slice Instance (NSI) LifeCycle Management (LCM) interface
   description: >
     Network Slice Instance (NSI) Lifecycle Management interface: This interface is aligned with the ETSI NFV IFA0013/SOL005 specification, making the required changes to adapt it to the lifecycle management of NSIs.

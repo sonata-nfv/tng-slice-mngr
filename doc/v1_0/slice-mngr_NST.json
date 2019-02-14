@@ -1,9 +1,9 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "0.1",
-    "title": "Network Slice Instance (NSI) LifeCycle Management (LCM) interface",
-    "description": "Network Slice Instance (NSI) Lifecycle Management interface: This interface is aligned with the ETSI NFV IFA0013/SOL005 specification, making the required changes to adapt it to the lifecycle management of NSIs.\n",
+    "version": "1.0",
+    "title": "Network Slice Template (NST) Management interface",
+    "description": "Network Slice Template (NST) interface: This interface is aligned with the ETSI NFV IFA0013/SOL005 specification, making the required changes to adapt it to the management of NSTs.\n",
     "license": {
       "name": "H2020 5GTANGO copyright"
     },
@@ -11,7 +11,7 @@
       "name": "H2020 5GTANGO"
     }
   },
-  "basePath": "/api/nsilcm/v1",
+  "basePath": "/api/nst/v1",
   "schemes": [
     "https"
   ],
@@ -22,45 +22,72 @@
     "application/json"
   ],
   "paths": {
-    "/nsi": {
+    "/descriptors": {
       "post": {
-        "description": "**Create NSI Identifier**: Creates a NSI ID, creating a NSI Record (NSIR) in NOT_INSTANTIATED state. At this point no NSI instantiation have occurred. This step must be done before Instantiate NSI.\n",
+        "description": "**Create NST Info**: Create a NetSlice Template Info object and the whole NST item information presented as JSON. After NST creation, the Upload NST completes the on-boarding operation. \n",
         "parameters": [
           {
             "name": "userDefinedData",
+            "description": "Data associated to a NST.",
             "in": "body",
             "required": true,
             "schema": {
               "description": "User Info associated to the NST.",
               "type": "object",
               "properties": {
-                "nstId": {
-                  "description": "Reference to the NST.",
-                  "type": "integer",
-                  "format": "string"
-                },
                 "name": {
-                  "description": "Humam-readable NSI name.",
+                  "description": "Name of the NetSLice Template",
                   "type": "string",
                   "format": "string"
                 },
-                "description": {
-                  "description": "Humam-readable NSI description.",
+                "version": {
+                  "description": "Version of the NetSLice Template",
                   "type": "string",
                   "format": "string"
+                },
+                "author": {
+                  "description": "Author name of the NetSLice Template",
+                  "type": "string",
+                  "format": "string"
+                },
+                "vendor": {
+                  "description": "Vendor name of the NetSLice Template",
+                  "type": "string",
+                  "format": "string"
+                },
+                "nstNsdIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "NsdId": {
+                        "type": "string",
+                        "description": "Uuid of the Network Service to be in the Template"
+                      }
+                    }
+                  }
                 }
               },
               "example": {
-                "name": "Example_NSI",
-                "description_nsi": "Decription of the NSI_Example.",
-                "nstId": "e3476dd9-259c-42ae-816f-e891ddb4e8db"
+                "name": "Example_NST",
+                "version": 1.1,
+                "author": "5gTango NetSlicer",
+                "vendor": "5gTango",
+                "nstNsdIds": [
+                  {
+                    "NsdId": "66a1c857-76d7-48db-98a1-6674b531b010"
+                  },
+                  {
+                    "NsdId": "a365dd7e-42c7-4db1-947f-1e2de4e432cc"
+                  }
+                ]
               }
             }
           }
         ],
         "responses": {
           "201": {
-            "description": "Unique identifier of the nstInfoId.\n",
+            "description": "Netslice Template structure.\n",
             "headers": {
               "Content-Type": {
                 "description": "The MIME type of the body of the response (\"application/json\").",
@@ -75,33 +102,37 @@
                 "minimum": 0
               },
               "Location": {
-                "description": "The resource URI of the created NSI.",
+                "description": "The resource URI of the created NSI instance.",
                 "type": "string",
                 "format": "url"
               }
             },
             "schema": {
-              "description": "A json of the created and instantiated NSi.\n",
+              "description": "A unique identifier of the NST Info.\n",
               "example": {
-                "created_at": "2018-07-16T14:03:02.204+00:00",
-                "description": "Decription of the NSI_Example.",
-                "flavorId": "",
-                "instantiateTime": "2018-07-16T14:01:31.447547",
-                "name": "Example_NSI",
-                "netServInstance_Uuid": [
-                  "e1547f09-e954-4299-bd62-138045566872"
-                ],
-                "nsiState": "INSTANTIATED",
-                "nstId": "e3476dd9-259c-42ae-816f-e891ddb4e8db",
-                "nstName": "Example_NST",
-                "nstVersion": "1.0",
-                "sapInfo": "",
-                "scaleTime": "",
-                "terminateTime": "",
-                "updateTime": "",
-                "updated_at": "2018-07-16T14:03:02.204+00:00",
-                "uuid": "a75d1555-cc2c-4b96-864f-fa1ffe5c909a",
-                "vendor": "eu.5gTango"
+                "created_at": "2018-07-19T12:40:41.419+00:00",
+                "md5": "42510e3a015bd1468b85987763566376",
+                "nstd": {
+                  "name": "Example_NST",
+                  "version": 1.1,
+                  "author": "5gTango NetSlicer",
+                  "vendor": "5gTango",
+                  "nstNsdIds": [
+                    "6a1c857-76d7-48db-98a1-6674b531b010",
+                    "a365dd7e-42c7-4db1-947f-1e2de4e432cc"
+                  ],
+                  "notificationTypes": "",
+                  "onboardingState": "ENABLED",
+                  "operationalState": "ENABLED",
+                  "referencedNSIs": [],
+                  "usageState": "IN_USE",
+                  "userDefinedData": ""
+                },
+                "signature": null,
+                "status": "active",
+                "updated_at": "2018-07-19T12:43:06.691+00:00",
+                "username": null,
+                "uuid": "66a1c857-76d7-48db-98a1-6674b531b010"
               }
             }
           },
@@ -696,10 +727,10 @@
         }
       },
       "get": {
-        "description": "**Query NSI**: Queries NSIs information.\n",
+        "description": "**Query NST**: Queries NST information (multiple NSTs).\n",
         "responses": {
           "200": {
-            "description": "Results of the query (NSIs).",
+            "description": "Results of the query (NSTs).\n",
             "headers": {
               "Content-Type": {
                 "description": "The MIME type of the body of the response (\"application/json\").",
@@ -717,98 +748,77 @@
             "schema": {
               "type": "array",
               "items": {
-                "description": "Results of the query (NsiInstance).",
+                "description": "Results of the query (NST).",
                 "type": "object",
                 "properties": {
                   "uuid": {
-                    "description": "The unique identifier of the NSI.",
-                    "type": "integer",
-                    "example": "a75d1555-cc2c-4b96-864f-fa1ffe5c909a"
-                  },
-                  "name": {
-                    "description": "The name of the NSI.",
-                    "type": "string",
-                    "example": "NSI_Example"
-                  },
-                  "description": {
-                    "description": "A description of the NSI.",
-                    "type": "string",
-                    "example": "NSI_descriptor"
-                  },
-                  "nstId": {
-                    "description": "The Id of the NST used to instantiate the NSI.",
-                    "type": "integer",
-                    "example": "a7633ab5-bf8e-46af-a12d-4407479df863"
-                  },
-                  "flavorId": {
-                    "description": "The flavor identifier of the NSI.",
-                    "type": "string",
-                    "example": ""
-                  },
-                  "sapInfo": {
-                    "description": "SAP of the NSI.",
-                    "type": "string",
-                    "example": ""
-                  },
-                  "nsiState": {
-                    "description": "State of the NSI (possible values INSTANTIATED, NOT_INSTANTIATED).",
-                    "type": "string",
-                    "enum": [
-                      "INSTANTIATED",
-                      "NOT_INSTANTIATED"
-                    ]
-                  },
-                  "nstName": {
-                    "description": "Reference uuid to the NST the NSi is base on.",
-                    "type": "string",
-                    "example": "Example_NST"
-                  },
-                  "netsVersion": {
-                    "description": "Version of the NST used.",
-                    "type": "string",
-                    "example": "1.1"
-                  },
-                  "vendor": {
-                    "description": "Vendor of the NST this NSi is base on.",
-                    "type": "string",
-                    "example": "eu.5gTango"
-                  },
-                  "netServInstance_Uuid": {
-                    "description": "uuid list of the service instantiations done from by the NSI.",
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "example": "e1547f09-e954-4299-bd62-138045566872"
-                    }
+                    "description": "A unique identifier of the NST allocated by the Slice Manager.\n",
+                    "type": "string"
                   },
                   "created_at": {
-                    "description": "Datetime when this NSI is created..",
-                    "type": "string",
-                    "example": "2018-07-16T14:03:02.204+00:00"
+                    "description": "Describe the datetime when it was created.\n",
+                    "type": "string"
                   },
-                  "instantiateTime": {
-                    "description": "Datetime when this NSIis instantiated.",
-                    "type": "string",
-                    "format": "date-time",
-                    "example": "2018-07-16T14:01:31.447547"
+                  "updated_at": {
+                    "description": "Describe the datetime when it was updated.\n",
+                    "type": "string"
                   },
-                  "scaleTime": {
-                    "description": "Datetime of last scale operation done with this NSI.",
-                    "type": "string",
-                    "format": "date-time",
-                    "example": ""
+                  "name": {
+                    "description": "NST Name.",
+                    "type": "string"
                   },
-                  "terminateTime": {
-                    "description": "Datetime when this NSI is terminated.",
-                    "type": "string",
-                    "format": "date-time",
-                    "example": ""
+                  "version": {
+                    "description": "NST Version.",
+                    "type": "string"
                   },
-                  "updateTime": {
-                    "description": "Datetime when this NSi was updated.",
+                  "author": {
+                    "description": "NST author.",
+                    "type": "string"
+                  },
+                  "vendor": {
+                    "description": "NST vendor.",
+                    "type": "string"
+                  },
+                  "nstNsdIds": {
+                    "description": "List of underlying NSDs that comprise the NST.",
+                    "type": "string"
+                  },
+                  "onboardingState": {
+                    "description": "Operational state (ENABLE, DISABLED).",
                     "type": "string",
-                    "format": "date-time",
-                    "example": "2018-07-16T14:03:02.204+00:00"
+                    "enum": [
+                      "ENABLED",
+                      "DISABLED"
+                    ]
+                  },
+                  "operationalState": {
+                    "description": "Operational state (ENABLE, DISABLED).",
+                    "type": "string",
+                    "enum": [
+                      "ENABLED",
+                      "DISABLED"
+                    ]
+                  },
+                  "usageState": {
+                    "description": "Usage state (IN_USE, NOT_IN_USE).",
+                    "type": "string",
+                    "enum": [
+                      "IN_USE",
+                      "NOT_IN_USE"
+                    ]
+                  },
+                  "notificationTypes": {
+                    "description": "Permited values: NstOnboardingNotification, NStTChangeNotification and NstDeletionNotification.\n",
+                    "type": "string",
+                    "enum": [
+                      "NstOnboardingNotification",
+                      "NstChangeNotification",
+                      "NstDeletionNotification"
+                    ]
+                  },
+                  "userDefinedData": {
+                    "description": "NST user defined data.",
+                    "type": "string"
                   }
                 }
               }
@@ -1405,21 +1415,21 @@
         }
       }
     },
-    "/nsi/{nsiId}": {
+    "/descriptors/{nstId}": {
       "parameters": [
         {
-          "name": "nsiId",
-          "description": "Unique identifier of the NSI.",
+          "name": "nstId",
+          "description": "Uuid of the on-boarded NST.\n",
           "in": "path",
           "type": "string",
           "required": true
         }
       ],
       "get": {
-        "description": "**Query NSI**: Queries NSI information (multiple NSIs).\n",
+        "description": "**Query NST**: Get a particular NST information.\n",
         "responses": {
           "200": {
-            "description": "Results of the query (NSIs).\n",
+            "description": "NST Information.\n",
             "headers": {
               "Content-Type": {
                 "description": "The MIME type of the body of the response (\"application/json\").",
@@ -1428,776 +1438,85 @@
                 "minimum": 1
               },
               "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.",
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
                 "type": "string",
                 "maximum": 1,
                 "minimum": 0
               }
             },
             "schema": {
-              "description": "Results of the query (NsiInstance).",
+              "description": "Results of the query (NST).",
               "type": "object",
               "properties": {
                 "uuid": {
-                  "description": "The unique identifier of the NSI.",
-                  "type": "integer",
-                  "example": "a75d1555-cc2c-4b96-864f-fa1ffe5c909a"
-                },
-                "name": {
-                  "description": "The name of the NSI.",
-                  "type": "string",
-                  "example": "NSI_Example"
-                },
-                "description": {
-                  "description": "A description of the NSI.",
-                  "type": "string",
-                  "example": "NSI_descriptor"
-                },
-                "nstId": {
-                  "description": "The Id of the NST used to instantiate the NSI.",
-                  "type": "integer",
-                  "example": "a7633ab5-bf8e-46af-a12d-4407479df863"
-                },
-                "flavorId": {
-                  "description": "The flavor identifier of the NSI.",
-                  "type": "string",
-                  "example": ""
-                },
-                "sapInfo": {
-                  "description": "SAP of the NSI.",
-                  "type": "string",
-                  "example": ""
-                },
-                "nsiState": {
-                  "description": "State of the NSI (possible values INSTANTIATED, NOT_INSTANTIATED).",
-                  "type": "string",
-                  "enum": [
-                    "INSTANTIATED",
-                    "NOT_INSTANTIATED"
-                  ]
-                },
-                "nstName": {
-                  "description": "Reference uuid to the NST the NSi is base on.",
-                  "type": "string",
-                  "example": "Example_NST"
-                },
-                "netsVersion": {
-                  "description": "Version of the NST used.",
-                  "type": "string",
-                  "example": "1.1"
-                },
-                "vendor": {
-                  "description": "Vendor of the NST this NSi is base on.",
-                  "type": "string",
-                  "example": "eu.5gTango"
-                },
-                "netServInstance_Uuid": {
-                  "description": "uuid list of the service instantiations done from by the NSI.",
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "example": "e1547f09-e954-4299-bd62-138045566872"
-                  }
+                  "description": "A unique identifier of the NST allocated by the Slice Manager.\n",
+                  "type": "string"
                 },
                 "created_at": {
-                  "description": "Datetime when this NSI is created..",
-                  "type": "string",
-                  "format": "date-time",
-                  "example": "2018-07-16T14:03:02.204+00:00"
+                  "description": "Describe the datetime when it was created.\n",
+                  "type": "string"
                 },
-                "instantiateTime": {
-                  "description": "Datetime when this NSIis instantiated.",
-                  "type": "string",
-                  "format": "date-time",
-                  "example": "2018-07-16T14:01:31.447547"
+                "updated_at": {
+                  "description": "Describe the datetime when it was updated.\n",
+                  "type": "string"
                 },
-                "scaleTime": {
-                  "description": "Datetime of last scale operation done with this NSI.",
-                  "type": "string",
-                  "format": "date-time",
-                  "example": ""
+                "name": {
+                  "description": "NST Name.",
+                  "type": "string"
                 },
-                "terminateTime": {
-                  "description": "Datetime when this NSI is terminated.",
-                  "type": "string",
-                  "format": "date-time",
-                  "example": ""
+                "version": {
+                  "description": "NST Version.",
+                  "type": "string"
                 },
-                "updateTime": {
-                  "description": "Datetime when this NSi was updated.",
+                "author": {
+                  "description": "NST author.",
+                  "type": "string"
+                },
+                "vendor": {
+                  "description": "NST vendor.",
+                  "type": "string"
+                },
+                "nstNsdIds": {
+                  "description": "List of underlying NSDs that comprise the NST.",
+                  "type": "string"
+                },
+                "onboardingState": {
+                  "description": "Operational state (ENABLE, DISABLED).",
                   "type": "string",
-                  "format": "date-time",
-                  "example": "2018-07-16T14:03:02.204+00:00"
+                  "enum": [
+                    "ENABLED",
+                    "DISABLED"
+                  ]
+                },
+                "operationalState": {
+                  "description": "Operational state (ENABLE, DISABLED).",
+                  "type": "string",
+                  "enum": [
+                    "ENABLED",
+                    "DISABLED"
+                  ]
+                },
+                "usageState": {
+                  "description": "Usage state (IN_USE, NOT_IN_USE).",
+                  "type": "string",
+                  "enum": [
+                    "IN_USE",
+                    "NOT_IN_USE"
+                  ]
+                },
+                "notificationTypes": {
+                  "description": "Permited values: NstOnboardingNotification, NStTChangeNotification and NstDeletionNotification.\n",
+                  "type": "string",
+                  "enum": [
+                    "NstOnboardingNotification",
+                    "NstChangeNotification",
+                    "NstDeletionNotification"
+                  ]
+                },
+                "userDefinedData": {
+                  "description": "NST user defined data.",
+                  "type": "string"
                 }
-              }
-            }
-          },
-          "400": {
-            "description": "If the request is malformed or syntactically incorrect.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "If the request contains no access token even though one is required, or if the request contains an authorization token that is invalid.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "If the API consumer is not allowed to perform a particular request to a particular resource, the API producer shall respond with this response code.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "If the API producer did not find a current representation for the resource addressed by the URI passed in the request, or is not willing to disclose that one exists.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "405": {
-            "description": "If the API producer did not find a current representation for the resource addressed by the URI passed in the request, or is not willing to disclose that one exists.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "406": {
-            "description": "If the \"Accept\" HTTP header does not contain at least one name of a content type that is acceptable to the API producer.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Another request is in progress that prohibits the fulfillment of the current request, or the current resource state is inconsistent with the request.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "412": {
-            "description": "This code is used in conjunction with conditional requests (typically used to protect resources consistency when using PUT or PATCH in a multi-client scenario) to indicate that a precondition has failed.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "416": {
-            "description": "This code is returned if the requested byte range in the Range HTTP header is not present in the requested resource.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "If the payload body of a request contains syntactically correct data (e.g. well-formed JSON) but the data cannot be processed (e.g. because it fails validation against a schema), the API producer shall respond with this response code. The \"ProblemDetails\" structure shall be provided, and should include in the \"detail\" attribute more information about the source of the problem. NOTE 2: This error response code is only applicable for methods that have a request body.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "The definition of the general \"ProblemDetails\" data structure from IETF RFC 7807 [19] is reproduced inthis structure. Compared to the general framework defined in IETF RFC 7807 [19], the \"status\" and \"detail\" attributes are mandated to be included by the present document, to ensure that the response contains additional textual information about an error. IETF RFC 7807 [19] foresees extensibility of the \"ProblemDetails\" type. It is possible that particular APIs in the present document, or particular implementations, define extensions to define additional attributes that provide more information about the error. The description column only provides some explanation of the meaning to Facilitate understanding of the design. For a full description, see IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "A URI reference according to IETF RFC 3986 [5] that identifies the problem type. It is encouraged that the URI provides human-readable documentation for the problem (e.g. using HTML) when dereferenced. When this member is not present, its value is assumed to be \"about:blank\".\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type. It should not change from occurrence to occurrence of the problem, except for purposes of localization. If type is given and other than \"about:blank\", this attribute shall also be provided. A short, human-readable summary of the problem type.  It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization (e.g., using proactive content negotiation; see [RFC7231], Section 3.4).\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem. The HTTP status code ([RFC7231], Section 6) generated by the origin server for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A human-readable explanation specific to this occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem. It may yield further information if dereferenced.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "If there is an application error not related to the client's input that cannot be easily mapped to any other HTTP response code (\"catch all error\").\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "If the API producer encounters an internal overload situation of itself or of a system it relies on.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/problem+json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              }
-            },
-            "schema": {
-              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
-              "type": "object",
-              "required": [
-                "status",
-                "detail"
-              ],
-              "properties": {
-                "type": {
-                  "description": "Problem type according to IETF RFC 3986 [5]\n",
-                  "type": "string",
-                  "format": "URI"
-                },
-                "title": {
-                  "description": "A short, human-readable summary of the problem type.\n",
-                  "type": "string"
-                },
-                "status": {
-                  "description": "The HTTP status code for this occurrence of the problem.\n",
-                  "type": "integer"
-                },
-                "detail": {
-                  "description": "A longer explanation of the specific occurrence of the problem.\n",
-                  "type": "string"
-                },
-                "instance": {
-                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
-                  "type": "string",
-                  "format": "URI"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/nsi/{nsiId}/terminate": {
-      "parameters": [
-        {
-          "name": "nsiId",
-          "description": "Identifier of the NSI.",
-          "in": "path",
-          "type": "string",
-          "required": true
-        }
-      ],
-      "post": {
-        "description": "**Instantiate NSI**: Instantiate a NSI (in NOT_INSTANTIATED state). Before this, a NSI ID creation needs to be done (Create NSI ID).\n",
-        "parameters": [
-          {
-            "name": "InstantiateNsiRequest",
-            "description": "Data associated to a NSI instantiation.",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "description": "Data associated to the NSI.",
-              "type": "object",
-              "properties": {
-                "terminateTime": {
-                  "description": "Timestamp indicating when the instantiation will be tigerred (0 means immediatly).",
-                  "type": "string",
-                  "format": "date-time"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "A json with the information of the terminated NSI.\n",
-            "headers": {
-              "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/json\").",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 1
-              },
-              "WWW-Authenticate": {
-                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
-                "type": "string",
-                "maximum": 1,
-                "minimum": 0
-              },
-              "Location": {
-                "description": "The resource URI of the created NSI.",
-                "type": "string",
-                "format": "url"
-              }
-            },
-            "schema": {
-              "description": "A unique identifier of lifecycle occurrence.\n",
-              "example": {
-                "created_at": "2018-07-16T14:03:02.204+00:00",
-                "description": "Decription of the NSI_Example.",
-                "flavorId": "",
-                "instantiateTime": "2018-07-16T14:01:31.447547",
-                "name": "Example_NSI",
-                "netServInstance_Uuid": [
-                  "e1547f09-e954-4299-bd62-138045566872"
-                ],
-                "nsiState": "TERMINATED",
-                "nstId": "e3476dd9-259c-42ae-816f-e891ddb4e8db",
-                "nstName": "Example_NST",
-                "nstVersion": "1.0",
-                "sapInfo": "",
-                "scaleTime": "",
-                "terminateTime": "2018-07-20T17:52:12.204+00:00",
-                "updateTime": "",
-                "updated_at": "2018-07-16T14:03:02.204+00:00",
-                "uuid": "a75d1555-cc2c-4b96-864f-fa1ffe5c909a",
-                "vendor": "eu.5gTango"
               }
             }
           },
@@ -2646,7 +1965,7 @@
             "description": "If the payload body of a request contains syntactically correct data (e.g. well-formed JSON) but the data cannot be processed (e.g. because it fails validation against a schema).\n",
             "headers": {
               "Content-Type": {
-                "description": "The MIME type of the body of the response (\"application/json\").",
+                "description": "The MIME type of the body of the response.",
                 "type": "string",
                 "maximum": 1,
                 "minimum": 1
@@ -2741,7 +2060,611 @@
             }
           },
           "503": {
+            "description": "If the API producer encounters an internal overload situation of itself or of a system it relies on.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "**Delete NST**: Delete a NST. After deletion, there is no possible anymore to create Network Slice Instances (NSIs).\n",
+        "responses": {
+          "204": {
+            "description": "The NST was deleted successfully.\n",
+            "headers": {
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            }
+          },
+          "400": {
+            "description": "If the request is malformed or syntactically incorrect.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "If the request contains no access token even though one is required, or if the request contains an authorization token that is invalid.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "If the API consumer is not allowed to perform a particular request to a particular resource, the API producer shall respond with this response code.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "If the API producer did not find a current representation for the resource addressed by the URI passed in the request, or is not willing to disclose that one exists.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "If the API producer did not find a current representation for the resource addressed by the URI passed in the request, or is not willing to disclose that one exists.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "If the \"Accept\" HTTP header does not contain at least one name of a content type that is acceptable to the API producer.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Another request is in progress that prohibits the fulfillment of the current request, or the current resource state is inconsistent with the request.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "This code is used in conjunction with conditional requests (typically used to protect resources consistency when using PUT or PATCH in a multi-client scenario) to indicate that a precondition has failed.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "416": {
+            "description": "This code is returned if the requested byte range in the Range HTTP header is not present in the requested resource.\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "If the payload body of a request contains syntactically correct data (e.g. well-formed JSON) but the data cannot be processed (e.g. because it fails validation against a schema).\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response.",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "The definition of the general \"ProblemDetails\" data structure from IETF RFC 7807 [19] is reproduced inthis structure. Compared to the general framework defined in IETF RFC 7807 [19], the \"status\" and \"detail\" attributes are mandated to be included by the present document, to ensure that the response contains additional textual information about an error. IETF RFC 7807 [19] foresees extensibility of the \"ProblemDetails\" type. It is possible that particular APIs in the present document, or particular implementations, define extensions to define additional attributes that provide more information about the error. The description column only provides some explanation of the meaning to Facilitate understanding of the design. For a full description, see IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "A URI reference according to IETF RFC 3986 [5] that identifies the problem type. It is encouraged that the URI provides human-readable documentation for the problem (e.g. using HTML) when dereferenced. When this member is not present, its value is assumed to be \"about:blank\".\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type. It should not change from occurrence to occurrence of the problem, except for purposes of localization. If type is given and other than \"about:blank\", this attribute shall also be provided. A short, human-readable summary of the problem type.  It SHOULD NOT change from occurrence to occurrence of the problem, except for purposes of localization (e.g., using proactive content negotiation; see [RFC7231], Section 3.4).\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem. The HTTP status code ([RFC7231], Section 6) generated by the origin server for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A human-readable explanation specific to this occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem. It may yield further information if dereferenced.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "500": {
             "description": "If there is an application error not related to the client's input that cannot be easily mapped to any other HTTP response code (\"catch all error\").\n",
+            "headers": {
+              "Content-Type": {
+                "description": "The MIME type of the body of the response (\"application/problem+json\").",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 1
+              },
+              "WWW-Authenticate": {
+                "description": "Challenge if the corresponding HTTP request has not provided authorization, or error details if the corresponding HTTP request has provided an invalid authorization token.\n",
+                "type": "string",
+                "maximum": 1,
+                "minimum": 0
+              }
+            },
+            "schema": {
+              "description": "General \"ProblemDetails\" data structure from IETF RFC 7807 [19].\n",
+              "type": "object",
+              "required": [
+                "status",
+                "detail"
+              ],
+              "properties": {
+                "type": {
+                  "description": "Problem type according to IETF RFC 3986 [5]\n",
+                  "type": "string",
+                  "format": "URI"
+                },
+                "title": {
+                  "description": "A short, human-readable summary of the problem type.\n",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "The HTTP status code for this occurrence of the problem.\n",
+                  "type": "integer"
+                },
+                "detail": {
+                  "description": "A longer explanation of the specific occurrence of the problem.\n",
+                  "type": "string"
+                },
+                "instance": {
+                  "description": "A URI reference that identifies the specific occurrence of the problem.\n",
+                  "type": "string",
+                  "format": "URI"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "If the API producer encounters an internal overload situation of itself or of a system it relies on.\n",
             "headers": {
               "Content-Type": {
                 "description": "The MIME type of the body of the response (\"application/problem+json\").",

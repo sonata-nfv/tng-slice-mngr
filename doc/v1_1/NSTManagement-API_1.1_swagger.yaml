@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  version: "0.1"
+  version: "1.1"
   title: Network Slice Template (NST) Management interface
   description: >
     Network Slice Template (NST) interface: This interface is aligned with the ETSI NFV IFA0013/SOL005 specification, making the required changes to adapt it to the management of NSTs.
@@ -48,27 +48,40 @@ paths:
                 description: Vendor name of the NetSLice Template
                 type: string
                 format: string
-              nstNsdIds:
+              description:
+                description: Description of the NetSLice Template
+                type: string
+                format: string
+              sliceServices:
                 type: array
                 items:
                   type: object
                   properties:
-                    NsdId:
+                    servname:
+                      type: string
+                      description: Uuid of the Network Service to be in the Template
+                    nsdID:
+                      type: string
+                      description: Uuid of the Network Service to be in the Template
+                    slaID:
                       type: string
                       description: Uuid of the Network Service to be in the Template
             example:
               name: Example_NST
               version: 1.1
-              author: 5gTango NetSlicer
+              author: 5gTango
               vendor: 5gTango
-              nstNsdIds:
-                - NsdId: 66a1c857-76d7-48db-98a1-6674b531b010
-                - NsdId: a365dd7e-42c7-4db1-947f-1e2de4e432cc
-                
+              description: This is a description of a NS
+              sliceServices:
+                - servname: service_name
+                  nsdID: 66a1c857-76d7-48db-98a1-6674b531b010
+                  slaID: a365dd7e-42c7-4db1-947f-1e2de4e432cc
+                - servname: service_name
+                  nsdID: 66a1c857-76d7-48db-98a1-6674b531b010
+                  slaID: a365dd7e-42c7-4db1-947f-1e2de4e432cc            
       responses:
         '201':
-          description: >
-            Netslice Template structure.
+          description: Netslice Template structure.
           headers:
             Content-Type:
               description: The MIME type of the body of the response ("application/json").
@@ -88,8 +101,7 @@ paths:
               type: string
               format: url
           schema:
-            description: >
-              A unique identifier of the NST Info.
+            description: The generated NST object.
             example:
               created_at: '2018-07-19T12:40:41.419+00:00'
               md5: 42510e3a015bd1468b85987763566376
@@ -98,13 +110,17 @@ paths:
                 version: 1.1
                 author: 5gTango NetSlicer
                 vendor: 5gTango
-                nstNsdIds: [6a1c857-76d7-48db-98a1-6674b531b010, a365dd7e-42c7-4db1-947f-1e2de4e432cc]
+                sliceServices: 
+                  - nsdRef: 6a1c857-76d7-48db-98a1-6674b531b010
+                    nsdName: service_name
+                    slaID: a365dd7e-42c7-4db1-947f-1e2de4e432cc
+                    is-shared: False
+                5qi_value: 1
                 notificationTypes: ''
                 onboardingState: ENABLED
                 operationalState: ENABLED
-                referencedNSIs: []
+                NSI_list_ref: [6a1c857-76d7-48db-98a1-6674b531b010, a365dd7e-42c7-4db1-947f-1e2de4e432cc]
                 usageState: IN_USE
-                userDefinedData: ''
               signature: null
               status: active
               updated_at: '2018-07-19T12:43:06.691+00:00'
@@ -791,9 +807,6 @@ paths:
                     - NstOnboardingNotification
                     - NstChangeNotification
                     - NstDeletionNotification
-                userDefinedData: #this type is not the most accurate (hash?)
-                  description: NST user defined data.
-                  type: string
         '400':
           description: >
             If the request is malformed or syntactically incorrect.
@@ -1426,65 +1439,31 @@ paths:
               maximum: 1
               minimum: 0
           schema:
-              description: Results of the query (NST).
-              type: object
-              properties:
-                uuid:
-                  description: >
-                      A unique identifier of the NST allocated by the Slice Manager.
-                  type: string
-                created_at:
-                  description: >
-                      Describe the datetime when it was created.
-                  type: string
-                updated_at:
-                  description: >
-                      Describe the datetime when it was updated.
-                  type: string
-                name:
-                    description: NST Name.
-                    type: string
-                version:
-                    description: NST Version.
-                    type: string
-                author:
-                    description: NST author.
-                    type: string
-                vendor:
-                    description: NST vendor.
-                    type: string
-                nstNsdIds:
-                  description: List of underlying NSDs that comprise the NST.
-                  type: string
-                onboardingState:
-                  description: Operational state (ENABLE, DISABLED).
-                  type: string
-                  enum:
-                    - ENABLED
-                    - DISABLED
-                operationalState:
-                  description: Operational state (ENABLE, DISABLED).
-                  type: string
-                  enum:
-                    - ENABLED
-                    - DISABLED
-                usageState:
-                  description: Usage state (IN_USE, NOT_IN_USE).
-                  type: string
-                  enum:
-                    - IN_USE
-                    - NOT_IN_USE
-                notificationTypes:
-                  description: >
-                    Permited values: NstOnboardingNotification, NStTChangeNotification and NstDeletionNotification.
-                  type: string
-                  enum:
-                    - NstOnboardingNotification
-                    - NstChangeNotification
-                    - NstDeletionNotification
-                userDefinedData: #this type is not the most accurate (hash?)
-                  description: NST user defined data.
-                  type: string
+            description: The generated NST object.
+            example:
+              created_at: '2018-07-19T12:40:41.419+00:00'
+              md5: 42510e3a015bd1468b85987763566376
+              nstd:
+                name: Example_NST
+                version: 1.1
+                author: 5gTango NetSlicer
+                vendor: 5gTango
+                sliceServices: 
+                  - nsdRef: 6a1c857-76d7-48db-98a1-6674b531b010
+                    nsdName: service_name
+                    slaID: a365dd7e-42c7-4db1-947f-1e2de4e432cc
+                    is-shared: False
+                5qi_value: 1
+                notificationTypes: ''
+                onboardingState: ENABLED
+                operationalState: ENABLED
+                NSI_list_ref: [6a1c857-76d7-48db-98a1-6674b531b010, a365dd7e-42c7-4db1-947f-1e2de4e432cc]
+                usageState: IN_USE
+              signature: null
+              status: active
+              updated_at: '2018-07-19T12:43:06.691+00:00'
+              username: null
+              uuid: 66a1c857-76d7-48db-98a1-6674b531b010
         '400':
           description: >
             If the request is malformed or syntactically incorrect.
