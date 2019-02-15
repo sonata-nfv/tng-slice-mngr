@@ -55,4 +55,4 @@ WORKDIR /tng-slice-mngr
 RUN python setup.py install
 
 #starting the slice-server/service
-CMD ["python3", "main.py"]
+CMD ["python", "main.py"]
