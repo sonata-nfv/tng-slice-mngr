@@ -51,7 +51,7 @@ ENV SONATA_CAT_PORT 4011
 ADD . /tng-slice-mngr
 WORKDIR /tng-slice-mngr
 
-#runing the pythons cript to prepare the docker environment
+#runing the python script to prepare the docker environment
 RUN python setup.py install
 
 #starting the slice-server/service
