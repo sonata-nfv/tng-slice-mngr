@@ -47,7 +47,7 @@ LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
 
-################################## THREAD TO NOTIFY UPDATES IN A SLICE ############3####################
+################################## THREAD TO NOTIFY UPDATES IN A SLICE #################################
 ## Objctive: used to inform about both slice instantiation or termination processes
 ## Params:
 ##  callback_endpoint --> the URL to call the Gatekeeper
@@ -155,7 +155,7 @@ def updateInstantiatingNSI(nsiId, request_json):
   for service_item in jsonNSI['netServInstance_Uuid']:
     if (service_item['requestID'] == request_json['id']):
       if(request_json['instance_uuid'] == None):
-        service_item['servInstanceId'] = "00000000-0000-0000-0000-000000000000"
+        service_item['servInstanceId'] = " "  #if it doesn'twork, use: 00000000-0000-0000-0000-000000000000
       else:
         service_item['servInstanceId'] = request_json['instance_uuid']
       service_item['workingStatus'] = request_json['status']
@@ -290,7 +290,7 @@ def terminateNSI(nsiId, TerminOrder):
           termination_response = mapper.net_serv_terminate(data)
           LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
           time.sleep(0.1)
-          uuidNetServ_item['servInstanceId'] = " "
+          #uuidNetServ_item['servInstanceId'] = " "
           uuidNetServ_item['workingStatus'] = "TERMINATING"
           uuidNetServ_item['requestID'] = termination_response['id']
 
@@ -337,7 +337,9 @@ def updateTerminatingNSI(nsiId, request_json):
   # checks if all services are READY/ERROR to update the slice_status
   allServicesDone = True
   for service_item in jsonNSI['netServInstance_Uuid']:
-    if (service_item['workingStatus'] == "READY" or service_item['workingStatus'] == "NEW" or service_item['workingStatus'] == "TERMINATING"):
+    #TODO: verify once it works if READY and NEW are used.
+    #if (service_item['workingStatus'] == "READY" or service_item['workingStatus'] == "NEW" or service_item['workingStatus'] == "TERMINATING"):
+    if service_item['workingStatus'] == "TERMINATING":
       allServicesDone = False
       break;
 
@@ -350,6 +352,7 @@ def updateTerminatingNSI(nsiId, request_json):
     time.sleep(0.1)
     # validates if any service has error status to apply it to the slice status
     for service_item in jsonNSI['netServInstance_Uuid']:
+      service_item['servInstanceId'] = " "
       if (service_item['workingStatus'] == "ERROR"):
         jsonNSI['nsiState'] = "ERROR"
         break;
@@ -366,8 +369,7 @@ def updateTerminatingNSI(nsiId, request_json):
   # sends the updated NetSlice instance to the repositories
   repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
 
-  #INFO: leave it here (do not join with the previous IF, as...
-  #... the multiple "return" depend on this order of the code.
+  #INFO: leave it here (do not join with the previous IF, as the multiple "return" depend on this order of the code.
   if (allServicesDone == True):
     LOG.info("NSI_MNGR_UpdateTerminate: Sends the thread_notification to the GK as slice is TERMINATED|ERROR.")
     time.sleep(0.1)
