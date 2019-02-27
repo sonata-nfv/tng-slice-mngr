@@ -74,12 +74,12 @@ def net_serv_instantiate(service_data):
     if use_sonata() == "True":
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 201):
-          jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: INSTANTIATING NetServices belonging to the NetSlice: " +str(jsonresponse))
+        jsonresponse = json.loads(response.text)
+        LOG.info("MAPPER: INSTANTIATING NetServices belonging to the NetSlice: " +str(jsonresponse))
       else:
-          error = {'http_code': response.status_code,'message': response.json()}
-          jsonresponse = error
-          LOG.info('MAPPER: error when instantiating NetService: ' +str(error))
+        error = {'http_code': response.status_code,'message': response.json()}
+        jsonresponse = error
+        LOG.info('MAPPER: error when instantiating NetService: ' +str(error))
       return jsonresponse
     else:
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
@@ -97,13 +97,13 @@ def net_serv_terminate(service_data):
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-      if (response.status_code == 200) or (response.status_code == 201) or (response.status_code == 204):
-          jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: Request belonging the NetSlice TERMINATED: "  +str(jsonresponse))
+      if (response.status_code == 200) or (response.status_code == 201):
+        jsonresponse = json.loads(response.text)
+        LOG.info("MAPPER: Request belonging the NetSlice TERMINATED: "  +str(jsonresponse))
       else:
-          error = {'http_code': response.status_code,'message': response.json()}
-          jsonresponse = error
-          LOG.info('MAPPER: error when terminating NetService instantiation: ' +str(error))
+        error = {'http_code': response.status_code,'message': response.json()}
+        jsonresponse = error
+        LOG.info('MAPPER: error when terminating NetService instantiation: ' +str(error))
       return jsonresponse
     else:
       jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)

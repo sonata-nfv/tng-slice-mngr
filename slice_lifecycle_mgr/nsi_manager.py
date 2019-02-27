@@ -272,10 +272,10 @@ def terminateNSI(nsiId, TerminOrder):
     time.sleep(0.1)
 
     if (NSI.nsiState == "INSTANTIATED"):
-      LOG.info("NSI_MNGR_TERMINATE: Sends terminate requests")
-      time.sleep(0.1)
       # updates the specific service_instance information
       for uuidNetServ_item in NSI.netServInstance_Uuid:
+        LOG.info("NSI_MNGR_TERMINATE: Sends terminate requests for each service")
+        time.sleep(0.1)
         if (uuidNetServ_item['workingStatus'] != "ERROR"):
           data = {}
           data["instance_uuid"] = str(uuidNetServ_item["servInstanceId"])
