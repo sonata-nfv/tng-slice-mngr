@@ -193,21 +193,18 @@ def updateInstantiatingNSI(nsiId, request_json):
       time.sleep(0.1)
       updateNST_jsonresponse = addNSIinNST(jsonNSI["nstId"], nsiId)
 
-    # updates NSI values
-    sliceCallback = jsonNSI['sliceCallback']
-    jsonNSI['sliceCallback'] = ''
-
   # sends the updated NetSlice instance to the repositories
   LOG.info("NSI_MNGR: Updating repositorieswith the updated NSI.")
   time.sleep(0.1)
   jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
-  repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
+  repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)         #TODO: do we remove the nsi or leave it as record?
 
   #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
   if (allServicesDone == True):
     LOG.info("NSI_MNGR: Notifying the GK that a slice instantiation process FINISHED")
     time.sleep(0.1)
     # creates a thread with the callback URL to advise the GK this slice is READY
+    sliceCallback = jsonNSI['sliceCallback']
     callback_json_slice_status = {}
     callback_json_slice_status['status'] = jsonNSI['nsiState']
     callback_json_slice_status['updateTime'] = jsonNSI['updateTime']
@@ -374,7 +371,11 @@ def updateTerminatingNSI(nsiId, request_json):
     LOG.info("NSI_MNGR_UpdateTerminate: Sends the thread_notification to the GK as slice is TERMINATED|ERROR.")
     time.sleep(0.1)
     # creates a thread with the callback URL to advise the GK this slice is READY
-    thread_notify = Notify_Slice(jsonNSI['sliceCallback'], jsonNSI)
+    sliceCallback = jsonNSI['sliceCallback']
+    callback_json_slice_status = {}
+    callback_json_slice_status['status'] = jsonNSI['nsiState']
+    callback_json_slice_status['updateTime'] = jsonNSI['updateTime']
+    thread_notify = Notify_Slice(sliceCallback, callback_json_slice_status)
     thread_notify.start()
     
     return (repo_responseStatus, 201)  #201 - Accepted
