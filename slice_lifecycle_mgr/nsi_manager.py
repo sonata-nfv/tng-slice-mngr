@@ -149,8 +149,10 @@ def updateInstantiatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
   time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
+  #TODO: improve the next 2 lines not have to use it.
   jsonNSI["id"] = jsonNSI["uuid"]
   del jsonNSI["uuid"]
+  
   # looks for the right service within the slice and updates it with the new data
   for service_item in jsonNSI['netServInstance_Uuid']:
     if (service_item['requestID'] == request_json['id']):
@@ -320,6 +322,9 @@ def updateTerminatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR_UpdateTerminate: Let's update the NSi with terminationg info.")
   time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
+  #TODO: improve the next 2 lines not have to use it.
+  jsonNSI["id"] = jsonNSI["uuid"]
+  del jsonNSI["uuid"]
 
   LOG.info("NSI_MNGR_UpdateTerminate: Updating the right NSI record.")
   time.sleep(0.1)
