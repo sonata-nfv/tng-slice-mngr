@@ -364,7 +364,7 @@ def updateTerminatingNSI(nsiId, request_json):
     
     if(jsonNSI['nsiState'] == "TERMINATED"):
       # updates NetSlice template list of slice_instances based on that template
-      updateNST_jsonresponse = removeNSIinNST(jsonNSI['uuid'], jsonNSI['nstId'])
+      updateNST_jsonresponse = removeNSIinNST(jsonNSI['id'], jsonNSI['nstId'])
 
   LOG.info("NSI_MNGR_UpdateTerminate: Updated the NSI information in repositories.")
   time.sleep(0.1)
