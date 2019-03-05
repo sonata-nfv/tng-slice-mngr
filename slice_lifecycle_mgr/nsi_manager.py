@@ -47,7 +47,7 @@ LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
 
-################################## THREAD to manage services/slice requests #################################
+################################## THREADs to manage services/slice requests #################################
 # TO SEND THE SERVICES TERMINATION REQUESTS 
 ## Objctive: used to inform about both slice instantiation or termination processes
 ## Params:
@@ -56,7 +56,7 @@ class terminate_service(Thread):
     Thread.__init__(self)
     self.data = data
   def run(self):
-    thread_term_resp = mapper.net_serv_terminate(data)
+    thread_term_resp = mapper.net_serv_terminate(self.data)
     time.sleep(0.1)
     LOG.info("NSI_MNGR_Thread: GTK informed & NSI process finished:" + str(thread_term_resp))
 
@@ -300,8 +300,8 @@ def terminateNSI(nsiId, TerminOrder):
           time.sleep(0.1)
 
           #Thread to send terminate requests
-          thread_notify = terminate_service(data)
-          thread_notify.start()
+          thread_terminate = terminate_service(data)
+          thread_terminate.start()
           # termination_response = mapper.net_serv_terminate(data)
           # LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
           # time.sleep(0.1)
