@@ -52,22 +52,42 @@ LOG.setLevel(logging.INFO)
 ## Objctive: used to inform about both slice instantiation or termination processes
 ## Params:
 class terminate_service(Thread):
-  def __init__(self, data, nsiId, instance_uuid):
+  def __init__(self, NSI, nsiId):
     Thread.__init__(self)
-    self.data = data
     self.nsiId = nsiId
-    self.instance_uuid = instance_uuid
+    self.NSI = NSI
   def run(self):
     thread_term_resp = mapper.net_serv_terminate(self.data)
-    time.sleep(0.5) # Allows the main thread to save the initial NSI before the thread updates it.
-    LOG.info("NSI_MNGR_Thread: GTK informed & NSI process finished:" + str(thread_term_resp))
+    LOG.info("NSI_MNGR_Thread: sending terminate to GTK:" + str(thread_term_resp))
     
     #Updates the NSI with the latest informationg of the specific requested service termination
+    """  
     jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
     for servinst_item in jsonNSI["netServInstance_Uuid"]:
       if servinst_item["servInstanceId"] == self.instance_uuid:
         servinst_item['requestID'] = thread_term_resp['id']
     nsi_repo.update_nsi(jsonNSI, self.nsiId)
+    """
+    
+    for uuidNetServ_item in self.NSI.netServInstance_Uuid:
+      LOG.info("NSI_MNGR_TERMINATE: Sends terminate requests for each service")
+      time.sleep(0.1)
+      if (uuidNetServ_item['workingStatus'] != "ERROR"):
+        data = {}
+        data["instance_uuid"] = str(uuidNetServ_item["servInstanceId"])
+        data["request_type"] = "TERMINATE_SERVICE"
+        data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.nsiId)+"/terminate-change"
+        LOG.info("CALLBACK: " + data['callback'])
+        time.sleep(0.1)
+
+        termination_response = mapper.net_serv_terminate(data)
+        LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
+        time.sleep(0.1)
+        
+        uuidNetServ_item['workingStatus'] = "TERMINATING"
+        uuidNetServ_item['requestID'] = termination_response['id']
+    
+    repo_responseStatus = nsi_repo.update_nsi(vars(self.NSI), self.nsiId)
 
 
 
@@ -140,7 +160,7 @@ def createNSI(nsi_json):
 def parseNewNSI(nst_json, nsi_json):
   LOG.info("NSI_MNGR: Parsing a new NSI from the user_info and the reference NST")
   uuid_nsi = str(uuid.uuid4())
-  if nsi_json['name']:
+  if nsi_json['name']:{'service': {'uuid': '033b5a08-3de4-43a7-8c64-b29b32506dd6', 'name': 'tango-nsd', 'version': '0.9', 'vendor': 'eu.5gtango'}, 'sla_id': None, 'request_type': 'TERMINATE_SERVICE', 'name': 'mar5_5-tangoNSD-1', 'egresses': '[]', 'instance_uuid': '541ed0b8-e2ee-40d8-8a11-ff682b425aea', 'callback': 'http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/f3ab4b15-a0b2-4e4c-8a25-06d3de532da1/terminate-change', 'id': '501f6f29-5f78-406c-adf4-dd6854b27ebe', 'customer_uuid': None, 'ingresses': '[]', 'blacklist': '[]', 'created_at': '2019-03-05T11:44:25.130Z', 'description': None, 'updated_at': '2019-03-05T11:44:25.130Z', 'error': None, 'status': 'NEW'}
     name = nsi_json['name']
   else:
     name = "Mock_Name"
@@ -299,33 +319,16 @@ def terminateNSI(nsiId, TerminOrder):
 
     if (NSI.nsiState == "INSTANTIATED"):
       # updates the specific service_instance information
-      for uuidNetServ_item in NSI.netServInstance_Uuid:
-        LOG.info("NSI_MNGR_TERMINATE: Sends terminate requests for each service")
-        time.sleep(0.1)
-        if (uuidNetServ_item['workingStatus'] != "ERROR"):
-          data = {}
-          data["instance_uuid"] = str(uuidNetServ_item["servInstanceId"])
-          data["request_type"] = "TERMINATE_SERVICE"
-          data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/terminate-change"
-          LOG.info("CALLBACK: " + data['callback'])
-          time.sleep(0.1)
-
-          #Thread to send terminate requests
-          thread_terminate = terminate_service(data, nsiId, data["instance_uuid"])
-          thread_terminate.start()
-          # termination_response = mapper.net_serv_terminate(data)
-          # LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
-          # time.sleep(0.1)
-          
-          uuidNetServ_item['workingStatus'] = "TERMINATING"
-          #uuidNetServ_item['requestID'] = termination_response['id']
-
       NSI.nsiState = "TERMINATING"
+      LOG.info("NSI_MNGR_TERMINATE: Updates NSI info and sends it to repos")
+      time.sleep(0.1)
+      update_NSI = vars(NSI)
+      repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
 
-    LOG.info("NSI_MNGR_TERMINATE: Updates NSI info and sends it to repos")
-    time.sleep(0.1)
-    update_NSI = vars(NSI)
-    repo_responseStatus = nsi_repo.update_nsi(update_NSI, nsiId)
+      #Thread to send terminate requests
+      thread_terminate = terminate_service(NSI, nsiId)
+      #thread_terminate = terminate_service(data, nsiId, data["instance_uuid"])
+      thread_terminate.start()
 
     return (vars(NSI), 200)
 
