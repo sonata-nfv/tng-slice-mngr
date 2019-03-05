@@ -47,7 +47,20 @@ LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
 
-################################## THREAD TO NOTIFY UPDATES IN A SLICE #################################
+################################## THREAD to manage services/slice requests #################################
+# TO SEND THE SERVICES TERMINATION REQUESTS 
+## Objctive: used to inform about both slice instantiation or termination processes
+## Params:
+class terminate_service(Thread):
+  def __init__(self, data):
+    Thread.__init__(self)
+    self.data = data
+  def run(self):
+    thread_term_resp = mapper.net_serv_terminate(data)
+    time.sleep(0.1)
+    LOG.info("NSI_MNGR_Thread: GTK informed & NSI process finished:" + str(thread_term_resp))
+
+# TO NOTIFY UPDATES OF A SLICE
 ## Objctive: used to inform about both slice instantiation or termination processes
 ## Params:
 ##  callback_endpoint --> the URL to call the Gatekeeper
@@ -78,7 +91,7 @@ def createNSI(nsi_json):
   NSI = parseNewNSI(nst_json, nsi_json)
 
   LOG.info("NSI_MNGR: Sending request to instantiate services within the NST")
-  # to put in order the services within a slice in the protal
+  # to put in order the services within a slice in the portal
   serv_seq = 1
   for NetServ_item in nst_json['sliceServices']:
     data = {}
@@ -149,7 +162,7 @@ def updateInstantiatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
   time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
-  #TODO: improve the next 2 lines not have to use it.
+  #TODO: improve the next 2 lines to not use this delete.
   jsonNSI["id"] = jsonNSI["uuid"]
   del jsonNSI["uuid"]
   
@@ -283,13 +296,16 @@ def terminateNSI(nsiId, TerminOrder):
           data["instance_uuid"] = str(uuidNetServ_item["servInstanceId"])
           data["request_type"] = "TERMINATE_SERVICE"
           data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/terminate-change"
-          LOG.info("CALLBACK: " +data['callback'])
+          LOG.info("CALLBACK: " + data['callback'])
           time.sleep(0.1)
 
-          termination_response = mapper.net_serv_terminate(data)
-          LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
-          time.sleep(0.1)
-          #uuidNetServ_item['servInstanceId'] = " "
+          #Thread to send terminate requests
+          thread_notify = terminate_service(data)
+          thread_notify.start()
+          # termination_response = mapper.net_serv_terminate(data)
+          # LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
+          # time.sleep(0.1)
+          
           uuidNetServ_item['workingStatus'] = "TERMINATING"
           uuidNetServ_item['requestID'] = termination_response['id']
 
@@ -339,8 +355,6 @@ def updateTerminatingNSI(nsiId, request_json):
   # checks if all services are READY/ERROR to update the slice_status
   allServicesDone = True
   for service_item in jsonNSI['netServInstance_Uuid']:
-    #TODO: verify once it works if READY and NEW are used.
-    #if (service_item['workingStatus'] == "READY" or service_item['workingStatus'] == "NEW" or service_item['workingStatus'] == "TERMINATING"):
     if service_item['workingStatus'] == "TERMINATING":
       allServicesDone = False
       break;
