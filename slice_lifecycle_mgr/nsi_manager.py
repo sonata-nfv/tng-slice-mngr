@@ -57,8 +57,8 @@ class terminate_service(Thread):
     self.nsiId = nsiId
     self.NSI = NSI
   def run(self):
-    thread_term_resp = mapper.net_serv_terminate(self.data)
-    LOG.info("NSI_MNGR_Thread: sending terminate to GTK:" + str(thread_term_resp))
+    #thread_term_resp = mapper.net_serv_terminate(self.data)
+    #LOG.info("NSI_MNGR_Thread: sending terminate to GTK:" + str(thread_term_resp))
     
     #Updates the NSI with the latest informationg of the specific requested service termination
     """  
