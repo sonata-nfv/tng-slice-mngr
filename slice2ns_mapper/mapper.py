@@ -65,17 +65,18 @@ def use_sonata():
 ##################################### REQUESTS TO THE GATEKEEPERS ########################################
 # POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(service_data):
-    LOG.info("MAPPER: Preparing the request to instantiate NetServices")
     url = get_base_url() + '/requests'
     data_json = json.dumps(service_data)
-    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data_json))
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
+      LOG.info("MAPPER: Sendin Instanitation request")
+      time.sleep(0.1)
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 201):
         jsonresponse = json.loads(response.text)
-        LOG.info("MAPPER: INSTANTIATING NetServices belonging to the NetSlice: " +str(jsonresponse))
+        LOG.info("MAPPER: Service instantiation response: " +str(jsonresponse))
+        time.sleep(0.1)
       else:
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
@@ -89,17 +90,18 @@ def net_serv_instantiate(service_data):
 
 # POST /requests to TERMINATE Network Service instance
 def net_serv_terminate(service_data):
-    LOG.info("MAPPER: Preparing the request to terminate NetServices")
     url = get_base_url() + "/requests"
     data_json = json.dumps(service_data)
-    LOG.info("MAPPER: URL --> " +str(url)+ ", DATA --> " +str(data_json))
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
+      LOG.info("MAPPER: Sending Terminate request")
+      time.sleep(0.1)
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200) or (response.status_code == 201):
         jsonresponse = json.loads(response.text)
-        LOG.info("MAPPER: Request belonging the NetSlice TERMINATED: "  +str(jsonresponse))
+        LOG.info("MAPPER: Terminate response: "  +str(jsonresponse))
+        time.sleep(0.1)
       else:
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
@@ -111,15 +113,17 @@ def net_serv_terminate(service_data):
 
 # GET /requests to pull the information of all Network Services INSTANCES
 def getAllNetServInstances():
-    LOG.info("MAPPER: Preparing the request to get all the NetServicesInstances")
     url = get_base_url() + "/requests"
 
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
+      LOG.info("MAPPER: Getting all NetServicesInstances")
+      time.sleep(0.1)
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: Information of all instantiated netService received: " +str(jsonresponse))
+          LOG.info("MAPPER: Response with all instantiated netService: " +str(jsonresponse))
+          time.sleep(0.1)
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
@@ -132,15 +136,17 @@ def getAllNetServInstances():
 
 # GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
 def getRequestedNetServInstance(request_uuid):
-    LOG.info("MAPPER: Preparing the request to get desired NetServicesInstance")
     url = get_base_url() + "/requests/" + str(request_uuid)
 
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
+      LOG.info("MAPPER: Getting desired NetServicesInstance")
+      time.sleep(0.1)
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: Information of the instantiated netService received: " +str(jsonresponse))
+          LOG.info("MAPPER: Response with instantiated netService: " +str(jsonresponse))
+          time.sleep(0.1)
       else:
           error = {'http_code': response.status_code,'message': response.json()}
           jsonresponse = error
@@ -155,10 +161,11 @@ def getRequestedNetServInstance(request_uuid):
 
 # POST to call the Gk when a slice is READY
 def sliceUpdated(callback_endpoint, nsi_status_json):
-    LOG.info("MAPPER: Slice UPDATED, let's call the GK")
     url = str(callback_endpoint)
     data_json = json.dumps(nsi_status_json)
     
+    LOG.info("MAPPER: Sending Slice updated to GTK")
+    time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
     
     if (response.status_code == 201):
@@ -174,6 +181,7 @@ def sliceUpdated(callback_endpoint, nsi_status_json):
 # GET /services to pull all Network Services information
 def getListNetServices():
     LOG.info("MAPPER: Preparing the request to get the NetServices Information")
+    time.sleep(0.1)
     # cleans the current nsInfo_list to have the information updated
     del db.nsInfo_list[:]
     url = get_base_url_NetService_info() + "/services"
@@ -184,6 +192,7 @@ def getListNetServices():
       
       if (response.status_code == 200):
           LOG.info("MAPPER: Services from the SP received.")
+          time.sleep(0.1)
           services_array = json.loads(response.text)
           for service_item in services_array:
             # each element of the list is a dictionary
