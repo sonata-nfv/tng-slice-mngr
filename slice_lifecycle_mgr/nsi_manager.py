@@ -160,7 +160,7 @@ def createNSI(nsi_json):
 def parseNewNSI(nst_json, nsi_json):
   LOG.info("NSI_MNGR: Parsing a new NSI from the user_info and the reference NST")
   uuid_nsi = str(uuid.uuid4())
-  if nsi_json['name']:{'service': {'uuid': '033b5a08-3de4-43a7-8c64-b29b32506dd6', 'name': 'tango-nsd', 'version': '0.9', 'vendor': 'eu.5gtango'}, 'sla_id': None, 'request_type': 'TERMINATE_SERVICE', 'name': 'mar5_5-tangoNSD-1', 'egresses': '[]', 'instance_uuid': '541ed0b8-e2ee-40d8-8a11-ff682b425aea', 'callback': 'http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/f3ab4b15-a0b2-4e4c-8a25-06d3de532da1/terminate-change', 'id': '501f6f29-5f78-406c-adf4-dd6854b27ebe', 'customer_uuid': None, 'ingresses': '[]', 'blacklist': '[]', 'created_at': '2019-03-05T11:44:25.130Z', 'description': None, 'updated_at': '2019-03-05T11:44:25.130Z', 'error': None, 'status': 'NEW'}
+  if nsi_json['name']:
     name = nsi_json['name']
   else:
     name = "Mock_Name"
