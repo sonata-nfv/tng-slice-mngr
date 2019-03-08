@@ -48,34 +48,6 @@ LOG.setLevel(logging.INFO)
 
 
 ################################## THREADs to manage services/slice requests #################################
-# TO SEND THE SERVICES TERMINATION REQUESTS 
-## Objctive: used to inform about both slice instantiation or termination processes
-## Params:
-class terminate_service(Thread):
-  def __init__(self, NSI, nsiId):
-    Thread.__init__(self)
-    self.nsiId = nsiId
-    self.NSI = NSI
-  def run(self):
-    #Updates the NSI with the latest informationg of the specific requested service termination
-    for uuidNetServ_item in self.NSI.netServInstance_Uuid:
-      LOG.info("NSI_MNGR_TERMINATE: Sending Terminate request")
-      time.sleep(0.1)
-      if (uuidNetServ_item['workingStatus'] != "ERROR"):
-        data = {}
-        data["instance_uuid"] = str(uuidNetServ_item["servInstanceId"])
-        data["request_type"] = "TERMINATE_SERVICE"
-        data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.nsiId)+"/terminate-change"
-
-        termination_response = mapper.net_serv_terminate(data)
-        LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
-        time.sleep(0.1)
-        
-        uuidNetServ_item['workingStatus'] = "TERMINATING"
-        uuidNetServ_item['requestID'] = termination_response['id']
-    
-    repo_responseStatus = nsi_repo.update_nsi(vars(self.NSI), self.nsiId)
-
 # TO NOTIFY UPDATES OF A SLICE
 ## Objctive: used to inform about both slice instantiation or termination processes
 ## Params:
@@ -175,6 +147,7 @@ def updateInstantiatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
   time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
+  #TODO: put an if condition to avoid to enter if the status is still terminating (as now new info has come yet)
   #TODO: improve the next 2 lines to not use this delete.
   jsonNSI["id"] = jsonNSI["uuid"]
   del jsonNSI["uuid"]
@@ -279,26 +252,34 @@ def terminateNSI(nsiId, TerminOrder):
 
   # prepares the datetime values to work with them 
   if (TerminOrder['terminateTime'] == "0" or TerminOrder['terminateTime'] == 0):
+    LOG.info("NSI_MNGR: terminateTime is 0.")
+    time.sleep(0.1)
     termin_time = 0
   else:
     termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
     instan_time = dateutil.parser.parse(NSI.instantiateTime)
-
+  
+  LOG.info("NSI_MNGR: Let's start to reminate the nsi...")
+  time.sleep(0.1)
   # depending on the termin_time executes one action or another
   if termin_time == 0 and NSI.nsiState == "INSTANTIATED":
+    LOG.info("NSI_MNGR: ... updating NSI information.")
+    time.sleep(0.1)
     # updates internal NSI information
     NSI.terminateTime = str(datetime.datetime.now().isoformat())
     NSI.sliceCallback = TerminOrder['callback']
     NSI.nsiState = "TERMINATING"
 
-    for uuidNetServ_item in self.NSI.netServInstance_Uuid:
+    LOG.info("NSI_MNGR: ... sending all necessary service termination requests.")
+    time.sleep(0.1)
+    for uuidNetServ_item in NSI.netServInstance_Uuid:
       LOG.info("NSI_MNGR_TERMINATE: Sending Terminate request")
       time.sleep(0.1)
       if (uuidNetServ_item['workingStatus'] != "ERROR"):
         data = {}
         data["instance_uuid"] = str(uuidNetServ_item["servInstanceId"])
         data["request_type"] = "TERMINATE_SERVICE"
-        data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.nsiId)+"/terminate-change"
+        data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(nsiId)+"/terminate-change"
 
         termination_response = mapper.net_serv_terminate(data)
         LOG.info("NSI_MNGR: TERMINATION_response: " + str(termination_response))
