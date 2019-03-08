@@ -324,64 +324,68 @@ def updateTerminatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR_UpdateTerminate: Let's update the NSi with terminationg info.")
   time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
-  #TODO: improve the next 2 lines not have to use it.
-  jsonNSI["id"] = jsonNSI["uuid"]
-  del jsonNSI["uuid"]
 
-  # looks for the right service within the slice and updates it with the new data
-  for service_item in jsonNSI['netServInstance_Uuid']:
-    if (service_item['requestID'] == request_json['id']):
-      service_item['workingStatus'] = request_json['status']
-      break;
+  # to avoi unuseful updates, we modify the nsi  only when the instance has a real status update
+  if request_json['status'] == "READY" or request_json['status'] == "ERROR":
+    #TODO: improve the next 2 lines not have to use it.
+    jsonNSI["id"] = jsonNSI["uuid"]
+    del jsonNSI["uuid"]
 
-  LOG.info("NSI_MNGR_UpdateTerminate: Checking if all services are updated.")
-  time.sleep(0.1)
-  # checks if all services are READY/ERROR to update the slice_status
-  allServicesDone = True
-  for service_item in jsonNSI['netServInstance_Uuid']:
-    if service_item['workingStatus'] == "TERMINATING":
-      allServicesDone = False
-      break;
-
-  LOG.info("NSI_MNGR_UpdateTerminate: If all services are terminated/error, updates the NSI information.")
-  time.sleep(0.1)
-  if (allServicesDone == True):
-    jsonNSI['nsiState'] = "TERMINATED"
-    
-    LOG.info("NSI_MNGR_UpdateTerminate: Checks if any service has status error.")
-    time.sleep(0.1)
-    # validates if any service has error status to apply it to the slice status
+    # looks for the right service within the slice and updates it with the new data
     for service_item in jsonNSI['netServInstance_Uuid']:
-      service_item['servInstanceId'] = " "
-      if (service_item['workingStatus'] == "ERROR"):
-        jsonNSI['nsiState'] = "ERROR"
+      if (service_item['requestID'] == request_json['id']):
+        service_item['workingStatus'] = request_json['status']
         break;
-    
-    jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
-    jsonNSI['updateTime'] = jsonNSI['terminateTime']
-    
-    if(jsonNSI['nsiState'] == "TERMINATED"):
-      # updates NetSlice template list of slice_instances based on that template
-      updateNST_jsonresponse = removeNSIinNST(jsonNSI['id'], jsonNSI['nstId'])
 
-  # sends the updated NetSlice instance to the repositories
-  repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
-
-  #INFO: leave it here (do not join with the previous IF, as the multiple "return" depend on this order of the code.
-  if (allServicesDone == True):
-    LOG.info("NSI_MNGR_UpdateTerminate: Sends the thread_notification to the GK.")
+    LOG.info("NSI_MNGR_UpdateTerminate: Checking if all services are updated: " + str(jsonNSI))
     time.sleep(0.1)
-    # creates a thread with the callback URL to advise the GK this slice is READY
-    sliceCallback = jsonNSI['sliceCallback']
-    callback_json_slice_status = {}
-    callback_json_slice_status['status'] = jsonNSI['nsiState']
-    callback_json_slice_status['updateTime'] = jsonNSI['updateTime']
-    thread_notify = Notify_Slice(sliceCallback, callback_json_slice_status)
-    thread_notify.start()
-    
-    return (repo_responseStatus, 201)  #201 - Accepted
+    # checks if all services are READY/ERROR to update the slice_status
+    allServicesDone = True
+    for service_item in jsonNSI['netServInstance_Uuid']:
+      if service_item['workingStatus'] == "TERMINATING":
+        allServicesDone = False
+        break;
 
-  return (repo_responseStatus, 200)    #200 - OK
+    LOG.info("NSI_MNGR_UpdateTerminate: If all services are terminated/error, updates the NSI information.")
+    time.sleep(0.1)
+    if (allServicesDone == True):
+      jsonNSI['nsiState'] = "TERMINATED"
+      
+      LOG.info("NSI_MNGR_UpdateTerminate: Checks if any service has status error.")
+      time.sleep(0.1)
+      # validates if any service has error status to apply it to the slice status
+      for service_item in jsonNSI['netServInstance_Uuid']:
+        service_item['servInstanceId'] = " "
+        if (service_item['workingStatus'] == "ERROR"):
+          jsonNSI['nsiState'] = "ERROR"
+          break;
+      
+      jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
+      jsonNSI['updateTime'] = jsonNSI['terminateTime']
+      
+      if(jsonNSI['nsiState'] == "TERMINATED"):
+        # updates NetSlice template list of slice_instances based on that template
+        updateNST_jsonresponse = removeNSIinNST(jsonNSI['id'], jsonNSI['nstId'])
+
+    # sends the updated NetSlice instance to the repositories
+    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
+
+    #INFO: leave it here (do not join with the previous IF, as the multiple "return" depend on this order of the code.
+    if (allServicesDone == True):
+      LOG.info("NSI_MNGR_UpdateTerminate: Sends the thread_notification to the GK.")
+      time.sleep(0.1)
+      # creates a thread with the callback URL to advise the GK this slice is READY
+      sliceCallback = jsonNSI['sliceCallback']
+      callback_json_slice_status = {}
+      callback_json_slice_status['status'] = jsonNSI['nsiState']
+      callback_json_slice_status['updateTime'] = jsonNSI['updateTime']
+      thread_notify = Notify_Slice(sliceCallback, callback_json_slice_status)
+      thread_notify.start()
+      
+      return (repo_responseStatus, 201)  #201 - Accepted
+
+    return (repo_responseStatus, 200)    #200 - OK
+  return (jsonNSI, 200)
 
 #TODO: change the point of view, when a NST has to be deleted, do not check internal list but look ...
 # ... for any NSI using that NST. Like this, we avoid to change NST information in running time.
