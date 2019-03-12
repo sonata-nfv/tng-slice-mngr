@@ -66,16 +66,20 @@ class Notify_Slice(Thread):
 # Does all the process to create the NSI object (gathering the information and sending orders to GK)
 def createNSI(nsi_json):
   LOG.info("NSI_MNGR: Creating a new NSI: " + str(nsi_json))
+  time.sleep(0.1)
   nstId = nsi_json['nstId']
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
   nst_json = catalogue_response['nstd']
   LOG.info("NSI_MNGR: Getting NST: " + str(nst_json))
+  time.sleep(0.1)
 
   LOG.info("NSI_MNGR: parsing the NSI object")
+  time.sleep(0.1)
   # creates NSI with the received information
   NSI = parseNewNSI(nst_json, nsi_json)
 
   LOG.info("NSI_MNGR: Sending request to instantiate services within the NST")
+  time.sleep(0.1)
   # to put in order the services within a slice in the protal
   serv_seq = 1
   for NetServ_item in nst_json['sliceServices']:
@@ -91,6 +95,7 @@ def createNSI(nsi_json):
     # requests to instantiate NSI services to the SP
     instantiation_response = mapper.net_serv_instantiate(data)
     LOG.info("NSI_MNGR: INSTANTIATION_response: " + str(instantiation_response))
+    time.sleep(0.1)
     
     serviceInstance = {}
     serviceInstance['servId'] = instantiation_response['service']['uuid']
@@ -105,6 +110,7 @@ def createNSI(nsi_json):
     serv_seq = serv_seq + 1
 
   LOG.info("NSI_MNGR: saving the slice instance information")
+  time.sleep(0.1)
   # saving the NSI into the repositories
   NSI_string = vars(NSI)
   nsirepo_jsonresponse = nsi_repo.safe_nsi(NSI_string)
