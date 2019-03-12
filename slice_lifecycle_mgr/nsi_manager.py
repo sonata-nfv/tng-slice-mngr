@@ -69,7 +69,7 @@ class Notify_Slice(Thread):
 ################################ NSI CREATION & INSTANTIATION SECTION ##################################
 # Does all the process to create the NSI object (gathering the information and sending orders to GK)
 def createNSI(nsi_json):
-  LOG.info("NSI_MNGR: Creating a new NSI: " + str(nsi_json))
+  LOG.info("NSI_MNGR: Creates a new NSI: " + str(nsi_json))
   time.sleep(0.1)
   nstId = nsi_json['nstId']
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
