@@ -175,9 +175,8 @@ def updateSliceInstance(nsiId):
   else:
     return updatedService, 200
 
-
   #[0] error_message or valid_json, [1] status code
-  return jsonify(sliceUpdated[0]), sliceUpdated[1]
+  #return jsonify(sliceUpdated[0]), sliceUpdated[1]
 
 # TERMINATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
