@@ -67,10 +67,12 @@ def use_sonata():
 def net_serv_instantiate(service_data):
     url = get_base_url() + '/requests'
     data_json = json.dumps(service_data)
+    LOG.info("MAPPER: URL --> " + str(url) + "DATA --> " + str(data_json))
+    time.sleep(0.1)
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
-      LOG.info("MAPPER: Sendin Instanitation request")
+      LOG.info("MAPPER: Sending Instanitation request")
       time.sleep(0.1)
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 201):
@@ -81,6 +83,7 @@ def net_serv_instantiate(service_data):
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
         LOG.info('MAPPER: error when instantiating NetService: ' +str(error))
+        time.sleep(0.1)
       return jsonresponse
     else:
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
