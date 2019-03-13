@@ -59,8 +59,6 @@ class thread_instantiate(Thread):
     self.NSI = NSI
     self.nst_json = nst_json
   def run(self):
-    mutex.acquire()
-    try:
       # to put in order the services within a slice in the portal
       serv_seq = 1
       for NetServ_item in self.nst_json['sliceServices']:
@@ -90,8 +88,6 @@ class thread_instantiate(Thread):
 
       # saving the NSI into the repositories
       # nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(self.NSI))
-    finally:
-      mutex.release()
 
 # UPDATES THE SPECIFIC SERVICE RELATED TO THE URECEIVED UPDATE INFO
 ## Objctive:
@@ -228,7 +224,7 @@ def createNSI(nsi_json):
 
   LOG.info("NSI_MNGR: Starting thread_instantiate")
   time.sleep(0.1)
-  thread_instantiate = request_instance(NSI, nst_json)
+  thread_instantiate = thread_instantiate(NSI, nst_json)
   thread_instantiate.start()
 
   LOG.info("NSI_MNGR: Returnin values")
