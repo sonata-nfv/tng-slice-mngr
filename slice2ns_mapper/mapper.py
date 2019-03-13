@@ -163,9 +163,9 @@ def getRequestedNetServInstance(request_uuid):
       return jsonresponse 
 
 # POST to call the Gk when a slice is READY
-def sliceUpdated(callback_endpoint, nsi_status_json):
-    url = str(callback_endpoint)
-    data_json = json.dumps(nsi_status_json)
+def sliceUpdated(slice_callback, json_slice_info):
+    url = str(slice_callback)
+    data_json = json.dumps(json_slice_info)
     
     LOG.info("MAPPER: Sending Slice updated to GTK")
     time.sleep(0.1)
