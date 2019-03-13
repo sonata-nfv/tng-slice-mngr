@@ -243,16 +243,21 @@ def updateInstantiatingNSI(nsiId, request_json):
   time.sleep(0.1)
 
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
+  if (jsonNSI):
 
-  thread_update_instance = update_service_instantiation(nsiId, request_json)
-  thread_update_instance.start()
+    thread_update_instance = update_service_instantiation(nsiId, request_json)
+    thread_update_instance.start()
 
-  thread_notify = notify_slice(nsiId)
-  thread_notify.start()
+    thread_notify = notify_slice(nsiId)
+    thread_notify.start()
 
-  LOG.info("NSI_MNGR: Returning 200")
-  time.sleep(0.1)
-  return (jsonNSI, 200)
+    LOG.info("NSI_MNGR: Returning 200")
+    time.sleep(0.1)
+    return (jsonNSI, 200)
+  else:
+    LOG.info("NSI_MNGR: There is no NSIR in the db.")
+    time.sleep(0.1)
+    return ('{"error":"There is no NSIR in the db."}', 500)
 
 #TODO: change the point of view, when a NST has to be deleted, do not check internal list but look for any NSI ...
 # ... using that NST. Like this, we avoid to change NST information in running time. This function will be removed.
