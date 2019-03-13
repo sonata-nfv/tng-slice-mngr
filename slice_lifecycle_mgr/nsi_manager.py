@@ -76,20 +76,20 @@ class create_nsi(Thread):
         # requests to instantiate NSI services to the SP
         instantiation_response = mapper.net_serv_instantiate(data)
 
-        serviceInstance = {}
-        serviceInstance['servId'] = instantiation_response['service']['uuid']
-        serviceInstance['servName'] = instantiation_response['service']['name']
-        serviceInstance['servInstanceId'] = "null"
-        serviceInstance['workingStatus'] = "INSTANTIATING"
-        serviceInstance['requestID'] = instantiation_response['id']
+        #serviceInstance = {}
+        #serviceInstance['servId'] = instantiation_response['service']['uuid']
+        #serviceInstance['servName'] = instantiation_response['service']['name']
+        #serviceInstance['servInstanceId'] = "null"
+        #serviceInstance['workingStatus'] = "INSTANTIATING"
+        #serviceInstance['requestID'] = instantiation_response['id']
 
         # adds the service instance into the NSI json
-        self.NSI.netServInstance_Uuid.append(serviceInstance)
+        #self.NSI.netServInstance_Uuid.append(serviceInstance)
         # increaes the index for the internal slice subnets names
         serv_seq = serv_seq + 1
 
       # saving the NSI into the repositories
-      nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(self.NSI))
+      # nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(self.NSI))
     finally:
       mutex.release()
 
@@ -109,13 +109,36 @@ class update_service_instantiation(Thread):
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
-      # looks for the right service within the slice and updates it with the new data
-      for service_item in jsonNSI['netServInstance_Uuid']:
-        if (service_item['requestID'] == self.request_json['id']):
-          service_item['workingStatus'] = self.request_json['status']
-          if(self.request_json['instance_uuid'] != None):
-            service_item['servInstanceId'] = self.request_json['instance_uuid']
-          break;
+      serviceInstance = {}
+      # if list is empty, full it with the first element
+      if not jsonNSI['netServInstance_Uuid']:
+        serviceInstance['servId'] = self.request_json['service_uuid']
+        serviceInstance['servName'] = self.request_json['name']
+        serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
+        serviceInstance['workingStatus'] = self.request_json['status']
+        serviceInstance['requestID'] = self.request_json['id']
+        # adds the service instance into the NSI json
+        jsonNSI['netServInstance_Uuid'].append(serviceInstance)
+
+      # list has at least one element
+      else:
+        # looks for the right service within the slice and updates it with the new data
+        for service_item in jsonNSI['netServInstance_Uuid']:
+          # if the current request already exists, update it.
+          if (service_item['requestID'] == self.request_json['id']):
+            service_item['workingStatus'] = self.request_json['status']
+            if(self.request_json['instance_uuid'] != None):
+              service_item['servInstanceId'] = self.request_json['instance_uuid']
+            break;
+        # the current request doensn't exist in the list, add it.
+        else:
+          serviceInstance['servId'] = self.request_json['service_uuid']
+          serviceInstance['servName'] = self.request_json['name']
+          serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
+          serviceInstance['workingStatus'] = self.request_json['status']
+          serviceInstance['requestID'] = self.request_json['id']
+          # adds the service instance into the NSI json
+          jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
@@ -198,8 +221,26 @@ def createNSI(nsi_json):
   # creates NSI with the received information
   NSI = parseNewNSI(nst_json, nsi_json)
 
-  thread_create = create_nsi(NSI, nst_json)
-  thread_create.start()
+  # saving the NSI into the repositories
+  nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(NSI))
+
+  #thread_create = create_nsi(NSI, nst_json)
+  #thread_create.start()
+  serv_seq = 1
+  for NetServ_item in nst_json['sliceServices']:
+    data = {}
+    data['name'] = NSI.name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
+    data['service_uuid'] = NetServ_item['nsdID']
+    data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
+    #data['ingresses'] = []
+    #data['egresses'] = []
+    #data['blacklist'] = []
+    data['sla_id'] = NetServ_item['slaID']
+
+    # requests to instantiate NSI services to the SP
+    instantiation_response = mapper.net_serv_instantiate(data)
+    
+    serv_seq = serv_seq + 1
 
   return vars(NSI)
 
@@ -243,16 +284,21 @@ def updateInstantiatingNSI(nsiId, request_json):
   time.sleep(0.1)
 
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
+  if (jsonNSI):
 
-  thread_update_instance = update_service_instantiation(nsiId, request_json)
-  thread_update_instance.start()
+    thread_update_instance = update_service_instantiation(nsiId, request_json)
+    thread_update_instance.start()
 
-  thread_notify = notify_slice(nsiId)
-  thread_notify.start()
+    thread_notify = notify_slice(nsiId)
+    thread_notify.start()
 
-  LOG.info("NSI_MNGR: Returning 200")
-  time.sleep(0.1)
-  return (jsonNSI, 200)
+    LOG.info("NSI_MNGR: Returning 200")
+    time.sleep(0.1)
+    return (jsonNSI, 200)
+  else:
+    LOG.info("NSI_MNGR: There is no NSIR in the db.")
+    time.sleep(0.1)
+    return ('{"error":"There is no NSIR in the db."}', 500)
 
 #TODO: change the point of view, when a NST has to be deleted, do not check internal list but look for any NSI ...
 # ... using that NST. Like this, we avoid to change NST information in running time. This function will be removed.
