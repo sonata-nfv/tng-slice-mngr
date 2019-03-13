@@ -53,7 +53,7 @@ LOG.setLevel(logging.INFO)
 # TO SEND SERVICE INSTANTIATIONS AND CREATE NSI
 ## Objctive:
 ## Params:
-class create_nsi(Thread):
+class thread_instantiate(Thread):
   def __init__(self, NSI, nst_json):
     Thread.__init__(self)
     self.NSI = NSI
@@ -114,9 +114,10 @@ class update_service_instantiation(Thread):
       if not jsonNSI['netServInstance_Uuid']:
         serviceInstance['servId'] = self.request_json['service_uuid']
         serviceInstance['servName'] = self.request_json['name']
-        serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
         serviceInstance['workingStatus'] = self.request_json['status']
         serviceInstance['requestID'] = self.request_json['id']
+        if(self.request_json['instance_uuid'] == None):
+          serviceInstance['servInstanceId'] = " "
         # adds the service instance into the NSI json
         jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
@@ -134,9 +135,10 @@ class update_service_instantiation(Thread):
         else:
           serviceInstance['servId'] = self.request_json['service_uuid']
           serviceInstance['servName'] = self.request_json['name']
-          serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
           serviceInstance['workingStatus'] = self.request_json['status']
           serviceInstance['requestID'] = self.request_json['id']
+          if(self.request_json['instance_uuid'] == None):
+            serviceInstance['servInstanceId'] = " "
           # adds the service instance into the NSI json
           jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
@@ -224,23 +226,8 @@ def createNSI(nsi_json):
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(NSI))
 
-  #thread_create = create_nsi(NSI, nst_json)
-  #thread_create.start()
-  serv_seq = 1
-  for NetServ_item in nst_json['sliceServices']:
-    data = {}
-    data['name'] = NSI.name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
-    data['service_uuid'] = NetServ_item['nsdID']
-    data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
-    #data['ingresses'] = []
-    #data['egresses'] = []
-    #data['blacklist'] = []
-    data['sla_id'] = NetServ_item['slaID']
-
-    # requests to instantiate NSI services to the SP
-    instantiation_response = mapper.net_serv_instantiate(data)
-    
-    serv_seq = serv_seq + 1
+  thread_instantiate = request_instance(NSI, nst_json)
+  thread_instantiate.start()
 
   return nsirepo_jsonresponse, 201
 
