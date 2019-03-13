@@ -278,10 +278,13 @@ def updateInstantiatingNSI(nsiId, request_json):
 
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
   if (jsonNSI):
-
+    LOG.info("NSI_MNGR: Starting thread_update_instance")
+    time.sleep(0.1)
     thread_update_instance = update_service_instantiation(nsiId, request_json)
     thread_update_instance.start()
 
+    LOG.info("NSI_MNGR: Starting thread_notify")
+    time.sleep(0.1)
     thread_notify = notify_slice(nsiId)
     thread_notify.start()
 
