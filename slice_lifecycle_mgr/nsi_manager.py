@@ -242,7 +242,7 @@ def createNSI(nsi_json):
     
     serv_seq = serv_seq + 1
 
-  return vars(NSI)
+  return nsirepo_jsonresponse, 201
 
 # Creates the object for the previous function from the information gathered
 def parseNewNSI(nst_json, nsi_json):
