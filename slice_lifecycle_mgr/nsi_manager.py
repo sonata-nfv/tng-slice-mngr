@@ -93,7 +93,6 @@ class create_nsi(Thread):
     finally:
       mutex.release()
 
-
 # UPDATES THE SPECIFIC SERVICE RELATED TO THE URECEIVED UPDATE INFO
 ## Objctive:
 ## Params:
@@ -123,7 +122,6 @@ class update_service_instantiation(Thread):
 
     finally:
       mutex.release()
-
 
 # TO NOTIFY UPDATES OF A SLICE
 ## Objctive: used to inform about both slice instantiation or termination processes
@@ -187,7 +185,6 @@ class notify_slice(Thread):
         thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
         time.sleep(0.1)
         LOG.info("NSI_MNGR_Thread: GTK informed & NSI process finished:" + str(thread_response))
-
 
 ################################ NSI CREATION & INSTANTIATION SECTION ##################################
 # Does all the process to create the NSI object (gathering the information and sending orders to GK)

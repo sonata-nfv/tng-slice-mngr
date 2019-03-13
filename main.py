@@ -167,16 +167,11 @@ def updateSliceInstance(nsiId):
   updatedService = request.json
   logging.info("SLICE_MAIN: received json to update an instantiating NSI: " + str(updatedService))
   time.sleep(0.1)
-  if (updatedService["status"] != "INSTANTIATING"):
-    sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
-    logging.info('Network Slice Instance update done.')
-
-    return jsonify(sliceUpdated[0]), sliceUpdated[1]
-  else:
-    return updatedService, 200
+  sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
+  logging.info('Network Slice Instance update done.')
 
   #[0] error_message or valid_json, [1] status code
-  #return jsonify(sliceUpdated[0]), sliceUpdated[1]
+  return jsonify(sliceUpdated[0]), sliceUpdated[1]
 
 # TERMINATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
