@@ -226,9 +226,15 @@ def createNSI(nsi_json):
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(NSI))
 
+  LOG.info("NSI_MNGR: Starting thread_instantiate")
+  time.sleep(0.1)
   thread_instantiate = request_instance(NSI, nst_json)
   thread_instantiate.start()
 
+  LOG.info("NSI_MNGR: Returnin values")
+  LOG.info("NSI_MNGR: nsirepo_jsonresponse: " + str(nsirepo_jsonresponse))
+  LOG.info("NSI_MNGR: nsirepo_jsonresponse: " + type(nsirepo_jsonresponse))
+  time.sleep(0.1)
   return nsirepo_jsonresponse, 201
 
 # Creates the object for the previous function from the information gathered
