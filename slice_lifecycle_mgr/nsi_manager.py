@@ -112,11 +112,11 @@ class update_service_instantiation(Thread):
       serviceInstance = {}
       # if list is empty, full it with the first element
       if not jsonNSI['netServInstance_Uuid']:
-        serviceInstance['servId'] = request_json['service_uuid']
-        serviceInstance['servName'] = request_json['name']
-        serviceInstance['servInstanceId'] = request_json['instance_uuid']
-        serviceInstance['workingStatus'] = request_json['status']
-        serviceInstance['requestID'] = request_json['id']
+        serviceInstance['servId'] = self.request_json['service_uuid']
+        serviceInstance['servName'] = self.request_json['name']
+        serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
+        serviceInstance['workingStatus'] = self.request_json['status']
+        serviceInstance['requestID'] = self.request_json['id']
         # adds the service instance into the NSI json
         jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
@@ -132,11 +132,11 @@ class update_service_instantiation(Thread):
             break;
         # the current request doensn't exist in the list, add it.
         else:
-          serviceInstance['servId'] = request_json['service_uuid']
-          serviceInstance['servName'] = request_json['name']
-          serviceInstance['servInstanceId'] = request_json['instance_uuid']
-          serviceInstance['workingStatus'] = request_json['status']
-          serviceInstance['requestID'] = request_json['id']
+          serviceInstance['servId'] = self.request_json['service_uuid']
+          serviceInstance['servName'] = self.request_json['name']
+          serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
+          serviceInstance['workingStatus'] = self.request_json['status']
+          serviceInstance['requestID'] = self.request_json['id']
           # adds the service instance into the NSI json
           jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
@@ -222,16 +222,16 @@ def createNSI(nsi_json):
   NSI = parseNewNSI(nst_json, nsi_json)
 
   # saving the NSI into the repositories
-  nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(self.NSI))
+  nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(NSI))
 
   #thread_create = create_nsi(NSI, nst_json)
   #thread_create.start()
   serv_seq = 1
-  for NetServ_item in self.nst_json['sliceServices']:
+  for NetServ_item in nst_json['sliceServices']:
     data = {}
-    data['name'] = self.NSI.name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
+    data['name'] = NSI.name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
     data['service_uuid'] = NetServ_item['nsdID']
-    data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI.id)+"/instantiation-change"
+    data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
     #data['ingresses'] = []
     #data['egresses'] = []
     #data['blacklist'] = []
