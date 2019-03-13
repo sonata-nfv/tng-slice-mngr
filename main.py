@@ -173,7 +173,7 @@ def updateSliceInstance(nsiId):
 
     return jsonify(sliceUpdated[0]), sliceUpdated[1]
   else:
-    return updatedService, 200
+    return str(updatedService), 200
 
   #[0] error_message or valid_json, [1] status code
   #return jsonify(sliceUpdated[0]), sliceUpdated[1]
