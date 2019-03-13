@@ -224,8 +224,8 @@ def createNSI(nsi_json):
 
   LOG.info("NSI_MNGR: Starting thread_instantiate")
   time.sleep(0.1)
-  thread_instantiate = thread_instantiate(NSI, nst_json)
-  thread_instantiate.start()
+  thread_instantiation = thread_instantiate(NSI, nst_json)
+  thread_instantiation.start()
 
   LOG.info("NSI_MNGR: Returnin values")
   LOG.info("NSI_MNGR: nsirepo_jsonresponse: " + str(nsirepo_jsonresponse))
