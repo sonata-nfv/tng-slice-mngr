@@ -53,15 +53,15 @@ LOG.setLevel(logging.INFO)
 # TO SEND SERVICE INSTANTIATIONS AND CREATE NSI
 ## Objctive:
 ## Params:
-class create_nsi(Thread):
+class thread_instantiate(Thread):
   def __init__(self, NSI, nst_json):
     Thread.__init__(self)
     self.NSI = NSI
     self.nst_json = nst_json
   def run(self):
-    mutex.acquire()
-    try:
       # to put in order the services within a slice in the portal
+      LOG.info("NSI_MNGR_Instantiate: Sending service instantiation requests!!")
+      time.sleep(0.1)
       serv_seq = 1
       for NetServ_item in self.nst_json['sliceServices']:
         data = {}
@@ -75,6 +75,8 @@ class create_nsi(Thread):
 
         # requests to instantiate NSI services to the SP
         instantiation_response = mapper.net_serv_instantiate(data)
+        LOG.info("NSI_MNGR_Instantiate: INSTANTIATION NUMBER: " + str(serv_seq))
+        time.sleep(0.1)
 
         #serviceInstance = {}
         #serviceInstance['servId'] = instantiation_response['service']['uuid']
@@ -90,8 +92,6 @@ class create_nsi(Thread):
 
       # saving the NSI into the repositories
       # nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(self.NSI))
-    finally:
-      mutex.release()
 
 # UPDATES THE SPECIFIC SERVICE RELATED TO THE URECEIVED UPDATE INFO
 ## Objctive:
@@ -104,42 +104,58 @@ class update_service_instantiation(Thread):
   def run(self):
     mutex.acquire()
     try:
+      LOG.info("NSI_MNGR_Update: Getting NSI")
+      time.sleep(0.1)
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
       #TODO: improve the next 2 lines to not use this delete.
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
+      LOG.info("NSI_MNGR_Update: Adding Service information")
+      time.sleep(0.1)
       serviceInstance = {}
       # if list is empty, full it with the first element
       if not jsonNSI['netServInstance_Uuid']:
+        LOG.info("NSI_MNGR_Update: List is empty, adding the first service.")
+        time.sleep(0.1)
         serviceInstance['servId'] = self.request_json['service_uuid']
         serviceInstance['servName'] = self.request_json['name']
-        serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
         serviceInstance['workingStatus'] = self.request_json['status']
         serviceInstance['requestID'] = self.request_json['id']
+        if(self.request_json['instance_uuid'] == None):
+          serviceInstance['servInstanceId'] = " "
         # adds the service instance into the NSI json
         jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
       # list has at least one element
       else:
+        LOG.info("NSI_MNGR_Update: List NOT empty.")
+        time.sleep(0.1)
         # looks for the right service within the slice and updates it with the new data
         for service_item in jsonNSI['netServInstance_Uuid']:
           # if the current request already exists, update it.
           if (service_item['requestID'] == self.request_json['id']):
             service_item['workingStatus'] = self.request_json['status']
             if(self.request_json['instance_uuid'] != None):
+              LOG.info("NSI_MNGR_Update: Giving the instance_uuid to the service info.")
+              time.sleep(0.1)
               service_item['servInstanceId'] = self.request_json['instance_uuid']
             break;
         # the current request doensn't exist in the list, add it.
         else:
+          LOG.info("NSI_MNGR_Update: List NOT empty, adding a new service.")
+          time.sleep(0.1)
           serviceInstance['servId'] = self.request_json['service_uuid']
           serviceInstance['servName'] = self.request_json['name']
-          serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
           serviceInstance['workingStatus'] = self.request_json['status']
           serviceInstance['requestID'] = self.request_json['id']
+          if(self.request_json['instance_uuid'] == None):
+            serviceInstance['servInstanceId'] = " "
           # adds the service instance into the NSI json
           jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
+      LOG.info("NSI_MNGR_Update: Updating nsir.")
+      time.sleep(0.1)
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
 
@@ -158,18 +174,18 @@ class notify_slice(Thread):
     try:
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
 
-      LOG.info("NSI_MNGR: Checking if the slice has all services ready/error or instantiating")
+      LOG.info("NSI_MNGR_Notify: Checking if the slice has all services ready/error or instantiating")
       time.sleep(0.1)
       # checks if all services are READY/ERROR to update the slice_status
       all_services_ready = True
       for service_item in jsonNSI['netServInstance_Uuid']:
-        LOG.info("NSI_MNGR: Checking service status: "+ str(service_item['workingStatus']))
+        LOG.info("NSI_MNGR_Notify: Checking service status: "+ str(service_item['workingStatus']))
         time.sleep(0.1)
         if (service_item['workingStatus'] == "INSTANTIATING"):
           all_services_ready = False
           break;
 
-      LOG.info("NSI_MNGR: allServiceDone_value: "+ str(all_services_ready))
+      LOG.info("NSI_MNGR_Notify: allServiceDone_value: "+ str(all_services_ready))
       time.sleep(0.1)
       if (all_services_ready == True):
         LOG.info("NSI_MNGR: All services instantiated, updating slice information.")
@@ -224,25 +240,16 @@ def createNSI(nsi_json):
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(NSI))
 
-  #thread_create = create_nsi(NSI, nst_json)
-  #thread_create.start()
-  serv_seq = 1
-  for NetServ_item in nst_json['sliceServices']:
-    data = {}
-    data['name'] = NSI.name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
-    data['service_uuid'] = NetServ_item['nsdID']
-    data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(NSI.id)+"/instantiation-change"
-    #data['ingresses'] = []
-    #data['egresses'] = []
-    #data['blacklist'] = []
-    data['sla_id'] = NetServ_item['slaID']
+  LOG.info("NSI_MNGR: Starting thread_instantiate")
+  time.sleep(0.1)
+  thread_instantiation = thread_instantiate(NSI, nst_json)
+  thread_instantiation.start()
 
-    # requests to instantiate NSI services to the SP
-    instantiation_response = mapper.net_serv_instantiate(data)
-    
-    serv_seq = serv_seq + 1
-
-  return vars(NSI)
+  LOG.info("NSI_MNGR: Returnin values")
+  LOG.info("NSI_MNGR: nsirepo_jsonresponse: " + str(nsirepo_jsonresponse))
+  LOG.info("NSI_MNGR: nsirepo_jsonresponse: " + str(type(nsirepo_jsonresponse)))
+  time.sleep(0.1)
+  return nsirepo_jsonresponse, 201
 
 # Creates the object for the previous function from the information gathered
 def parseNewNSI(nst_json, nsi_json):
@@ -285,10 +292,13 @@ def updateInstantiatingNSI(nsiId, request_json):
 
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
   if (jsonNSI):
-
+    LOG.info("NSI_MNGR: Starting thread_update_instance")
+    time.sleep(0.1)
     thread_update_instance = update_service_instantiation(nsiId, request_json)
     thread_update_instance.start()
 
+    LOG.info("NSI_MNGR: Starting thread_notify")
+    time.sleep(0.1)
     thread_notify = notify_slice(nsiId)
     thread_notify.start()
 

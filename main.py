@@ -154,7 +154,7 @@ def NSI_instantiation():
     instantiatedNSI = nsi_manager.createNSI(new_NSI)
     logging.info('NSI Created and waiting to finish the instantiation...')
     
-    return jsonify(instantiatedNSI), 201
+    return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
   else:
     #[0] error_message or valid_json, [1] status code
