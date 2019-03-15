@@ -172,7 +172,12 @@ class notify_slice(Thread):
   def run(self):
     mutex.acquire()
     try:
+      LOG.info("NSI_MNGR_Notify: Getting nsir")
+      time.sleep(0.1)
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
+      #TODO: improve the next 2 lines to not use this delete.
+      jsonNSI["id"] = jsonNSI["uuid"]
+      del jsonNSI["uuid"]
 
       LOG.info("NSI_MNGR_Notify: Checking if the slice has all services ready/error or instantiating")
       time.sleep(0.1)
