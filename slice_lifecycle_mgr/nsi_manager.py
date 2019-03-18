@@ -325,7 +325,7 @@ class notify_slice_terminated(Thread):
             break;
 
         # updates NetSlice template list of slice_instances based on that template
-        updateNST_jsonresponse = removeNSIinNST(jsonNSI['id'], jsonNSI['nstId']
+        updateNST_jsonresponse = removeNSIinNST(jsonNSI['id'], jsonNSI['nstId'])
 
         # sends the updated NetSlice instance to the repositories
         LOG.info("NSI_MNGR: Updating repositories with the updated NSI.")
