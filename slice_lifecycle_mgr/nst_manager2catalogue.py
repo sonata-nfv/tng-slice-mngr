@@ -48,6 +48,7 @@ def get_base_url():
     ip_address = os.environ.get("SONATA_CAT")
     port = os.environ.get("SONATA_CAT_PORT")
     base_url = 'http://'+ip_address+':'+port
+    
     return base_url
 
 # POST to send the NST information to the catalogues
@@ -64,6 +65,7 @@ def safe_nst(nst_string):
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
         LOG.info('NST_MNGR2CAT: nstd to catalogues failed: ' + str(error))
+    
     return jsonresponse
        
 # GET all NST information from the catalogues
@@ -71,15 +73,12 @@ def getAll_saved_nst():
     LOG.info("NST_MNGR2CAT: Requesting all NSTD information from catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts'
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    LOG.info(response.text)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):
-        LOG.info("NST_MNGR2CAT: all NSTD received.")
-    else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        jsonresponse = error
-        LOG.info('NSI_MNGR2CAT: nstd getAll from catalogues failed: ' + str(error))
+    if (response.status_code != 200):
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NSI_MNGR2CAT: nstd getAll from catalogues failed: ' + str(jsonresponse))
+    
     return jsonresponse
     
 # PUT to update specific NST parameter in catalogues
@@ -88,15 +87,14 @@ def getAll_saved_nst():
 def update_nst(nstParameter2update, nstId):
     LOG.info("NST_MNGR2CAT: Updating NSTD information")
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId + '?' + nstParameter2update
-    response = requests.put(url, headers=JSON_CONTENT_HEADER, timeout=1.0, )
+    jsonresponse = requests.put(url, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     
-    if (response.status_code == 200) or (response.status_code == 201):
+    if (jsonresponse.status_code == 200) or (jsonresponse.status_code == 201):
         LOG.info("NST_MNGR2CAT: NSTD updated.")
     else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        response = error
-        LOG.info('NST_MNGR2CAT: nstd update action to catalogues failed: ' + str(error))
-    return response
+        jsonresponse = {'http_code': jsonresponse.status_code,'message': jsonresponse.json()}
+        LOG.info('NST_MNGR2CAT: nstd update action to catalogues failed: ' + str(jsonresponse))
+    return jsonresponse
 
 # GET the specific NST item from the catalogues
 def get_saved_nst(nstId):
@@ -105,12 +103,10 @@ def get_saved_nst(nstId):
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):
-        LOG.info("NST_MNGR2CAT: NSTD received.")
-    else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        jsonresponse = error
-        LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(error))
+    if (response.status_code != 200):
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(jsonresponse))
+    
     return jsonresponse
     
 # DELETE the specific NST item from catalogues
@@ -120,14 +116,11 @@ def delete_nst(nstId):
     response = requests.delete(url)
     LOG.info(response.status_code)
     
-    if (response.status_code == 200):
-        LOG.info("NST_MNGR2CAT: NSTD deleted.")
-        return response.status_code
-    else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        response = error
-        LOG.info('NST_MNGR2CAT: nstd delete action to catalogues failed: ' + str(error))
-        return response
+    if (response.status_code != 200):
+        response = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NST_MNGR2CAT: nstd delete action to catalogues failed: ' + str(response))
+    
+    return response
   
   
 ################################## OTHER OPTIONS TO WORK IN THE FUTURE ################################

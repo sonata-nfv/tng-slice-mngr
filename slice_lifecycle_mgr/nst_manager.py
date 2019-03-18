@@ -62,18 +62,21 @@ def createNST(jsondata):
 
   NST_string = vars(NST)
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)
+  
   return nstcatalogue_jsonresponse
 
 # Updates the information of a selected NST in catalogues
 def updateNST(nstId, NST_string):
   logging.info("NST_MNGR: Updating NST with id: " +str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.update_nst(update_NST, nstId)
+  
   return nstcatalogue_jsonresponse
 
 # Deletes a NST kept in catalogues
 def deleteNST(nstId):
   logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
+  
   if (nstcatalogue_jsonresponse['nstd']["usageState"] == "NOT_IN_USE"):
     nstcatalogue_jsonresponse = nst_catalogue.delete_nst(nstId)
     return nstcatalogue_jsonresponse
@@ -86,10 +89,12 @@ def deleteNST(nstId):
 def getAllNst():
   logging.info("NST_MNGR: Retrieving all existing NSTs")
   nstcatalogue_jsonresponse = nst_catalogue.getAll_saved_nst()
+  
   return nstcatalogue_jsonresponse
 
 # Returns the information of a selected NST in catalogues
 def getNST(nstId):
   logging.info("NST_MNGR: Retrieving NST with id: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
+  
   return nstcatalogue_jsonresponse

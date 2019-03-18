@@ -52,63 +52,44 @@ def get_base_url():
 
 # POST to send the NSI information to the repositories
 def safe_nsi(NSI_string):
-    LOG.info("NSI_MNGR2REPO: Sending information to the repositories")
-    time.sleep(0.1)
     url = get_base_url() + '/records/nsir/ns-instances'
     data = json.dumps(NSI_string)
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):
-        LOG.info("NSI_MNGR2REPO: NSIR storage accepted.")
-        time.sleep(0.1)
-    else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        jsonresponse = error
-        LOG.info('NSI_MNGR2REPO: nsir to repo failed: ' + str(error))
+    if(response.status_code != 200):
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NSI_MNGR2REPO: nsir to repo failed: ' + str(jsonresponse))
     
     return jsonresponse
 
 # GET all NSI items from the repositories
 def getAll_saved_nsi():
-    LOG.info("NSI_MNGR2REPO: Requesting all NSIs information from repositories")
-    time.sleep(0.1)
     url = get_base_url() + '/records/nsir/ns-instances'
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     LOG.info(response.text)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):
-        LOG.info("NSI_MNGR2REPO: all NSIR received.")
-        time.sleep(0.1)
-    else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        jsonresponse = error
-        LOG.info('NSI_MNGR2REPO: nsir getAll from repo failed: ' + str(error))
+    if(response.status_code != 200):
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NSI_MNGR2REPO: nsir getAll from repo failed: ' + str(jsonresponse))
     
     return jsonresponse
 
 # GET specific NSI item from the repositories
 def get_saved_nsi(nsiId):
-    LOG.info("NSI_MNGR2REPO: Requesting NSI information from repositories")
-    time.sleep(0.1)
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):
-        LOG.info("NSI_MNGR2REPO: NSIR received.")
-        time.sleep(0.1)
-    else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        jsonresponse = error
-        LOG.info('NSI_MNGR2REPO: nsir get from repo failed: ' + str(error))
+    if(response.status_code != 200):
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NSI_MNGR2REPO: nsir get from repo failed: ' + str(jsonresponse))
     
     return jsonresponse
 
 # PUT to update specific NSI information in repositories
 def update_nsi(update_NSI, nsiId):
-    LOG.info("NSI_MNGR2REPO: Updating NSI information")
     time.sleep(0.1)
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     data = json.dumps(update_NSI)
@@ -116,30 +97,20 @@ def update_nsi(update_NSI, nsiId):
     response = requests.put(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 200):
-        LOG.info("NSI_MNGR2REPO: NSIR updated.")
-        time.sleep(0.1)
-    else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        jsonresponse = error
-        LOG.info('NSI_MNGR2REPO: nsir update action to repo failed: ' + str(error))
+    if(response.status_code != 200):
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NSI_MNGR2REPO: nsir update action to repo failed: ' + str(jsonresponse))
     
     return jsonresponse
 
 # DELETE soecific NSI item in repositories
 def delete_nsi(nsiId):
-    LOG.info("NSI_MNGR2REPO: Deleting NSI")
     time.sleep(0.1)
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
-    response = requests.delete(url)
-    LOG.info(response.status_code)
+    jsonresponse = requests.delete(url)
     
-    if (response.status_code == 200):
-        LOG.info("NSI_MNGR2REPO: NSIR deleted.")
-        time.sleep(0.1)
-    else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        response = error
-        LOG.info('NSI_MNGR2REPO: nsir delete action to repo failed: ' + str(error))
+    if(response.status_code != 200):
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NSI_MNGR2REPO: nsir delete action to repo failed: ' + str(jsonresponse))
     
-    return response.status_code
+    return jsonresponse.status_code
