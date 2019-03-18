@@ -112,7 +112,8 @@ class update_service_instantiation(Thread):
         if(self.request_json['instance_uuid'] == None):
           serviceInstance['servInstanceId'] = " "
         else:
-          service_item['servInstanceId'] = self.request_json['instance_uuid']
+          serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
+
         # adds the service instance into the NSI json
         jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
@@ -120,7 +121,9 @@ class update_service_instantiation(Thread):
       else:
         LOG.info("NSI_MNGR_Update: List NOT empty.")
         time.sleep(0.1)
-        # looks for the right service within the slice and updates it with the new data
+        service_added = False
+
+        # looks all the already added services and updates the right
         for service_item in jsonNSI['netServInstance_Uuid']:
           # if the current request already exists, update it.
           if (service_item['requestID'] == self.request_json['id']):
@@ -129,9 +132,11 @@ class update_service_instantiation(Thread):
               LOG.info("NSI_MNGR_Update: Giving the instance_uuid to the service info.")
               time.sleep(0.1)
               service_item['servInstanceId'] = self.request_json['instance_uuid']
+              service_added = True                                  # used to avoid a for-else loop with the next if
             break;
-        # the current request doensn't exist in the list, add it.
-        else:
+
+        # the current request doesn't exist in the list, adds it.
+        if (service_added == False):
           LOG.info("NSI_MNGR_Update: List NOT empty, adding a new service.")
           time.sleep(0.1)
           serviceInstance['servId'] = self.request_json['service_uuid']
@@ -141,7 +146,8 @@ class update_service_instantiation(Thread):
           if(self.request_json['instance_uuid'] == None):
             serviceInstance['servInstanceId'] = " "
           else:
-            service_item['servInstanceId'] = self.request_json['instance_uuid']
+            serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
+
           # adds the service instance into the NSI json
           jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
