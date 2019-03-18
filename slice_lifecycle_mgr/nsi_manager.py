@@ -141,7 +141,7 @@ class update_service_instantiation(Thread):
           if(self.request_json['instance_uuid'] == None):
             serviceInstance['servInstanceId'] = " "
           else:
-          service_item['servInstanceId'] = self.request_json['instance_uuid']
+            service_item['servInstanceId'] = self.request_json['instance_uuid']
           # adds the service instance into the NSI json
           jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
