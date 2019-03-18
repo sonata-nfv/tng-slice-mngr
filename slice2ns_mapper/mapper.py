@@ -67,23 +67,15 @@ def use_sonata():
 def net_serv_instantiate(service_data):
     url = get_base_url() + '/requests'
     data_json = json.dumps(service_data)
-    LOG.info("MAPPER: URL --> " + str(url) + "DATA --> " + str(data_json))
-    time.sleep(0.1)
     
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       LOG.info("MAPPER: Sending Instanitation request")
-      time.sleep(0.1)
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 201):
         jsonresponse = json.loads(response.text)
-        LOG.info("MAPPER: Service instantiation response: " +str(jsonresponse))
-        time.sleep(0.1)
       else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        jsonresponse = error
-        LOG.info('MAPPER: error when instantiating NetService: ' +str(error))
-        time.sleep(0.1)
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
       return jsonresponse
     else:
       print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
@@ -99,16 +91,11 @@ def net_serv_terminate(service_data):
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       LOG.info("MAPPER: Sending Terminate request")
-      time.sleep(0.1)
       response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200) or (response.status_code == 201):
         jsonresponse = json.loads(response.text)
-        LOG.info("MAPPER: Terminate response: "  +str(jsonresponse))
-        time.sleep(0.1)
       else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        jsonresponse = error
-        LOG.info('MAPPER: error when terminating NetService instantiation: ' +str(error))
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
       return jsonresponse
     else:
       jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
@@ -121,16 +108,11 @@ def getAllNetServInstances():
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       LOG.info("MAPPER: Getting all NetServicesInstances")
-      time.sleep(0.1)
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: Response with all instantiated netService: " +str(jsonresponse))
-          time.sleep(0.1)
       else:
-          error = {'http_code': response.status_code,'message': response.json()}
-          jsonresponse = error
-          LOG.info('MAPPER: error when receiving all NS instantiations info: ' +str(error))
+          jsonresponse = {'http_code': response.status_code,'message': response.json()}
       return jsonresponse  
     else:
       jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
@@ -144,16 +126,11 @@ def getRequestedNetServInstance(request_uuid):
     #REAL or EMULATED usage of Sonata SP 
     if use_sonata() == "True":
       LOG.info("MAPPER: Getting desired NetServicesInstance")
-      time.sleep(0.1)
       response = requests.get(url, headers=JSON_CONTENT_HEADER)
       if (response.status_code == 200):
           jsonresponse = json.loads(response.text)
-          LOG.info("MAPPER: Response with instantiated netService: " +str(jsonresponse))
-          time.sleep(0.1)
       else:
-          error = {'http_code': response.status_code,'message': response.json()}
-          jsonresponse = error
-          LOG.info('MAPPER: error when receiving the NS instantiation info: ' +str(error))
+          jsonresponse = {'http_code': response.status_code,'message': response.json()}
       return jsonresponse
     else:
       print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER))
@@ -168,15 +145,12 @@ def sliceUpdated(slice_callback, json_slice_info):
     data_json = json.dumps(json_slice_info)
     
     LOG.info("MAPPER: Sending Slice updated to GTK")
-    time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
     
     if (response.status_code == 201):
         jsonresponse = json.loads(response.text)
     else:
-        error = {'http_code': response.status_code,'message': response.json()}
-        jsonresponse = error
-        LOG.info('MAPPER: error when instantiating NetService: ' +str(error))
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
     
     return jsonresponse
 
@@ -184,7 +158,6 @@ def sliceUpdated(slice_callback, json_slice_info):
 # GET /services to pull all Network Services information
 def getListNetServices():
     LOG.info("MAPPER: Preparing the request to get the NetServices Information")
-    time.sleep(0.1)
     # cleans the current nsInfo_list to have the information updated
     del db.nsInfo_list[:]
     url = get_base_url_NetService_info() + "/services"
@@ -194,8 +167,6 @@ def getListNetServices():
       response = requests.get(url)
       
       if (response.status_code == 200):
-          LOG.info("MAPPER: Services from the SP received.")
-          time.sleep(0.1)
           services_array = json.loads(response.text)
           for service_item in services_array:
             # each element of the list is a dictionary
@@ -205,9 +176,7 @@ def getListNetServices():
             db.nsInfo_list.append(nsd_string)
           service_response = db.nsInfo_list
       else:
-          error = {'http_code': response.status_code,'message': response.json()}
-          service_response = error
-          LOG.info('MAPPER: error when deceiving the SP services information: ' +str(error))  
+          service_response = {'http_code': response.status_code,'message': response.json()}
       return service_response
     else:
       URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)

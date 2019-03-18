@@ -92,15 +92,14 @@ def optionsOneNST(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
 def NST_creation():
   receivedNSTd = request.json
-  #LOG.info("SLICE_MAIN: received json from portal: " + str(receivedNSTd))
   logging.info("SLICE_MAIN: received json from portal: " + str(receivedNSTd))
+  
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
   validationResponse = json_validator.validateCreateTemplate(receivedNSTd)
+  
+  #[0] error_message or valid_json, [1] status code
   if (validationResponse[1] == 201):
     new_NST = nst_manager.createNST(receivedNSTd)
-    #LOG.info('NST created')
-    logging.info('NST created')
-
     return jsonify(new_NST), 201
 
   else:
@@ -110,8 +109,6 @@ def NST_creation():
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
 def getAllNST():
   listNST = nst_manager.getAllNst()
-  #LOG.info('Returning all NST')
-  logging.info('Returning all NST')
 
   return jsonify(listNST), 200
 
@@ -119,8 +116,6 @@ def getAllNST():
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['GET'])
 def getNST(nstId):
   returnedNST = nst_manager.getNST(nstId)
-  #LOG.info('Returning the desired NST')
-  logging.info('Returning the desired NST')
 
   return jsonify(returnedNST), 200
 
@@ -128,16 +123,12 @@ def getNST(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
 def delete_NST(nstId):
   deleted_NSTid = nst_manager.deleteNST(nstId)
+  
   if deleted_NSTid == 403:
     returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
-    #LOG.info(returnMessage)
-    logging.info(returnMessage)
-
     return jsonify(returnMessage), 403
 
   else:
-    #LOG.info("The NST was deleted successfully.")
-    logging.info("The NST was deleted successfully.")
     return jsonify(deleted_NSTid), 204
 
 
@@ -147,17 +138,17 @@ def delete_NST(nstId):
 def NSI_instantiation():
   new_NSI = request.json
   logging.info("SLICE_MAIN: received json with NST_uuid from portal to instantiate: " + str(new_NSI))
+  
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
   validationResponse = json_validator.validateCreateInstantiation(new_NSI)
+  
+  #[0] error_message or valid_json, [1] status code
   if (validationResponse[1] == 200):
     logging.debug(new_NSI)
     instantiatedNSI = nsi_manager.createNSI(new_NSI)
-    logging.info('NSI Created and waiting to finish the instantiation...')
-    
     return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
   else:
-    #[0] error_message or valid_json, [1] status code
     return jsonify(validationResponse[0]), validationResponse[1]
 
 # INSTANTIATION UPDATE
@@ -165,28 +156,24 @@ def NSI_instantiation():
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
 def updateSliceInstance(nsiId):
   updatedService = request.json
-  logging.info("SLICE_MAIN: received json to update an instantiating NSI: " + str(updatedService))
-  time.sleep(0.1)
   sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
-  logging.info('Network Slice Instance update done.')
-
-  return jsonify(sliceUpdated[0]), sliceUpdated[1]
 
   #[0] error_message or valid_json, [1] status code
-  #return jsonify(sliceUpdated[0]), sliceUpdated[1]
+  return jsonify(sliceUpdated[0]), sliceUpdated[1]
+
 
 # TERMINATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
 def NSI_termination(nsiId):
   terminate_json = request.json
   logging.info("SLICE_MAIN: received json from portal: " + str(terminate_json))
+  
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 200 ok
   validationResponse = json_validator.validateTerminateInstantiation(terminate_json)
+  
+  #[0] error_message or valid_json, [1] status code
   if (validationResponse[1] == 200):
     terminateNSI = nsi_manager.terminateNSI(nsiId, terminate_json)
-    logging.info('NSI Terminated_data: ' + str(terminateNSI[0]))
-    logging.info('NSI Terminated_code: ' + str(terminateNSI[1]))
-
     return jsonify(terminateNSI[0]), terminateNSI[1]
 
   else:
@@ -207,8 +194,6 @@ def updateSliceTerminate(nsiId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
 def getALLNSI():
   allNSI = nsi_manager.getAllNsi()
-  #LOG.info('Returning all NSI')
-  logging.info('Returning all NSI')
 
   return jsonify(allNSI), 200
 
@@ -216,8 +201,6 @@ def getALLNSI():
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['GET'])
 def getNSI(nsiId):
   returnedNSI = nsi_manager.getNSI(nsiId)
-  #LOG.info('Returning the NSI with id:' +str(nsiId))
-  logging.info('Returning the NSI with id:' +str(nsiId))
 
   return jsonify(returnedNSI), 200
 
