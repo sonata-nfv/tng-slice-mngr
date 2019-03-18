@@ -475,7 +475,7 @@ def terminateNSI(nsiId, TerminOrder):
     jsonNSI['nsiState'] = "TERMINATING"
 
     for uuidNetServ_item in jsonNSI['netServInstance_Uuid']:
-      if (uuidNetServ_item['workingStatus'] ! = "ERROR"):
+      if (uuidNetServ_item['workingStatus'] != "ERROR"):
         uuidNetServ_item['workingStatus'] = "TERMINATING"
 
     LOG.info("NSI_MNGR_TERMINATE: Updates NSI info and sends it to repos")
