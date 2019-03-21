@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3.4
 
 """
 Copyright (c) 2018 SONATA-NFV, 5GTANGO, Paderborn University
