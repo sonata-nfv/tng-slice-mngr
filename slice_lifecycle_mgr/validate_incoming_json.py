@@ -50,7 +50,7 @@ def is_valid_uuid(uuid_to_test, version=4):
     except:
         return False
     #return str(uuid_obj) == uuid_to_test
-    return uuid_obj
+    return str(uuid_obj) == uuid_to_test
 
 
 # CASE: Create NetSlice Template
@@ -66,15 +66,13 @@ def is_valid_uuid(uuid_to_test, version=4):
 # }
 def validateCreateTemplate (jsonData):
   for item in jsonData['sliceServices']:
-    if (is_valid_uuid (item['slaID']) == True):
-      returnData["missing_field"] = "UUID value is OK!!"
-      return (returnData, 201)
-    elif (item['slaID'] == None):
-      returnData["missing_field"] = "None value is OK!!"
-      return (returnData, 201)
-    else:
+    if (is_valid_uuid (item['slaID']) != True and item['slaID'] != None):
       returnData["missing_field"] = "The Service Level Agreement (SLA) ID format is wrong, please check it."
       return (returnData, 400)
+      break
+
+  returnData["missing_field"] = "UUID values are OK!!"
+  return (returnData, 201)
 
 # CASE: Create NetSlice instantiation
 # Json_example: {"name": "NSI_name", "description": "NSI_descriptor", "nstId": "26c540a8-1e70-4242-beef-5e77dfa05a41"}
