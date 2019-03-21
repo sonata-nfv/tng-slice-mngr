@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 ## Copyright (c) 2015 SONATA-NFV, 2017 5GTANGO [, ANY ADDITIONAL AFFILIATION]
 ## ALL RIGHTS RESERVED.
@@ -31,7 +32,6 @@
 ## acknowledge the contributions of their colleagues of the 5GTANGO
 ## partner consortium (www.5gtango.eu).
 """
-#!/usr/bin/python
 
 from flask import Flask, request, jsonify
 import os, sys, logging, json, argparse, time
@@ -44,7 +44,6 @@ import slice2ns_mapper.mapper as mapper
 from database import database as db
 
 #from logger import TangoLogger
-
 #LOG = TangoLogger.getLogger("slicemngr:repo", log_level=logging.INFO, log_json=True)
 
 app = Flask(__name__)
