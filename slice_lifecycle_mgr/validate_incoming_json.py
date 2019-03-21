@@ -42,17 +42,15 @@ returnData = {}
 # Validation Functions
 def is_valid_uuid(uuid_to_test, version=4):
     """ Check if uuid_to_test is a valid UUID.
-    Parameters -----> uuid_to_test : str / version : {1, 2, 3, 4}
-    Returns --------> `True` if uuid_to_test is a valid UUID, otherwise `False`.
-    Examples
-    -- is_valid_uuid('c9bf9e57-1685-4c89-bafb-ff5af830be8a') --> True
-    -- is_valid_uuid('c9bf9e58') --> False
+    Parameters -> uuid_to_test : str / version : {1, 2, 3, 4}
+    Returns ----> `True` if a valid UUID, otherwise `False`.
     """
     try:
         uuid_obj = UUID(uuid_to_test, version=version)
     except:
         return False
-    return str(uuid_obj) == uuid_to_test
+    #return str(uuid_obj) == uuid_to_test
+    return uuid_obj
 
 
 # CASE: Create NetSlice Template
@@ -68,16 +66,14 @@ def is_valid_uuid(uuid_to_test, version=4):
 # }
 def validateCreateTemplate (jsonData):
   for item in jsonData['sliceServices']:
-    if (is_valid_uuid (item['nsdID']) == True):
-      if (is_valid_uuid (item['slaID']) == False and item['slaID'] != "None"):
-        returnData["missing_field"] = "The Service Level Agreement (SLA) ID format is wrong, please check it."
-        return (returnData, 400)
-      else:
-        returnData["missing_field"] = "Everything is OK!!"
-        return (returnData, 201)
+    if (is_valid_uuid (item['slaID']) == True):
+      returnData["missing_field"] = "UUID value is OK!!"
+      return (returnData, 201)
+    elif item['slaID']) == None:
+      returnData["missing_field"] = "None value is OK!!"
+      return (returnData, 201)
     else:
-      returnData["missing_field"] = "The Network Service Descriptor ID format is wrong, please check it."
-      LOG.info('FormValidator NST_Error: ' + str(returnData))
+      returnData["missing_field"] = "The Service Level Agreement (SLA) ID format is wrong, please check it."
       return (returnData, 400)
 
 # CASE: Create NetSlice instantiation
