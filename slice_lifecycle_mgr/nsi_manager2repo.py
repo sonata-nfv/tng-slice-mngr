@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3.4
 """
 ## Copyright (c) 2015 SONATA-NFV, 2017 5GTANGO [, ANY ADDITIONAL AFFILIATION]
 ## ALL RIGHTS RESERVED.
@@ -31,7 +32,7 @@
 ## acknowledge the contributions of their colleagues of the 5GTANGO
 ## partner consortium (www.5gtango.eu).
 """
-#!/usr/bin/python
+
 import os, sys, requests, json, logging, time
 from flask import jsonify
 
