@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 """
 ## Copyright (c) 2015 SONATA-NFV, 2017 5GTANGO [, ANY ADDITIONAL AFFILIATION]
 ## ALL RIGHTS RESERVED.
