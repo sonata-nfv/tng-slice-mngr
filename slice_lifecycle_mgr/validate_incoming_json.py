@@ -66,10 +66,11 @@ def is_valid_uuid(uuid_to_test, version=4):
 # }
 def validateCreateTemplate (jsonData):
   for item in jsonData['sliceServices']:
+    LOG.info('FormValidator check slaID: ' + str(item['slaID']) + "type: " + str(type(item['slaID'])))
     if (is_valid_uuid (item['slaID']) == True):
       returnData["missing_field"] = "UUID value is OK!!"
       return (returnData, 201)
-    elif item['slaID']) == None:
+    elif item['slaID'] == None:
       returnData["missing_field"] = "None value is OK!!"
       return (returnData, 201)
     else:
