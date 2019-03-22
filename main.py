@@ -98,12 +98,12 @@ def NST_creation():
   # validationResponse = json_validator.validateCreateTemplate(receivedNSTd)
   
   #[0] error_message or valid_json, [1] status code
-  if (validationResponse[1] == 201):
+  #if (validationResponse[1] == 201):
     new_NST = nst_manager.createNST(receivedNSTd)
     return jsonify(new_NST), 201
 
-  else:
-    return jsonify(validationResponse[0]), validationResponse[1]            
+  #else:
+    #return jsonify(validationResponse[0]), validationResponse[1]            
 
 # GETS for all the NetSlice Templates (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
