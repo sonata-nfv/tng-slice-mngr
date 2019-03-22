@@ -33,7 +33,7 @@
 ## partner consortium (www.5gtango.eu).
 """
 
-import os, sys, logging, uuid
+import os, sys, logging, uuid, json
 import objects.nst_content as nst
 
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
@@ -61,7 +61,7 @@ def createNST(jsondata):
   # #NST.NSI_list_ref = []                       # empty until a NetSlice instance is created
 
   # NST_string = vars(NST)
-  NST_string = json.load(jsondata)
+  NST_string = json.loads(jsondata)
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)
   
   return nstcatalogue_jsonresponse
