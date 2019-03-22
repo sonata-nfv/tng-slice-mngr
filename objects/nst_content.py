@@ -46,7 +46,7 @@ class nst_content:
         self.onboardingState = ""         # values are ENABLED/DISABLED in string format
         self.operationalState = ""        # values are ENABLED/DISABLED in string format
         self.usageState = ""              # values are IN_USE/NOT_IN_USE in string format
-        self.5qi_value = ""               # 5QI value defined by the 3GPP for 5G QoS parameters
+        self.slice_qos = ""               # 5QI value defined by the 3GPP for 5G QoS parameters
         self.slice_ns_subnets = []        # list of network services (subnets) composing the slice
         self.slice_vld = []               # list of vlds where the subnets are connected for the service composition
         self.NSI_list_ref = []            # list of NetSlices Instances using this Template
