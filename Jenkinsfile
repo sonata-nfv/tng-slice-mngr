@@ -26,13 +26,13 @@ pipeline {
             }
           }
         }
-        stage('Performing NSI Unit Tests') {
+        /*stage('Performing NSI Unit Tests') {
           steps {
             dir(path: 'unit_tests'){
               sh './nsiapi.sh'
             }
           }
-        }
+        }*/
       }
     }
     stage('Checkstyle') {
