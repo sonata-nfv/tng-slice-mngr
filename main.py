@@ -99,8 +99,8 @@ def NST_creation():
   
   #[0] error_message or valid_json, [1] status code
   #if (validationResponse[1] == 201):
-    new_NST = nst_manager.createNST(receivedNSTd)
-    return jsonify(new_NST), 201
+  new_NST = nst_manager.createNST(receivedNSTd)
+  return jsonify(new_NST), 201
 
   #else:
     #return jsonify(validationResponse[0]), validationResponse[1]            
