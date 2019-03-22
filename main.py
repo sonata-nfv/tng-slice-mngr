@@ -95,7 +95,7 @@ def NST_creation():
   logging.info("SLICE_MAIN: received json from portal: " + str(receivedNSTd))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
-  validationResponse = json_validator.validateCreateTemplate(receivedNSTd)
+  # validationResponse = json_validator.validateCreateTemplate(receivedNSTd)
   
   #[0] error_message or valid_json, [1] status code
   if (validationResponse[1] == 201):
@@ -140,7 +140,7 @@ def NSI_instantiation():
   logging.info("SLICE_MAIN: received json with NST_uuid from portal to instantiate: " + str(new_NSI))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
-  validationResponse = json_validator.validateCreateInstantiation(new_NSI)
+  #validationResponse = json_validator.validateCreateInstantiation(new_NSI)
   
   #[0] error_message or valid_json, [1] status code
   if (validationResponse[1] == 200):
@@ -169,7 +169,7 @@ def NSI_termination(nsiId):
   logging.info("SLICE_MAIN: received json from portal: " + str(terminate_json))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 200 ok
-  validationResponse = json_validator.validateTerminateInstantiation(terminate_json)
+  #validationResponse = json_validator.validateTerminateInstantiation(terminate_json)
   
   #[0] error_message or valid_json, [1] status code
   if (validationResponse[1] == 200):
