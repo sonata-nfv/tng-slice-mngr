@@ -64,8 +64,9 @@ def createNST(jsondata):
   #NST_string = json.dumps(jsondata)
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(jsondata)))
-  #NST_string = jsondata
-  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
+  NST_string = str(jsondata)
+  logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(NST_string)))
+  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)
 
   return nstcatalogue_jsonresponse
 
