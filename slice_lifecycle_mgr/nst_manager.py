@@ -61,7 +61,8 @@ def createNST(jsondata):
   # #NST.NSI_list_ref = []                       # empty until a NetSlice instance is created
 
   # NST_string = vars(NST)
-  NST_string = json.dumps(jsondata)
+  #NST_string = json.dumps(jsondata)
+  NST_string = jsondata
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)
   
   return nstcatalogue_jsonresponse
