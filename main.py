@@ -123,12 +123,13 @@ def getNST(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
 def delete_NST(nstId):
   deleted_NSTid = nst_manager.deleteNST(nstId)
+   logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
   
   if deleted_NSTid == 403:
     returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
-    return jsonify(returnMessage), 403
+    return jsonify(returnMessage)
   else:
-    return jsonify(deleted_NSTid), 204
+    return deleted_NSTid.json(), deleted_NSTid.status_code
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
