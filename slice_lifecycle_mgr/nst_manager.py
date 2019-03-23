@@ -69,7 +69,7 @@ def createNST(jsondata):
   #time.sleep(0.1)
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
 
-  return nstcatalogue_jsonresponse
+  return nstcatalogue_jsonresponse[0], nstcatalogue_jsonresponse[1]
 
 # Updates the information of a selected NST in catalogues
 def updateNST(nstId, NST_string):

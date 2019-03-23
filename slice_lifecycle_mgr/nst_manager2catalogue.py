@@ -72,12 +72,14 @@ def safe_nst(nst_string):
     
     if (response.status_code == 201):
         LOG.info("NST_MNGR2CAT: NSTD storage accepted.")
+        responseValue = 201
     else:
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
+        responseValue = response.status_code
         LOG.info('NST_MNGR2CAT: nstd to catalogues failed: ' + str(error))
     
-    return jsonresponse
+    return jsonresponse, responseValue
        
 # GET all NST information from the catalogues
 def getAll_saved_nst():
