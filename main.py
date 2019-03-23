@@ -123,7 +123,7 @@ def getNST(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
 def delete_NST(nstId):
   deleted_NSTid = nst_manager.deleteNST(nstId)
-   logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
+  logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
   
   if deleted_NSTid == 403:
     returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
