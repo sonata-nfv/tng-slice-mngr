@@ -127,9 +127,8 @@ def delete_NST(nstId):
   if deleted_NSTid == 403:
     returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
     return jsonify(returnMessage), 403
-
   else:
-    return 204
+    return jsonify(deleted_NSTid), 204
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
