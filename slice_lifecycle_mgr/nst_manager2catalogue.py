@@ -58,10 +58,12 @@ def safe_nst(nst_string):
     LOG.info("NST_MNGR2CAT: Sending information to the catalogues")
     time.sleep(0.1)
     url = get_base_url() + '/api/catalogues/v2/nsts'
+    LOG.info("NST_MNGR2CAT_type_nst_string: " + str(type(nst_string)))
+    time.sleep(0.1)
     data = json.dumps(nst_string)
     LOG.info("NST_MNGR2CAT_request_data: " + str(data))
     time.sleep(0.1)
-    LOG.info("NST_MNGR2CAT_request_data: " + str(type(data)))
+    LOG.info("NST_MNGR2CAT_type_data: " + str(type(data)))
     time.sleep(0.1)
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     LOG.info("NST_MNGR2CAT_response_data: " + response.text)

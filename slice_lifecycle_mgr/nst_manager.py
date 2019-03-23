@@ -62,15 +62,12 @@ def createNST(jsondata):
   # #NST.NSI_list_ref = []                       # empty until a NetSlice instance is created
 
   # NST_string = vars(NST)
-  #NST_string = json.dumps(jsondata)
-  logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
-  time.sleep(0.1)
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(jsondata)))
   time.sleep(0.1)
-  NST_string = str(jsondata)
-  logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(NST_string)))
-  time.sleep(0.1)
-  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)
+  #NST_string = str(jsondata)
+  #logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(NST_string)))
+  #time.sleep(0.1)
+  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
 
   return nstcatalogue_jsonresponse
 
