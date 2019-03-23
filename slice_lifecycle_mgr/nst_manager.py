@@ -33,7 +33,7 @@
 ## partner consortium (www.5gtango.eu).
 """
 
-import os, sys, logging, uuid, json
+import os, sys, logging, uuid, json, time
 import objects.nst_content as nst
 
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
@@ -43,6 +43,7 @@ import database.database as db
 # Creates a NST and sends it to catalogues
 def createNST(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
+  time.sleep(0.1)
   # NST = nst.nst_content()
   # #NST.id = nst_uuid                            # given by the catalogues
   # NST.name = jsondata['name']
@@ -63,9 +64,12 @@ def createNST(jsondata):
   # NST_string = vars(NST)
   #NST_string = json.dumps(jsondata)
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
+  time.sleep(0.1)
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(jsondata)))
+  time.sleep(0.1)
   NST_string = str(jsondata)
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(NST_string)))
+  time.sleep(0.1)
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)
 
   return nstcatalogue_jsonresponse
