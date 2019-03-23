@@ -57,9 +57,10 @@ def get_base_url():
 def safe_nst(nst_string):
     LOG.info("NST_MNGR2CAT: Sending information to the catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts'
-    #data = json.dumps(nst_string)
+    data = json.dumps(nst_string)
     data = nst_string
     LOG.info("NST_MNGR2CAT_request_data: " + str(data))
+    LOG.info("NST_MNGR2CAT_request_data: " + str(type(data)))
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     LOG.info("NST_MNGR2CAT_response_data: " + response.text)
     jsonresponse = json.loads(response.text)
