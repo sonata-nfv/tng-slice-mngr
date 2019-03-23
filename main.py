@@ -129,7 +129,7 @@ def delete_NST(nstId):
     return jsonify(returnMessage), 403
 
   else:
-    return jsonify(deleted_NSTid), 204
+    return 204
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################

@@ -43,32 +43,7 @@ import database.database as db
 # Creates a NST and sends it to catalogues
 def createNST(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
-  time.sleep(0.1)
-  # NST = nst.nst_content()
-  # #NST.id = nst_uuid                            # given by the catalogues
-  # NST.name = jsondata['name']
-  # NST.version = jsondata['version']
-  # NST.author = jsondata['author']
-  # NST.vendor = jsondata['vendor']
-  # NST.description = jsondata['description']
-  # for nsiId_item in jsondata['sliceServices']:
-  #   if (nsiId_item['slaID'] == "None"):
-  #     nsiId_item['slaID'] = None
-  #     nsiId_item['slaName'] = None
-  #   NST.sliceServices.append(nsiId_item)
-  # NST.onboardingState = "ENABLED"
-  # NST.operationalState = "ENABLED"
-  # NST.usageState = "NOT_IN_USE"
-  # #NST.NSI_list_ref = []                       # empty until a NetSlice instance is created
-
-  # NST_string = vars(NST)
-  logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(jsondata)))
-  time.sleep(0.1)
-  #NST_string = str(jsondata)
-  #logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(NST_string)))
-  #time.sleep(0.1)
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
-
   return nstcatalogue_jsonresponse[0], nstcatalogue_jsonresponse[1]
 
 # Updates the information of a selected NST in catalogues

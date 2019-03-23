@@ -56,30 +56,17 @@ def get_base_url():
 # POST to send the NST information to the catalogues
 def safe_nst(nst_string):
     LOG.info("NST_MNGR2CAT: Sending information to the catalogues")
-    time.sleep(0.1)
     url = get_base_url() + '/api/catalogues/v2/nsts'
-    LOG.info("NST_MNGR2CAT_type_nst_string: " + str(type(nst_string)))
-    time.sleep(0.1)
     data = json.dumps(nst_string)
-    LOG.info("NST_MNGR2CAT_request_data: " + str(data))
-    time.sleep(0.1)
-    LOG.info("NST_MNGR2CAT_type_data: " + str(type(data)))
-    time.sleep(0.1)
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
-    LOG.info("NST_MNGR2CAT_response_data: " + response.text)
-    time.sleep(0.1)
     jsonresponse = json.loads(response.text)
     
-    if (response.status_code == 201):
-        LOG.info("NST_MNGR2CAT: NSTD storage accepted.")
-        responseValue = 201
-    else:
+    if (response.status_code != 201):
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
-        responseValue = response.status_code
         LOG.info('NST_MNGR2CAT: nstd to catalogues failed: ' + str(error))
     
-    return jsonresponse, responseValue
+    return jsonresponse, response.status_code
        
 # GET all NST information from the catalogues
 def getAll_saved_nst():
