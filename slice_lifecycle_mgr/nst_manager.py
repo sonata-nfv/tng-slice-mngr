@@ -62,9 +62,11 @@ def createNST(jsondata):
 
   # NST_string = vars(NST)
   #NST_string = json.dumps(jsondata)
-  NST_string = jsondata
-  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)
-  
+  logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
+  logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(type(jsondata)))
+  #NST_string = jsondata
+  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
+
   return nstcatalogue_jsonresponse
 
 # Updates the information of a selected NST in catalogues
