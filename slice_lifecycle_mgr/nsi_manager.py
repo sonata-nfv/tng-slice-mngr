@@ -309,47 +309,47 @@ def createNSI(nsi_json):
   nst_json = catalogue_response['nstd']
 
   # creates NSI with the received information
-  NSI = parseNewNSI(nst_json, nsi_json)
+  new_nsir = parseNewNSI(nst_json, nsi_json)
 
   # saving the NSI into the repositories
-  nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(NSI))
+  #nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(NSI))
+  nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  thread_instantiation = thread_instantiate(NSI, nst_json)
-  thread_instantiation.start()
+  #thread_instantiation = thread_instantiate(new_nsir, nst_json)
+  #thread_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
 # Creates the object for the previous function from the information gathered
 def parseNewNSI(nst_json, nsi_json):
-  uuid_nsi = str(uuid.uuid4())
-  if nsi_json['name']:
-    name = nsi_json['name']
-  else:
-    name = "Mock_Name"
-
+  nsir_dict = {}
+  nsir_dict['id'] = str(uuid.uuid4())
+  nsir_dict['name'] = nsi_json['name']
   if nsi_json['description']:
-    description = nsi_json['description']
+    nsir_dict['description'] = nsi_json['description']
   else:
-    description = "Mock_Description"
-
-  nstId = nsi_json['nstId']
-  vendor = nst_json['vendor']
-  nstName = nst_json['name']
-  nstVersion = nst_json['version']
-  flavorId = ""                                           #TODO: where does it come from??
-  sapInfo = ""                                            #TODO: where does it come from??
-  nsiState = "INSTANTIATING"
-  instantiateTime = str(datetime.datetime.now().isoformat())
-  terminateTime = ""
-  scaleTime = ""
-  updateTime = instantiateTime
-  sliceCallback = nsi_json['callback']                    #URL used to call back the GK when the slice instance is READY/ERROR
-  netServInstance_Uuid = []                               #values given when services are instantiated by the SP
-
-  NSI=nsi.nsi_content(uuid_nsi, name, description, nstId, vendor, nstName, nstVersion, flavorId, 
-                sapInfo, nsiState, instantiateTime, terminateTime, scaleTime, updateTime, sliceCallback, netServInstance_Uuid)
-  return NSI
+    nsir_dict['description'] = 'Mock_Description'
+  nsir_dict['vendor'] = nst_json['vendor']
+  nsir_dict['nst-ref'] = nsi_json['nstId']
+  nsir_dict['nst-name'] = nst_json['name']
+  nsir_dict['nst-version'] = nst_json['version']
+  nsir_dict['nsi-status'] = 'INSTANTIATING'
+  nsir_dict['errorLog'] = ''
+  if nsi_json['datacenter']:
+      nsir_dict['datacenter'] = nsi_json['datacenter']
+  else:
+    nsir_dict['datacenter'] = ''
+  nsir_dict['instantiateTime'] = str(datetime.datetime.now().isoformat())
+  nsir_dict['terminateTime'] = ''
+  nsir_dict['scaleTime'] = ''
+  nsir_dict['updateTime'] = ''
+  nsir_dict['sliceCallback'] = nsi_json['callback']  #URL used to call back the GK when the slice instance is READY/ERROR
+  nsir_dict['5qiValue'] = nst_json['5qi_value']
+  nsir_dict['nsr-list'] = []
+  nsir_dict['vldr-list'] = []
+  
+  return nsir_dict
 
 # Updates a NSI with the latest informationg coming from the MANO/GK
 #TODO: make updateInstantiatingNSI & updateTerminatingNSI one single function to update any NSI
