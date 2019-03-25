@@ -36,7 +36,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(response_NSI["vendor"], "5GTango")
         self.assertEqual(response_NSI["description"], "5gTango_descriptor")
         self.assertEqual(response_NSI["nsi-status"], "INSTANTIATING")
-        self.assertEqual(response_NSI["nstId"], "096c26f9-6142-43d2-8521-57cea9e76c6c")
+        self.assertEqual(response_NSI["nst-ref"], "096c26f9-6142-43d2-8521-57cea9e76c6c")
         
     
 #    def test_get_NSI(self):
