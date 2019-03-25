@@ -309,10 +309,11 @@ def createNSI(nsi_json):
   nst_json = catalogue_response['nstd']
 
   # creates NSI with the received information
-  new_nsir = parseNewNSI(nst_json, nsi_json)
+  new_nsir = createBasicNSI(nst_json, nsi_json)
+  new_nsir = addSubnets2NSi(new_nsir, nst_json["slice_ns_subnets"])
+  # new_nsir = addVLD2NSi(new_nsir, nst_json["slice_ns_subnets"])    #TODO: function to add VLD information into the NSI
 
   # saving the NSI into the repositories
-  #nsirepo_jsonresponse = nsi_repo.safe_nsi(vars(NSI))
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
@@ -322,7 +323,7 @@ def createNSI(nsi_json):
   return nsirepo_jsonresponse, 201
 
 # Creates the initial NSI object to send to the repositories
-def parseNewNSI(nst_json, nsi_json):
+def createBasicNSI(nst_json, nsi_json):
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
@@ -348,27 +349,33 @@ def parseNewNSI(nst_json, nsi_json):
   nsir_dict['5qiValue'] = nst_json['5qi_value']
   nsir_dict['nsr-list'] = []
   nsir_dict['vldr-list'] = []
+ 
+  return nsir_dict
 
-  # adding initial netservice (subnets) instances information into the nsi
+# Adds the basic subnets information to the NSI record
+def addSubnets2NSi(nsi_json, subnets_list):
+  nsr_list = []
   serv_seq = 1
-  for subnet_item in nst_json["slice_ns_subnets"]:
+  for subnet_item in subnets_list:
     subnet_record = {}
     subnet_record['nsrName'] = nsi_json['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
-    subnet_record['nsrId'] = null
+    subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
     subnet_record['subnet-ref'] = subnet_item['id']
-    subnet_record['sla-name'] = subnet_item['sla-name']     #TODO: add instantiation parameters
-    subnet_record['sla-ref'] = subnet_item['sla-ref']       #TODO: add instantiation parameters
+    subnet_record['subnet-nsdId-ref'] = subnets_list['nsd-ref']
+    subnet_record['sla-name'] = subnet_item['sla-name']                           #TODO: add instantiation parameters
+    subnet_record['sla-ref'] = subnet_item['sla-ref']                             #TODO: add instantiation parameters
     subnet_record['working-status'] = 'INSTANTIATING'
     subnet_record['requestId'] = ''
-    subnet_record['vimAccountId'] = null                    #TODO: add instantiation parameters
+    subnet_record['vimAccountId'] = '00000000-0000-0000-0000-000000000000'        #TODO: add instantiation parameters
     subnet_record['isshared'] = subnet_item['is-shared']
     subnet_record['isinstantiated'] = False
     subnet_record['vld'] = []
 
-    nsir_dict['nsr-list'].append(subnet_record)
+    nsr_list.append(subnet_record)
     serv_seq = serv_seq + 1
- 
-  return nsir_dict
+  
+  nsi_json['nsr-list'] = nsr_list
+  return nsi_json
 
 # Updates a NSI with the latest informationg coming from the MANO/GK
 #TODO: make updateInstantiatingNSI & updateTerminatingNSI one single function to update any NSI
