@@ -354,13 +354,13 @@ def parseNewNSI(nst_json, nsi_json):
   for subnet_item in nst_json["slice_ns_subnets"]:
     subnet_record = {}
     subnet_record['nsrName'] = nsi_json['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
-    subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
+    subnet_record['nsrId'] = null
     subnet_record['subnet-ref'] = subnet_item['id']
     subnet_record['sla-name'] = subnet_item['sla-name']     #TODO: add instantiation parameters
     subnet_record['sla-ref'] = subnet_item['sla-ref']       #TODO: add instantiation parameters
     subnet_record['working-status'] = 'INSTANTIATING'
     subnet_record['requestId'] = ''
-    subnet_record['vimAccountId'] = nsi_json['datacenter']  #TODO: add instantiation parameters
+    subnet_record['vimAccountId'] = null                    #TODO: add instantiation parameters
     subnet_record['isshared'] = subnet_item['is-shared']
     subnet_record['isinstantiated'] = False
     subnet_record['vld'] = []
