@@ -361,7 +361,7 @@ def addSubnets2NSi(nsi_json, subnets_list):
     subnet_record['nsrName'] = nsi_json['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
     subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
     subnet_record['subnet-ref'] = subnet_item['id']
-    subnet_record['subnet-nsdId-ref'] = subnets_list['nsd-ref']
+    subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
     subnet_record['sla-name'] = subnet_item['sla-name']                           #TODO: add instantiation parameters
     subnet_record['sla-ref'] = subnet_item['sla-ref']                             #TODO: add instantiation parameters
     subnet_record['working-status'] = 'INSTANTIATING'
