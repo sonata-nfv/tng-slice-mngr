@@ -321,7 +321,7 @@ def createNSI(nsi_json):
 
   return nsirepo_jsonresponse, 201
 
-# Creates the object for the previous function from the information gathered
+# Creates the initial NSI object to send to the repositories
 def parseNewNSI(nst_json, nsi_json):
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
@@ -348,7 +348,26 @@ def parseNewNSI(nst_json, nsi_json):
   nsir_dict['5qiValue'] = nst_json['5qi_value']
   nsir_dict['nsr-list'] = []
   nsir_dict['vldr-list'] = []
-  
+
+  # adding initial netservice (subnets) instances information into the nsi
+  serv_seq = 1
+  for subnet_item in nst_json["slice_ns_subnets"]:
+    subnet_record = {}
+    subnet_record['nsrName'] = nsi_json['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
+    subnet_record['nsrId'] = ''
+    subnet_record['subnet-ref'] = subnet_item['id']
+    subnet_record['sla-name'] = subnet_item['sla-name']     #TODO: add instantiation parameters
+    subnet_record['sla-ref'] = subnet_item['sla-ref']       #TODO: add instantiation parameters
+    subnet_record['working-status'] = 'INSTANTIATING'
+    subnet_record['requestId'] = ''
+    subnet_record['vimAccountId'] = nsi_json['datacenter']  #TODO: add instantiation parameters
+    subnet_record['isshared'] = subnet_item['is-shared']
+    subnet_record['isinstantiated'] = False
+    subnet_record['vld'] = []
+
+    nsir_dict['nsr-list'].append(subnet_record)
+    serv_seq = serv_seq + 1
+ 
   return nsir_dict
 
 # Updates a NSI with the latest informationg coming from the MANO/GK
