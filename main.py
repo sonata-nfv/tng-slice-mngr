@@ -144,13 +144,15 @@ def NSI_instantiation():
   #validationResponse = json_validator.validateCreateInstantiation(new_NSI)
   
   #[0] error_message or valid_json, [1] status code
-  if (validationResponse[1] == 200):
+  instantiatedNSI = nsi_manager.createNSI(new_NSI)
+  return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
+"""   if (validationResponse[1] == 200):
     logging.debug(new_NSI)
     instantiatedNSI = nsi_manager.createNSI(new_NSI)
     return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
   else:
-    return jsonify(validationResponse[0]), validationResponse[1]
+    return jsonify(validationResponse[0]), validationResponse[1] """
 
 # INSTANTIATION UPDATE
 # INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that must have the same URL.
