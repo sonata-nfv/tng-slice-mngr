@@ -339,17 +339,13 @@ def createNSI(nsi_json):
   # starts the thread to instantiate while sending back the response
   LOG.info("NSI_MNGR: Calling the instantiation thread.")
   time.sleep(0.1)
-  thread_instantiation = thread_instantiate(new_nsir, nst_json)
+  thread_instantiation = thread_instantiate(new_nsir)
   thread_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
 # Creates the initial NSI object to send to the repositories
 def createBasicNSI(nst_json, nsi_json):
-  LOG.info("NSI_MNGR_createBasicNSI: Show nst_json : "+ str(nst_json))
-  time.sleep(0.1)
-  LOG.info("NSI_MNGR_createBasicNSI: Show nsi_json : "+ str(nsi_json))
-  time.sleep(0.1)
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
@@ -360,44 +356,22 @@ def createBasicNSI(nst_json, nsi_json):
   nsir_dict['vendor'] = nst_json['vendor']
   nsir_dict['nst-ref'] = nsi_json['nstId']
   nsir_dict['nst-name'] = nst_json['name']
-  LOG.info("NSI_MNGR_createBasicNSI: name")
-  time.sleep(0.1)
   nsir_dict['nst-version'] = nst_json['version']
-  LOG.info("NSI_MNGR_createBasicNSI: version")
-  time.sleep(0.1)
   nsir_dict['nsi-status'] = 'INSTANTIATING'
-  LOG.info("NSI_MNGR_createBasicNSI: nsi-status")
-  time.sleep(0.1)
   nsir_dict['errorLog'] = ''
-  LOG.info("NSI_MNGR_createBasicNSI: errorLog")
-  time.sleep(0.1)
-  if (nsi_json['datacenter']):
-      nsir_dict['datacenter'] = nsi_json['datacenter']
-  else:
-    nsir_dict['datacenter'] = '00000000-0000-0000-0000-000000000000'
-  LOG.info("NSI_MNGR_createBasicNSI: datacenter")
-  time.sleep(0.1)
+  #if (nsi_json['datacenter']):
+  #    nsir_dict['datacenter'] = nsi_json['datacenter']
+  #else:
+  nsir_dict['datacenter'] = '00000000-0000-0000-0000-000000000000'
   nsir_dict['instantiateTime'] = str(datetime.datetime.now().isoformat())
-  LOG.info("NSI_MNGR_createBasicNSI: others...")
-  time.sleep(0.1)
   nsir_dict['terminateTime'] = ''
-  LOG.info("NSI_MNGR_createBasicNSI: others...")
-  time.sleep(0.1)
   nsir_dict['scaleTime'] = ''
-  LOG.info("NSI_MNGR_createBasicNSI: others...")
-  time.sleep(0.1)
   nsir_dict['updateTime'] = ''
-  LOG.info("NSI_MNGR_createBasicNSI: others...")
-  time.sleep(0.1)
   nsir_dict['sliceCallback'] = nsi_json['callback']  #URL used to call back the GK when the slice instance is READY/ERROR
-  LOG.info("NSI_MNGR_createBasicNSI: others and others...")
-  time.sleep(0.1)
   nsir_dict['5qiValue'] = nst_json['5qi_value']
   nsir_dict['nsr-list'] = []
   nsir_dict['vldr-list'] = []
 
-  LOG.info("NSI_MNGR: Returns this basic nsi: "+ str(nsir_dict))
-  time.sleep(0.1)
   return nsir_dict
 
 # Adds the basic subnets information to the NSI record
@@ -423,9 +397,6 @@ def addSubnets2NSi(nsi_json, subnets_list):
     serv_seq = serv_seq + 1
   
   nsi_json['nsr-list'] = nsr_list
-
-  LOG.info("NSI_MNGR: Returns this updated nsi: "+ str(nsi_json))
-  time.sleep(0.1)
   return nsi_json
 
 # Updates a NSI with the latest informationg coming from the MANO/GK
