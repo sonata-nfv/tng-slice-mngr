@@ -352,35 +352,43 @@ def createBasicNSI(nst_json, nsi_json):
   time.sleep(0.1)
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
-  LOG.info("NSI_MNGR_createBasicNSI: uuid")
-  time.sleep(0.1)
   nsir_dict['name'] = nsi_json['name']
-  LOG.info("NSI_MNGR_createBasicNSI: name")
-  time.sleep(0.1)
   if (nsi_json['description']):
     nsir_dict['description'] = nsi_json['description']
   else:
     nsir_dict['description'] = 'Mock_Description'
-  LOG.info("NSI_MNGR_createBasicNSI: description")
-  time.sleep(0.1)
   nsir_dict['vendor'] = nst_json['vendor']
   nsir_dict['nst-ref'] = nsi_json['nstId']
   nsir_dict['nst-name'] = nst_json['name']
-  LOG.info("NSI_MNGR_createBasicNSI: others...")
+  LOG.info("NSI_MNGR_createBasicNSI: name")
   time.sleep(0.1)
   nsir_dict['nst-version'] = nst_json['version']
+  LOG.info("NSI_MNGR_createBasicNSI: version")
+  time.sleep(0.1)
   nsir_dict['nsi-status'] = 'INSTANTIATING'
+  LOG.info("NSI_MNGR_createBasicNSI: nsi-status")
+  time.sleep(0.1)
   nsir_dict['errorLog'] = ''
+  LOG.info("NSI_MNGR_createBasicNSI: errorLog")
+  time.sleep(0.1)
   if (nsi_json['datacenter']):
       nsir_dict['datacenter'] = nsi_json['datacenter']
   else:
-    nsir_dict['datacenter'] = ''
+    nsir_dict['datacenter'] = '00000000-0000-0000-0000-000000000000'
   LOG.info("NSI_MNGR_createBasicNSI: datacenter")
   time.sleep(0.1)
   nsir_dict['instantiateTime'] = str(datetime.datetime.now().isoformat())
+  LOG.info("NSI_MNGR_createBasicNSI: others...")
+  time.sleep(0.1)
   nsir_dict['terminateTime'] = ''
+  LOG.info("NSI_MNGR_createBasicNSI: others...")
+  time.sleep(0.1)
   nsir_dict['scaleTime'] = ''
+  LOG.info("NSI_MNGR_createBasicNSI: others...")
+  time.sleep(0.1)
   nsir_dict['updateTime'] = ''
+  LOG.info("NSI_MNGR_createBasicNSI: others...")
+  time.sleep(0.1)
   nsir_dict['sliceCallback'] = nsi_json['callback']  #URL used to call back the GK when the slice instance is READY/ERROR
   LOG.info("NSI_MNGR_createBasicNSI: others and others...")
   time.sleep(0.1)
