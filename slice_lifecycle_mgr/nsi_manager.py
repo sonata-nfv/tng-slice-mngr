@@ -177,15 +177,19 @@ class notify_slice_instantiated(Thread):
             jsonNSI['nsi-status'] = "ERROR"
             break;
 
-        # updates NetSlice template list of slice_instances based on that template
-        if(jsonNSI['nsi-status'] == "INSTANTIATED"):
-          updateNST_jsonresponse = addNSIinNST(jsonNSI["nst-ref"], self.nsiId)
-
         # sends the updated NetSlice instance to the repositories
         jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
 
         repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
 
+        # updates NetSlice template usageState
+        if(jsonNSI['nsi-status'] == "INSTANTIATED"):
+          nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
+          if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
+            #updateNST_jsonresponse = nstd_usagesstatus_update(jsonNSI['nst-ref'], nst_descriptor['nstd'])
+            nstParameter2update = "usageState=IN_USE"
+            updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+    
     finally:
       mutex.release()
       #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
@@ -208,10 +212,10 @@ class thread_terminate(Thread):
   def run(self):
     LOG.info("NSI_MNGR_Terminate: Terminating Services")
     jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
-    for uuidNetServ_item in jsonNSI['netServInstance_Uuid']:
+    for nsr_item in jsonNSI['nsr-list']:
       if (uuidNetServ_item['workingStatus'] != "ERROR"):
         data = {}
-        data["instance_uuid"] = str(uuidNetServ_item["servInstanceId"])
+        data["instance_uuid"] = str(nsr_item["nsrId"])
         data["request_type"] = "TERMINATE_SERVICE"
         data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.nsiId)+"/terminate-change"
 
@@ -236,10 +240,13 @@ class update_service_termination(Thread):
       del jsonNSI["uuid"]
 
       # looks for the right service within the slice and updates it with the new data
-      for service_item in jsonNSI['netServInstance_Uuid']:
-        if (service_item['servInstanceId'] == self.request_json['instance_uuid']):
-          service_item['requestID'] = self.request_json['id']
-          service_item['workingStatus'] = self.request_json['status']
+      for service_item in jsonNSI['nsr-list']:
+        if (service_item['nsrId'] == self.request_json['instance_uuid']):
+          service_item['requestId'] = self.request_json['id']
+          if (self.request_json['status'] == "READY"):
+            service_item['working-status'] = "TERMINATED"
+          else:
+            service_item['working-status'] = self.request_json['status']
           break;
 
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
@@ -266,22 +273,19 @@ class notify_slice_terminated(Thread):
 
       # checks if all services are READY/ERROR to update the slice_status
       all_services_ready = True
-      for service_item in jsonNSI['netServInstance_Uuid']:
-        if (service_item['workingStatus'] == "TERMINATING"):
+      for service_item in jsonNSI['nsr-list']:
+        if (service_item['working-status'] == "TERMINATING"):
           all_services_ready = False
           break;
 
       if (all_services_ready == True):
-        jsonNSI['nsiState'] = "TERMINATED"
+        jsonNSI['nsi-status'] = "TERMINATED"
 
         # validates if any service has error status to apply it to the slice status
-        for service_item in jsonNSI['netServInstance_Uuid']:
+        for service_item in jsonNSI['nsr-list']:
           if (service_item['workingStatus'] == "ERROR"):
-            jsonNSI['nsiState'] = "ERROR"
+            jsonNSI['nsi-status'] = "ERROR"
             break;
-
-        # updates NetSlice template list of slice_instances based on that template
-        updateNST_jsonresponse = removeNSIinNST(jsonNSI['id'], jsonNSI['nstId'])
 
         # sends the updated NetSlice instance to the repositories
         jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
@@ -289,14 +293,18 @@ class notify_slice_terminated(Thread):
 
         repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
 
+        # updates NetSlice template list of slice_instances based on that template
+        removeNSIinNST(jsonNSI['nst-ref'])
+
     finally:
       mutex.release()
+
       #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
       if (all_services_ready == True):
-        # creates a thread with the callback URL to advise the GK this slice is READY
+        # sends the request to notify the GTK the slice is READY
         slice_callback = jsonNSI['sliceCallback']
         json_slice_info = {}
-        json_slice_info['status'] = jsonNSI['nsiState']
+        json_slice_info['status'] = jsonNSI['nsi-status']
         json_slice_info['updateTime'] = jsonNSI['updateTime']
 
         thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
@@ -397,19 +405,18 @@ def updateInstantiatingNSI(nsiId, request_json):
   else:
     return ('{"error":"There is no NSIR in the db."}', 500)
 
-#TODO: remove funct -> look for any INSTANTIATED nsi based on the nst: if any do nothing, else change NST usage.
-# Adds a NSI_id into the NST list of NSIs to keep track of them
-def addNSIinNST(nstId, nsiId):
-  nst_json = nst_catalogue.get_saved_nst(nstId)['nstd']
+# Updateds the usages status of a nstd
+def nstd_usagesstatus_update(nstId, nstd_item):
+  #nst_json = nst_catalogue.get_saved_nst(nstId)['nstd']
+  #if (nstd_item['usageState'] == "NOT_IN_USE"):
+    # updates (adds) the list of NSIref of original NST
+    # nstParameter2update = "NSI_list_ref.append="+str(nsiId)
+    # updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
 
   # updates the usageState parameter
-  if (nst_json['usageState'] == "NOT_IN_USE"):
+  if (nstd_item['usageState'] == "NOT_IN_USE"):
     nstParameter2update = "usageState=IN_USE"
     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-
-  # updates (adds) the list of NSIref of original NST
-  nstParameter2update = "NSI_list_ref.append="+str(nsiId)
-  updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
 
   return updatedNST_jsonresponse
 
@@ -429,14 +436,14 @@ def terminateNSI(nsiId, TerminOrder):
     instan_time = dateutil.parser.parse(jsonNSI['instantiateTime'])
 
   # depending on the termin_time executes one action or another
-  if termin_time == 0 and jsonNSI['nsiState'] == "INSTANTIATED":
+  if termin_time == 0 and jsonNSI['nsi-status'] == "INSTANTIATED":
     jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
     jsonNSI['sliceCallback'] = TerminOrder['callback']
-    jsonNSI['nsiState'] = "TERMINATING"
+    jsonNSI['nsi-status'] = "TERMINATING"
 
-    for uuidNetServ_item in jsonNSI['netServInstance_Uuid']:
-      if (uuidNetServ_item['workingStatus'] != "ERROR"):
-        uuidNetServ_item['workingStatus'] = "TERMINATING"
+    for terminate_nsr_item in jsonNSI['nsr-list']:
+      if (terminate_nsr_item['working-status'] != "ERROR"):
+        terminate_nsr_item['working-status'] = "TERMINATING"
 
     repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
 
@@ -476,18 +483,33 @@ def updateTerminatingNSI(nsiId, request_json):
 
 #TODO: remove funct -> look for any INSTANTIATED nsi based on the nst: if any do nothing, else change NST usage.
 # Removes a NSI_id from the NST list of NSIs to keep track of them
-def removeNSIinNST(nsiId, nstId):
-  nstParameter2update = "NSI_list_ref.pop="+str(nsiId)
-  updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+def removeNSIinNST(nstId):
+  # ------ OLD VERSION ---------
+  #nstParameter2update = "NSI_list_ref.pop="+str(nsiId)
+  #updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
 
   # if there are no more NSI assigned to the NST, updates usageState parameter
-  catalogue_response = nst_catalogue.get_saved_nst(nstId)
-  nst_json = catalogue_response['nstd']
-  if not nst_json['NSI_list_ref']:
+  # catalogue_response = nst_catalogue.get_saved_nst(nstId)
+  # nst_json = catalogue_response['nstd']
+  # if not nst_json['NSI_list_ref']:
+  #   if (nst_json['usageState'] == "IN_USE"):
+  #     nstParameter2update = "usageState=NOT_IN_USE"
+  #     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+  # ----------------------------
+  nsis_list = nsi_repo.getAll_saved_nsi()
+  all_nsis_terminated = True
+  for nsis_item in nsis_list:
+    if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] == "INSTANTIATED" or nsis_item['nsi-status'] == "INSTANTIATING" or nsis_item['nsi-status'] == "READY":
+        all_nsis_terminated = False
+        break;
+
+  if (all_nsis_terminated):
+    nst_descriptor = nst_catalogue.get_saved_nst(nstId)
+    nst_json = nst_descriptor['nstd']
     if (nst_json['usageState'] == "IN_USE"):
       nstParameter2update = "usageState=NOT_IN_USE"
       updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-
+  
 
 ############################################ NSI GET SECTION ############################################
 # Gets one single NSI item information
