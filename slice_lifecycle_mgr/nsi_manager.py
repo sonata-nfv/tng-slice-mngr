@@ -499,7 +499,7 @@ def removeNSIinNST(nstId):
   nsis_list = nsi_repo.getAll_saved_nsi()
   all_nsis_terminated = True
   for nsis_item in nsis_list:
-    if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] == "INSTANTIATED" or nsis_item['nsi-status'] == "INSTANTIATING" or nsis_item['nsi-status'] == "READY":
+    if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] == "INSTANTIATED" or nsis_item['nsi-status'] == "INSTANTIATING" or nsis_item['nsi-status'] == "READY"):
         all_nsis_terminated = False
         break;
 
