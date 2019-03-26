@@ -337,7 +337,7 @@ def createBasicNSI(nst_json, nsi_json):
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
-  if nsi_json['description']:
+  if (nsi_json['description']):
     nsir_dict['description'] = nsi_json['description']
   else:
     nsir_dict['description'] = 'Mock_Description'
@@ -347,7 +347,7 @@ def createBasicNSI(nst_json, nsi_json):
   nsir_dict['nst-version'] = nst_json['version']
   nsir_dict['nsi-status'] = 'INSTANTIATING'
   nsir_dict['errorLog'] = ''
-  if nsi_json['datacenter']:
+  if (nsi_json['datacenter']):
       nsir_dict['datacenter'] = nsi_json['datacenter']
   else:
     nsir_dict['datacenter'] = ''
