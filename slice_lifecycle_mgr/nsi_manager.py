@@ -58,20 +58,23 @@ class thread_instantiate(Thread):
     Thread.__init__(self)
     self.NSI = NSI
   def run(self):
-      # to put in order the services within a slice in the portal
-      LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
-      for nsr_item in self.NSI['nsr-list']:
-        data = {}
-        data['name'] = nsr_item['nsrName']
-        data['service_uuid'] = nsr_item['subnet-nsdId-ref']
-        data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/instantiation-change"
-        #data['ingresses'] = []
-        #data['egresses'] = []
-        #data['blacklist'] = []
-        data['sla_id'] = nsr_item['sla-ref']
+    # to put in order the services within a slice in the portal
+    LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
+    time.sleep(0.1)
+    for nsr_item in self.NSI['nsr-list']:
+      data = {}
+      data['name'] = nsr_item['nsrName']
+      data['service_uuid'] = nsr_item['subnet-nsdId-ref']
+      data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/instantiation-change"
+      #data['ingresses'] = []
+      #data['egresses'] = []
+      #data['blacklist'] = []
+      data['sla_id'] = nsr_item['sla-ref']
 
-        # requests to instantiate NSI services to the SP
-        instantiation_response = mapper.net_serv_instantiate(data)
+      LOG.info("NSI_MNGR: Data of instantiation requests: " + str(data))
+      time.sleep(0.1)
+      # requests to instantiate NSI services to the SP
+      instantiation_response = mapper.net_serv_instantiate(data)
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
 ## Objctive:
@@ -314,19 +317,28 @@ class notify_slice_terminated(Thread):
 # Does all the process to create the NSI object (gathering the information and sending orders to GK)
 def createNSI(nsi_json):
   LOG.info("NSI_MNGR: Creates and Instantiates a new NSI.")
+  time.sleep(0.1)
   nstId = nsi_json['nstId']
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
   nst_json = catalogue_response['nstd']
 
   # creates NSI with the received information
+  LOG.info("NSI_MNGR: Creating Basic NSI structure")
+  time.sleep(0.1)
   new_nsir = createBasicNSI(nst_json, nsi_json)
+  LOG.info("NSI_MNGR: Adding subnets infromationg into the basic structure")
+  time.sleep(0.1)
   new_nsir = addSubnets2NSi(new_nsir, nst_json["slice_ns_subnets"])
   # new_nsir = addVLD2NSi(new_nsir, nst_json["slice_ns_subnets"])    #TODO: function to add VLD information into the NSI
 
   # saving the NSI into the repositories
+  LOG.info("NSI_MNGR: Saving NSI into repositories")
+  time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
+  LOG.info("NSI_MNGR: Calling the instantiation thread.")
+  time.sleep(0.1)
   thread_instantiation = thread_instantiate(new_nsir, nst_json)
   thread_instantiation.start()
 
@@ -359,7 +371,9 @@ def createBasicNSI(nst_json, nsi_json):
   nsir_dict['5qiValue'] = nst_json['5qi_value']
   nsir_dict['nsr-list'] = []
   nsir_dict['vldr-list'] = []
- 
+
+  LOG.info("NSI_MNGR: Returns this basic nsi: "+ str(nsir_dict))
+  time.sleep(0.1)
   return nsir_dict
 
 # Adds the basic subnets information to the NSI record
@@ -385,6 +399,9 @@ def addSubnets2NSi(nsi_json, subnets_list):
     serv_seq = serv_seq + 1
   
   nsi_json['nsr-list'] = nsr_list
+
+  LOG.info("NSI_MNGR: Returns this updated nsi: "+ str(nsi_json))
+  time.sleep(0.1)
   return nsi_json
 
 # Updates a NSI with the latest informationg coming from the MANO/GK
