@@ -54,28 +54,24 @@ LOG.setLevel(logging.INFO)
 ## Objctive:
 ## Params:
 class thread_instantiate(Thread):
-  def __init__(self, NSI, nst_json):
+  def __init__(self, NSI):
     Thread.__init__(self)
     self.NSI = NSI
-    self.nst_json = nst_json
   def run(self):
       # to put in order the services within a slice in the portal
       LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
-      serv_seq = 1
-      for NetServ_item in self.nst_json['sliceServices']:
+      for nsr_item in self.NSI['nsr-list']:
         data = {}
-        data['name'] = self.NSI.name + "-" + NetServ_item['servname'] + "-" + str(serv_seq)
-        data['service_uuid'] = NetServ_item['nsdID']
-        data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI.id)+"/instantiation-change"
+        data['name'] = nsr_item['nsrName']
+        data['service_uuid'] = nsr_item['subnet-nsdId-ref']
+        data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/instantiation-change"
         #data['ingresses'] = []
         #data['egresses'] = []
         #data['blacklist'] = []
-        data['sla_id'] = NetServ_item['slaID']
+        data['sla_id'] = nsr_item['sla-ref']
 
         # requests to instantiate NSI services to the SP
         instantiation_response = mapper.net_serv_instantiate(data)
-
-        serv_seq = serv_seq + 1
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
 ## Objctive:
@@ -96,46 +92,52 @@ class update_service_instantiation(Thread):
 
       serviceInstance = {}
       # if list is empty, full it with the first element
-      if not jsonNSI['netServInstance_Uuid']:
-        serviceInstance['servId'] = self.request_json['service_uuid']
-        serviceInstance['servName'] = self.request_json['name']
-        serviceInstance['workingStatus'] = self.request_json['status']
-        serviceInstance['requestID'] = self.request_json['id']
-        if(self.request_json['instance_uuid'] == None):
-          serviceInstance['servInstanceId'] = " "
-        else:
-          serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
+      # if not jsonNSI['netServInstance_Uuid']:
+      #   serviceInstance['servId'] = self.request_json['service_uuid']
+      #   serviceInstance['servName'] = self.request_json['name']
+      #   serviceInstance['workingStatus'] = self.request_json['status']
+      #   serviceInstance['requestID'] = self.request_json['id']
+      #   if(self.request_json['instance_uuid'] == None):
+      #     serviceInstance['servInstanceId'] = " "
+      #   else:
+      #     serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
 
-        # adds the service instance into the NSI json
-        jsonNSI['netServInstance_Uuid'].append(serviceInstance)
+      #   # adds the service instance into the NSI json
+      #   jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
       # list has at least one element
-      else:
-        service_added = False
+      #else:
+      #  service_added = False
 
-        # looks all the already added services and updates the right
-        for service_item in jsonNSI['netServInstance_Uuid']:
-          # if the current request already exists, update it.
-          if (service_item['requestID'] == self.request_json['id']):
-            service_item['workingStatus'] = self.request_json['status']
-            if(self.request_json['instance_uuid'] != None):
-              service_item['servInstanceId'] = self.request_json['instance_uuid']
-              service_added = True                                  # used to avoid a for-else loop with the next if
-            break;
-
-        # the current request doesn't exist in the list, adds it.
-        if (service_added == False):
-          serviceInstance['servId'] = self.request_json['service_uuid']
-          serviceInstance['servName'] = self.request_json['name']
-          serviceInstance['workingStatus'] = self.request_json['status']
-          serviceInstance['requestID'] = self.request_json['id']
-          if(self.request_json['instance_uuid'] == None):
-            serviceInstance['servInstanceId'] = " "
+      # looks all the already added services and updates the right
+      for service_item in jsonNSI['nsr-list']:
+        # if the current request already exists, update it.
+        if (service_item['nsrName'] == self.request_json['name']):
+          service_item['requestId'] = self.request_json['id']
+          
+          if (self.request_json['status'] == "READY"):
+          service_item['working-status'] = "INSTANTIATED"
           else:
-            serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
+            service_item['working-status'] = self.request_json['status']
+          
+          if (self.request_json['instance_uuid'] != None):
+            service_item['nsrId'] = self.request_json['instance_uuid']                                  # used to avoid a for-else loop with the next if
+          
+          break;
 
-          # adds the service instance into the NSI json
-          jsonNSI['netServInstance_Uuid'].append(serviceInstance)
+        # # the current request doesn't exist in the list, adds it.
+        # if (service_added == False):
+        #   serviceInstance['servId'] = self.request_json['service_uuid']
+        #   serviceInstance['servName'] = self.request_json['name']
+        #   serviceInstance['workingStatus'] = self.request_json['status']
+        #   serviceInstance['requestID'] = self.request_json['id']
+        #   if(self.request_json['instance_uuid'] == None):
+        #     serviceInstance['servInstanceId'] = " "
+        #   else:
+        #     serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
+
+        # # adds the service instance into the NSI json
+        # jsonNSI['netServInstance_Uuid'].append(serviceInstance)
 
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
@@ -161,23 +163,23 @@ class notify_slice_instantiated(Thread):
 
       # checks if all services are READY/ERROR to update the slice_status
       all_services_ready = True
-      for service_item in jsonNSI['netServInstance_Uuid']:
-        if (service_item['workingStatus'] == "INSTANTIATING"):
+      for service_item in jsonNSI['nsr-list']:
+        if (service_item['working-status'] == "INSTANTIATING"):
           all_services_ready = False
           break;
 
       if (all_services_ready == True):
-        jsonNSI['nsiState'] = "INSTANTIATED"
+        jsonNSI['nsi-status'] = "INSTANTIATED"
 
         # validates if any service has error status to apply it to the slice status
-        for service_item in jsonNSI['netServInstance_Uuid']:
-          if (service_item['workingStatus'] == "ERROR"):
-            jsonNSI['nsiState'] = "ERROR"
+        for service_item in jsonNSI['nsr-list']:
+          if (service_item['working-status'] == "ERROR"):
+            jsonNSI['nsi-status'] = "ERROR"
             break;
 
         # updates NetSlice template list of slice_instances based on that template
-        if(jsonNSI['nsiState'] == "INSTANTIATED"):
-          updateNST_jsonresponse = addNSIinNST(jsonNSI["nstId"], self.nsiId)
+        if(jsonNSI['nsi-status'] == "INSTANTIATED"):
+          updateNST_jsonresponse = addNSIinNST(jsonNSI["nst-ref"], self.nsiId)
 
         # sends the updated NetSlice instance to the repositories
         jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
@@ -191,7 +193,7 @@ class notify_slice_instantiated(Thread):
         # creates a thread with the callback URL to advise the GK this slice is READY
         slice_callback = jsonNSI['sliceCallback']
         json_slice_info = {}
-        json_slice_info['status'] = jsonNSI['nsiState']
+        json_slice_info['status'] = jsonNSI['nsi-status']
         json_slice_info['updateTime'] = jsonNSI['updateTime']
 
         thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
@@ -317,8 +319,8 @@ def createNSI(nsi_json):
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  #thread_instantiation = thread_instantiate(new_nsir, nst_json)
-  #thread_instantiation.start()
+  thread_instantiation = thread_instantiate(new_nsir, nst_json)
+  thread_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
@@ -366,7 +368,7 @@ def addSubnets2NSi(nsi_json, subnets_list):
     subnet_record['sla-ref'] = subnet_item['sla-ref']                             #TODO: add instantiation parameters
     subnet_record['working-status'] = 'INSTANTIATING'
     subnet_record['requestId'] = ''
-    subnet_record['vimAccountId'] = '00000000-0000-0000-0000-000000000000'        #TODO: add instantiation parameters
+    subnet_record['vimAccountId'] = nsi_json['datacenter']                        #TODO: add instantiation parameters
     subnet_record['isshared'] = subnet_item['is-shared']
     subnet_record['isinstantiated'] = False
     subnet_record['vld'] = []

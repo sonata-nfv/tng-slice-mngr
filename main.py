@@ -144,20 +144,23 @@ def NSI_instantiation():
   #validationResponse = json_validator.validateCreateInstantiation(new_NSI)
   
   #[0] error_message or valid_json, [1] status code
-  instantiatedNSI = nsi_manager.createNSI(new_NSI)
-  return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
-"""   if (validationResponse[1] == 200):
+  """
+  if (validationResponse[1] == 200):
     logging.debug(new_NSI)
     instantiatedNSI = nsi_manager.createNSI(new_NSI)
     return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
   else:
-    return jsonify(validationResponse[0]), validationResponse[1] """
+    return jsonify(validationResponse[0]), validationResponse[1]
+  """
+  instantiatedNSI = nsi_manager.createNSI(new_NSI)
+  return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
 # INSTANTIATION UPDATE
 # INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
 def updateSliceInstance(nsiId):
+  logging.info("SLICE_MAIN: received json tu update nsi: " + str(request.json))
   updatedService = request.json
   sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
 
