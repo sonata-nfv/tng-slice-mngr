@@ -346,10 +346,6 @@ def createNSI(nsi_json):
 
 # Creates the initial NSI object to send to the repositories
 def createBasicNSI(nst_json, nsi_json):
-  LOG.info("NSI_MNGR_createBasicNSI: Show nst_json : "+ str(nst_json))
-  time.sleep(0.1)
-  LOG.info("NSI_MNGR_createBasicNSI: Show nsi_json : "+ str(nsi_json))
-  time.sleep(0.1)
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
@@ -360,21 +356,13 @@ def createBasicNSI(nst_json, nsi_json):
   nsir_dict['vendor'] = nst_json['vendor']
   nsir_dict['nst-ref'] = nsi_json['nstId']
   nsir_dict['nst-name'] = nst_json['name']
-  LOG.info("NSI_MNGR_createBasicNSI: name")
-  time.sleep(0.1)
   nsir_dict['nst-version'] = nst_json['version']
-  LOG.info("NSI_MNGR_createBasicNSI: version")
-  time.sleep(0.1)
   nsir_dict['nsi-status'] = 'INSTANTIATING'
-  LOG.info("NSI_MNGR_createBasicNSI: nsi-status")
-  time.sleep(0.1)
   nsir_dict['errorLog'] = ''
-  LOG.info("NSI_MNGR_createBasicNSI: errorLog")
-  time.sleep(0.1)
-  if (nsi_json['datacenter']):
-      nsir_dict['datacenter'] = nsi_json['datacenter']
-  else:
-    nsir_dict['datacenter'] = '00000000-0000-0000-0000-000000000000'
+  #if (nsi_json['datacenter']):
+  #    nsir_dict['datacenter'] = nsi_json['datacenter']
+  #else:
+  nsir_dict['datacenter'] = '00000000-0000-0000-0000-000000000000'
   LOG.info("NSI_MNGR_createBasicNSI: datacenter")
   time.sleep(0.1)
   nsir_dict['instantiateTime'] = str(datetime.datetime.now().isoformat())
