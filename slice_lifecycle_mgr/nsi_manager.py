@@ -346,16 +346,28 @@ def createNSI(nsi_json):
 
 # Creates the initial NSI object to send to the repositories
 def createBasicNSI(nst_json, nsi_json):
+  LOG.info("NSI_MNGR_createBasicNSI: Show nst_json : "+ str(nst_json))
+  time.sleep(0.1)
+  LOG.info("NSI_MNGR_createBasicNSI: Show nsi_json : "+ str(nsi_json))
+  time.sleep(0.1)
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
+  LOG.info("NSI_MNGR_createBasicNSI: uuid")
+  time.sleep(0.1)
   nsir_dict['name'] = nsi_json['name']
+  LOG.info("NSI_MNGR_createBasicNSI: name")
+  time.sleep(0.1)
   if (nsi_json['description']):
     nsir_dict['description'] = nsi_json['description']
   else:
     nsir_dict['description'] = 'Mock_Description'
+  LOG.info("NSI_MNGR_createBasicNSI: description")
+  time.sleep(0.1)
   nsir_dict['vendor'] = nst_json['vendor']
   nsir_dict['nst-ref'] = nsi_json['nstId']
   nsir_dict['nst-name'] = nst_json['name']
+  LOG.info("NSI_MNGR_createBasicNSI: others...")
+  time.sleep(0.1)
   nsir_dict['nst-version'] = nst_json['version']
   nsir_dict['nsi-status'] = 'INSTANTIATING'
   nsir_dict['errorLog'] = ''
@@ -363,11 +375,15 @@ def createBasicNSI(nst_json, nsi_json):
       nsir_dict['datacenter'] = nsi_json['datacenter']
   else:
     nsir_dict['datacenter'] = ''
+  LOG.info("NSI_MNGR_createBasicNSI: datacenter")
+  time.sleep(0.1)
   nsir_dict['instantiateTime'] = str(datetime.datetime.now().isoformat())
   nsir_dict['terminateTime'] = ''
   nsir_dict['scaleTime'] = ''
   nsir_dict['updateTime'] = ''
   nsir_dict['sliceCallback'] = nsi_json['callback']  #URL used to call back the GK when the slice instance is READY/ERROR
+  LOG.info("NSI_MNGR_createBasicNSI: others and others...")
+  time.sleep(0.1)
   nsir_dict['5qiValue'] = nst_json['5qi_value']
   nsir_dict['nsr-list'] = []
   nsir_dict['vldr-list'] = []
@@ -410,10 +426,14 @@ def updateInstantiatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR: Updates the NSI with the latest incoming information.")
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
   if (jsonNSI):
+    LOG.info("NSI_MNGR: Calling thread to update nsi.")
+    time.sleep(0.1)
     # starts the thread to update instantiation info within the services
     thread_update_instance = update_service_instantiation(nsiId, request_json)
     thread_update_instance.start()
 
+    LOG.info("NSI_MNGR: Calling thread to notify slice ready.")
+    time.sleep(0.1)
     # starts the thread to notify the GTK if the slice is ready
     thread_notify_instantiation = notify_slice_instantiated(nsiId)
     thread_notify_instantiation.start()
