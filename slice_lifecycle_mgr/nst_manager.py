@@ -57,7 +57,6 @@ def updateNST(nstId, NST_string):
 def deleteNST(nstId):
   logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
-  
   if (nstcatalogue_jsonresponse['nstd']["usageState"] == "NOT_IN_USE"):
     nstcatalogue_jsonresponse = nst_catalogue.delete_nst(nstId)
     return nstcatalogue_jsonresponse
