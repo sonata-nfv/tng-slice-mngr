@@ -69,7 +69,8 @@ class thread_instantiate(Thread):
       #data['ingresses'] = []
       #data['egresses'] = []
       #data['blacklist'] = []
-      data['sla_id'] = nsr_item['sla-ref']
+      if (nsr_item['sla-ref'] != "None"):
+        data['sla_id'] = nsr_item['sla-ref']
 
       LOG.info("NSI_MNGR: Data of instantiation requests: " + str(data))
       time.sleep(0.1)
