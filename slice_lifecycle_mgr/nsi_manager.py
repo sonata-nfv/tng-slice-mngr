@@ -432,8 +432,8 @@ def updateInstantiatingNSI(nsiId, request_json):
     thread_update_instance = update_service_instantiation(nsiId, request_json)
     thread_update_instance.start()
 
-  LOG.info("NSI_MNGR: Calling thread to notify slice ready.")
-  time.sleep(0.1)
+    LOG.info("NSI_MNGR: Calling thread to notify slice ready.")
+    time.sleep(0.1)
     # starts the thread to notify the GTK if the slice is ready
     thread_notify_instantiation = notify_slice_instantiated(nsiId)
     thread_notify_instantiation.start()
