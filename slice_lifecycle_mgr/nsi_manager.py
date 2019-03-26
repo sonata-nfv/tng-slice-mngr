@@ -74,7 +74,7 @@ class thread_instantiate(Thread):
       LOG.info("NSI_MNGR: Data of instantiation requests: " + str(data))
       time.sleep(0.1)
       # requests to instantiate NSI services to the SP
-      #instantiation_response = mapper.net_serv_instantiate(data)
+      instantiation_response = mapper.net_serv_instantiate(data)
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
 ## Objctive:
