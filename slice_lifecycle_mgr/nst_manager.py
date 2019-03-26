@@ -33,7 +33,7 @@
 ## partner consortium (www.5gtango.eu).
 """
 
-import os, sys, logging, uuid
+import os, sys, logging, uuid, json, time
 import objects.nst_content as nst
 
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
@@ -43,27 +43,8 @@ import database.database as db
 # Creates a NST and sends it to catalogues
 def createNST(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
-  NST = nst.nst_content()
-  #NST.id = nst_uuid                            # given by the catalogues
-  NST.name = jsondata['name']
-  NST.version = jsondata['version']
-  NST.author = jsondata['author']
-  NST.vendor = jsondata['vendor']
-  NST.description = jsondata['description']
-  for nsiId_item in jsondata['sliceServices']:
-    if (nsiId_item['slaID'] == "None"):
-      nsiId_item['slaID'] = None
-      nsiId_item['slaName'] = None
-    NST.sliceServices.append(nsiId_item)
-  NST.onboardingState = "ENABLED"
-  NST.operationalState = "ENABLED"
-  NST.usageState = "NOT_IN_USE"
-  #NST.NSI_list_ref = []                       # empty until a NetSlice instance is created
-
-  NST_string = vars(NST)
-  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(NST_string)
-  
-  return nstcatalogue_jsonresponse
+  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
+  return nstcatalogue_jsonresponse[0], nstcatalogue_jsonresponse[1]
 
 # Updates the information of a selected NST in catalogues
 def updateNST(nstId, NST_string):

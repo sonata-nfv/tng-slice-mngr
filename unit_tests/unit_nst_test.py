@@ -29,12 +29,12 @@ class TestCase(unittest.TestCase):
     def test_create_NST(self, mock_createNST):
         #Mock answer for the request to the catalogues     
         mock_createNST.return_value.status_code = 201
-        mock_createNST.return_value.text = '{"created_at": "2018-06-08T10:36:53.425+00:00","md5": "5024cfde7637ab98f086ff51bd158bc9","nstd": {"NSI_list_ref": [],"author": "5gTango","name": "5gtango_NST_name", "description":"This is a NST description.", "notificationTypes": "","sliceServices": [{"nsdID": "ae27790d-640f-4b8e-bdf4-04be24cb5335","slaID": "d8e6c985-1f5f-41f8-85d0-a402f51314cb"}],"onboardingState": "ENABLED","operationalState": "ENABLED","usageState": "NOT_IN_USE","userDefinedData": "","vendor": "tango","version": "0.1"},"signature": null,"status": "active","updated_at": "2018-06-08T10:36:53.425+00:00","username": null,"uuid": "096c26f9-6142-43d2-8521-57cea9e76c6c"}'
+        mock_createNST.return_value.text = '{"created_at": "2018-06-08T10:36:53.425+00:00","md5": "5024cfde7637ab98f086ff51bd158bc9","nstd": {"name":"NST_Example","description":"This is the description of a NST.","version":"3.0","author":"CTTC","vendor":"5GTango","SNSSAI_identifier":{"slice-service-type":"eMBB"},"onboardingState":"ENABLED","operationalState":"ENABLED","usageState":"NOT_IN_USE","5qi_value":3,"slice_ns_subnets":[{"id":"Service_subnet_1","nsd-ref":"6a01afdc-9d42-4bc9-866c-a8a3868fdf5e","nsd-name":"Service_1","sla-name":"GOLD_SLA_2","sla-ref":"aabbccdd-9d42-4bc9-866c-a8a3868fdf5e","is-shared":False},{"id":"Service_subnet_2","nsd-ref":"eeff1122-9d42-4bc9-866c-a8a3868fdf5e","nsd-name":"Service_2","sla-name":"GOLD_SLA_2","sla-ref":"44556677-9d42-4bc9-866c-a8a3868fdf5e","is-shared":True},{"id":"Service_subnet_3","nsd-ref":"99887766-9d42-4bc9-866c-a8a3868fdf5e","nsd-name":"Service_3","sla-name":"None","sla-ref":"None","is-shared":False}],"slice_vld":[{"id":"mgmt","name":"mgmt","mgmt-network":True,"type":"E-LAN","nsd-connection-point-ref":[{"subnet-ref":"Service_subnet_1","nsd-cp-ref":"cp_mgmt"},{"subnet-ref":"Service_subnet_2","nsd-cp-ref":"cp_mgmt"},{"subnet-ref":"Service_subnet_3","nsd-cp-ref":"cp_mgmt"}]},{"id":"data-east","name":"data-east","type":"E-LAN","nsd-connection-point-ref":[{"subnet-ref":"Service_subnet_1","nsd-cp-ref":"cp_1"},{"subnet-ref":"Service_subnet_2","nsd-cp-ref":"cp_1"}]},{"id":"data_west","name":"data_west","type":"E-LAN","nsd-connection-point-ref":[{"subnet-ref":"Service_subnet_2","nsd-cp-ref":"cp_2"},{"subnet-ref":"Service_subnet_3","nsd-cp-ref":"cp_1"}]}]},"signature": null,"status": "active","updated_at": "2018-06-08T10:36:53.425+00:00","username": null,"uuid": "096c26f9-6142-43d2-8521-57cea9e76c6c"}'
         
         #Prepares received information from portal
-        NetService_1_uuid = str(uuid.uuid4())
-        NetService_2_uuid = str(uuid.uuid4())
-        mock_jsondata = {"name":"5gtango_NST_name", "version":"1.0", "author":"5gTango", "vendor":"5gTango", "description": "This is a template", "sliceServices":[{"servname":"Y1-demo","nsdID": "ae27790d-640f-4b8e-bdf4-04be24cb5335","slaID": "d8e6c985-1f5f-41f8-85d0-a402f51314cb"}]}
+        #NetService_1_uuid = str(uuid.uuid4())
+        #NetService_2_uuid = str(uuid.uuid4())
+        mock_jsondata = {"name":"NST_Example","description":"This is the description of a NST.","version":"3.0","author":"CTTC","vendor":"5GTango","SNSSAI_identifier":{"slice-service-type":"eMBB"},"onboardingState":"ENABLED","operationalState":"ENABLED","usageState":"NOT_IN_USE","5qi_value":3,"slice_ns_subnets":[{"id":"Service_subnet_1","nsd-ref":"6a01afdc-9d42-4bc9-866c-a8a3868fdf5e","nsd-name":"Service_1","sla-name":"GOLD_SLA_2","sla-ref":"aabbccdd-9d42-4bc9-866c-a8a3868fdf5e","is-shared":False},{"id":"Service_subnet_2","nsd-ref":"eeff1122-9d42-4bc9-866c-a8a3868fdf5e","nsd-name":"Service_2","sla-name":"GOLD_SLA_2","sla-ref":"44556677-9d42-4bc9-866c-a8a3868fdf5e","is-shared":True},{"id":"Service_subnet_3","nsd-ref":"99887766-9d42-4bc9-866c-a8a3868fdf5e","nsd-name":"Service_3","sla-name":"None","sla-ref":"None","is-shared":False}],"slice_vld":[{"id":"mgmt","name":"mgmt","mgmt-network":True,"type":"E-LAN","nsd-connection-point-ref":[{"subnet-ref":"Service_subnet_1","nsd-cp-ref":"cp_mgmt"},{"subnet-ref":"Service_subnet_2","nsd-cp-ref":"cp_mgmt"},{"subnet-ref":"Service_subnet_3","nsd-cp-ref":"cp_mgmt"}]},{"id":"data-east","name":"data-east","type":"E-LAN","nsd-connection-point-ref":[{"subnet-ref":"Service_subnet_1","nsd-cp-ref":"cp_1"},{"subnet-ref":"Service_subnet_2","nsd-cp-ref":"cp_1"}]},{"id":"data_west","name":"data_west","type":"E-LAN","nsd-connection-point-ref":[{"subnet-ref":"Service_subnet_2","nsd-cp-ref":"cp_2"},{"subnet-ref":"Service_subnet_3","nsd-cp-ref":"cp_1"}]}]}
         
         #Testing the function to create NST
         response = createNST(mock_jsondata)
@@ -43,14 +43,14 @@ class TestCase(unittest.TestCase):
         NST_uuid = response["uuid"]
         NST_name = response["nstd"]["name"]
         NST_author = response["nstd"]["author"]
-        NST_usageState = response["nstd"]["usageState"]
+        NST_vendor = response["nstd"]["vendor"]
         NST_onboardingState = response["nstd"]["onboardingState"]
         NST_operationalState = response["nstd"]["operationalState"]
         
         self.assertEqual(NST_uuid, "096c26f9-6142-43d2-8521-57cea9e76c6c")
-        self.assertEqual(NST_name, "5gtango_NST_name")
-        self.assertEqual(NST_author, "5gTango")
-        self.assertEqual(NST_usageState, "NOT_IN_USE")
+        self.assertEqual(NST_name, "NST_Example")
+        self.assertEqual(NST_author, "CTTC")
+        self.assertEqual(NST_vendor, "5GTango")
         self.assertEqual(NST_onboardingState, "ENABLED")
         self.assertEqual(NST_operationalState, "ENABLED")
     

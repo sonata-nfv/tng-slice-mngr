@@ -95,15 +95,15 @@ def NST_creation():
   logging.info("SLICE_MAIN: received json from portal: " + str(receivedNSTd))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
-  validationResponse = json_validator.validateCreateTemplate(receivedNSTd)
+  # validationResponse = json_validator.validateCreateTemplate(receivedNSTd)
   
   #[0] error_message or valid_json, [1] status code
-  if (validationResponse[1] == 201):
-    new_NST = nst_manager.createNST(receivedNSTd)
-    return jsonify(new_NST), 201
+  #if (validationResponse[1] == 201):
+  new_NST = nst_manager.createNST(receivedNSTd)
+  return jsonify(new_NST[0]), new_NST[1]
 
-  else:
-    return jsonify(validationResponse[0]), validationResponse[1]            
+  #else:
+    #return jsonify(validationResponse[0]), validationResponse[1]            
 
 # GETS for all the NetSlice Templates (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
@@ -123,13 +123,14 @@ def getNST(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
 def delete_NST(nstId):
   deleted_NSTid = nst_manager.deleteNST(nstId)
+  logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
   
   if deleted_NSTid == 403:
     returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
-    return jsonify(returnMessage), 403
-
+    
   else:
-    return jsonify(deleted_NSTid), 204
+    returnMessage = "NST with ID:" + str(nstId) + "deleted from catalogues."
+  return jsonify(returnMessage)
 
 
 ######################################### NETSLICE INSTANCE Actions #########################################
@@ -140,9 +141,10 @@ def NSI_instantiation():
   logging.info("SLICE_MAIN: received json with NST_uuid from portal to instantiate: " + str(new_NSI))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
-  validationResponse = json_validator.validateCreateInstantiation(new_NSI)
+  #validationResponse = json_validator.validateCreateInstantiation(new_NSI)
   
   #[0] error_message or valid_json, [1] status code
+  """
   if (validationResponse[1] == 200):
     logging.debug(new_NSI)
     instantiatedNSI = nsi_manager.createNSI(new_NSI)
@@ -150,11 +152,15 @@ def NSI_instantiation():
 
   else:
     return jsonify(validationResponse[0]), validationResponse[1]
+  """
+  instantiatedNSI = nsi_manager.createNSI(new_NSI)
+  return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
 # INSTANTIATION UPDATE
 # INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
 def updateSliceInstance(nsiId):
+  logging.info("SLICE_MAIN: received json tu update nsi: " + str(request.json))
   updatedService = request.json
   sliceUpdated = nsi_manager.updateInstantiatingNSI(nsiId, updatedService)
 
@@ -169,7 +175,7 @@ def NSI_termination(nsiId):
   logging.info("SLICE_MAIN: received json from portal: " + str(terminate_json))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 200 ok
-  validationResponse = json_validator.validateTerminateInstantiation(terminate_json)
+  #validationResponse = json_validator.validateTerminateInstantiation(terminate_json)
   
   #[0] error_message or valid_json, [1] status code
   if (validationResponse[1] == 200):

@@ -35,40 +35,46 @@
 """
 
 class nsi_content:
-    def __init__(self, id="", name="", description="", nstId="", vendor="", nstName="", nstVersion="", flavorId="", sapInfo="", nsiState="", instantiateTime="", terminateTime="", scaleTime="", updateTime="", sliceCallback="", netServInstance_Uuid=[]):
+    def __init__(self, id="", name="", description="", vendor="", nst_ref="", nstName="", nstVersion="", nsiStatus="",
+                 errorLog="", datacenter="", instantiateTime="", terminateTime="", scaleTime="", updateTime="", 
+                 sliceCallback="", slice_qos="", nsr_list=[], vld_ref_list=[]):
         self.id=id
         self.name=name
         self.description=description
-        self.nstId=nstId                                          #in portal is the NST Reference
-        self.vendor=vendor                                        # same vendor as the NetSlice Template
+        self.vendor=vendor                                   # same vendor as the NetSlice Template        
+        self.nst_ref=nst_ref                                 # in portal is the NST Reference
         self.nstName=nstName
         self.nstVersion=nstVersion
-        self.flavorId=flavorId
-        self.sapInfo=sapInfo                                      #this is used only when the instantiation has an error
-        self.nsiState=nsiState                                    #values are Instantiated/Terminated TODO: check if there are there more
+        self.nsiStatus=nsiStatus
+        self.errorLog = errorLog
+        self.datacenter = datacenter
         self.instantiateTime=instantiateTime
         self.terminateTime=terminateTime
         self.scaleTime=scaleTime
         self.updateTime=updateTime
         self.sliceCallback=sliceCallback
-        self.netServInstance_Uuid=netServInstance_Uuid
-    
+        self.slice_qos = slice_qos
+        self.nsr_list=nsr_list
+        self.vld_ref_list=vld_ref_list
+
     def __str__(self):
         str_result =  "NSI: " + self.id \
                     + self.name \
                     + self.description \
-                    + self.nstId \
                     + self.vendor \
+                    + self.nst_ref \
                     + self.nstName \
                     + self.nstVersion \
-                    + self.flavorId \
-                    + self.sapInfo \
-                    + self.nsiState \
+                    + self.nsiStatus \
+                    + self.errorLog \
+                    + self.datacenter \
                     + self.instantiateTime \
                     + self.terminateTime \
                     + self.scaleTime \
                     + self.updateTime \
                     + self.sliceCallback \
-                    + self.netServInstance_Uuid
-                    
+                    + self.slice_qos \
+                    + self.nsr_list \
+                    + self.vld_ref_list
+
         return str_result

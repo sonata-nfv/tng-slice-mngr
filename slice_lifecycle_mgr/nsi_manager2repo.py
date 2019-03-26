@@ -52,9 +52,9 @@ def get_base_url():
     return base_url
 
 # POST to send the NSI information to the repositories
-def safe_nsi(NSI_string):
+def safe_nsi(NSI_dict):
     url = get_base_url() + '/records/nsir/ns-instances'
-    data = json.dumps(NSI_string)
+    data = json.dumps(NSI_dict)
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     

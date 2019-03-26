@@ -36,16 +36,17 @@
 
 class nst_content:
     def __init__(self):
-        #self.id = ""                      #given by the catalogues
+        #self.id = ""                      # given by the catalogues
         self.name = ""
+        self.description = ""
         self.version = ""
         self.author = ""
         self.vendor = ""
-        self.description = ""
-        self.sliceServices = []
-        self.onboardingState = ""         #values are ENABLED/DISABLED in string format
-        self.operationalState = ""        #values are ENABLED/DISABLED in string format
-        self.usageState = ""              #values are IN_USE/NOT_IN_USE in string format
-        self.notificationTypes = ""       #containts a Nst_Onboarding_Notification
-        self.userDefinedData = ""
-        self.NSI_list_ref = []           #list of NetSlices Instances using this Template
+        self.SNSSAI_identifier = {}       # identifier of the slice: type + slice-differenciator
+        self.onboardingState = ""         # values are ENABLED/DISABLED in string format
+        self.operationalState = ""        # values are ENABLED/DISABLED in string format
+        self.usageState = ""              # values are IN_USE/NOT_IN_USE in string format
+        self.slice_qos = ""               # 5QI value defined by the 3GPP for 5G QoS parameters
+        self.slice_ns_subnets = []        # list of network services (subnets) composing the slice
+        self.slice_vld = []               # list of vlds where the subnets are connected for the service composition
+        self.NSI_list_ref = []            # list of NetSlices Instances using this Template
