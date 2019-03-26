@@ -116,7 +116,7 @@ class update_service_instantiation(Thread):
           service_item['requestId'] = self.request_json['id']
           
           if (self.request_json['status'] == "READY"):
-          service_item['working-status'] = "INSTANTIATED"
+            service_item['working-status'] = "INSTANTIATED"
           else:
             service_item['working-status'] = self.request_json['status']
           
