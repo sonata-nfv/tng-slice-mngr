@@ -81,6 +81,8 @@ def getAll_saved_nsi():
 def get_saved_nsi(nsiId):
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
+    LOG.info('NSI_MNGR2REPO: what is repo returning: ' + str(response))
+    time.sleep(0.1)
     jsonresponse = json.loads(response.text)
     
     if(response.status_code != 200):
