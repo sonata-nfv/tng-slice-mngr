@@ -287,7 +287,7 @@ class notify_slice_terminated(Thread):
 
         # validates if any service has error status to apply it to the slice status
         for service_item in jsonNSI['nsr-list']:
-          if (service_item['workingStatus'] == "ERROR"):
+          if (service_item['working-status'] == "ERROR"):
             jsonNSI['nsi-status'] = "ERROR"
             break;
 
