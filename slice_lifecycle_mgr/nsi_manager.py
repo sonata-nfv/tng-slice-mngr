@@ -192,7 +192,7 @@ class notify_slice_instantiated(Thread):
           if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
             #updateNST_jsonresponse = nstd_usagesstatus_update(jsonNSI['nst-ref'], nst_descriptor['nstd'])
             nstParameter2update = "usageState=IN_USE"
-            updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+            updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
     
     finally:
       mutex.release()
