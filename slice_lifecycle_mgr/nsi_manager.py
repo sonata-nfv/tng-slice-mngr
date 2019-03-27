@@ -462,6 +462,7 @@ def terminateNSI(nsiId, TerminOrder):
       if (terminate_nsr_item['working-status'] != "ERROR"):
         terminate_nsr_item['working-status'] = "TERMINATING"
 
+    LOG.info("NSI_MNGR: Updating initial terminate nsi with this dict:" + str(jsonNSI))
     repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
 
     # starts the thread to terminate while sending back the response
