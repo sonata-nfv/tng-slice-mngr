@@ -217,7 +217,7 @@ class thread_terminate(Thread):
     LOG.info("NSI_MNGR_Terminate: Terminating Services")
     jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
     for nsr_item in jsonNSI['nsr-list']:
-      if (uuidNetServ_item['workingStatus'] != "ERROR"):
+      if (nsr_item['working-status'] != "ERROR"):
         data = {}
         data["instance_uuid"] = str(nsr_item["nsrId"])
         data["request_type"] = "TERMINATE_SERVICE"
