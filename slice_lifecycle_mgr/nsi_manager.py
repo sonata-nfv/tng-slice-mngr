@@ -90,6 +90,9 @@ class update_service_instantiation(Thread):
     try:
       LOG.info("NSI_MNGR_Update: Updating NSI instantiation")
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
+      #TODO: improve the next 2 lines to not use this delete.
+      jsonNSI["id"] = jsonNSI["uuid"]
+      del jsonNSI["uuid"]
 
       serviceInstance = {}
       # if list is empty, full it with the first element
@@ -158,6 +161,9 @@ class notify_slice_instantiated(Thread):
     try:
       LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
+      #TODO: improve the next 2 lines to not use this delete.
+      jsonNSI["id"] = jsonNSI["uuid"]
+      del jsonNSI["uuid"]
 
       # checks if all services are READY/ERROR to update the slice_status
       all_services_ready = True
@@ -233,6 +239,9 @@ class update_service_termination(Thread):
       LOG.info("NSI_MNGR_Update: Updating NSI Termination")
       time.sleep(0.1)
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
+      #TODO: improve the next 2 lines to not use this delete.
+      jsonNSI["id"] = jsonNSI["uuid"]
+      del jsonNSI["uuid"]
 
       # looks for the right service within the slice and updates it with the new data
       for service_item in jsonNSI['nsr-list']:
@@ -262,6 +271,9 @@ class notify_slice_terminated(Thread):
     try:
       LOG.info("NSI_MNGR_Notify: Slice terminationg Notification to GTK.")
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
+      #TODO: improve the next 2 lines to not use this delete.
+      jsonNSI["id"] = jsonNSI["uuid"]
+      del jsonNSI["uuid"]
 
       # checks if all services are READY/ERROR to update the slice_status
       all_services_ready = True
@@ -336,7 +348,7 @@ def createNSI(nsi_json):
 # Creates the initial NSI object to send to the repositories
 def createBasicNSI(nst_json, nsi_json):
   nsir_dict = {}
-  nsir_dict['uuid'] = str(uuid.uuid4())
+  nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
   if (nsi_json['description']):
     nsir_dict['description'] = nsi_json['description']
@@ -432,6 +444,9 @@ def terminateNSI(nsiId, TerminOrder):
   LOG.info("NSI_MNGR: Terminates a NSI.")
 
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
+  #TODO: improve the next 2 lines to not use this delete.
+  jsonNSI["id"] = jsonNSI["uuid"]
+  del jsonNSI["uuid"]
 
   # prepares time values to check if termination is done in the future
   if (TerminOrder['terminateTime'] == "0" or TerminOrder['terminateTime'] == 0):
@@ -450,7 +465,7 @@ def terminateNSI(nsiId, TerminOrder):
       if (terminate_nsr_item['working-status'] != "ERROR"):
         terminate_nsr_item['working-status'] = "TERMINATING"
 
-    LOG.info("NSI_MNGR: Updating initial terminate nsi with this dict:" + str(jsonNSI))
+    LOG.info("NSI_MNGR: Updating initial nsi with this dict:" + str(jsonNSI))
     repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
 
     # starts the thread to terminate while sending back the response
