@@ -175,7 +175,7 @@ def NSI_termination(nsiId):
   logging.info("SLICE_MAIN: received json from portal: " + str(terminate_json))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 200 ok
-  #validationResponse = json_validator.validateTerminateInstantiation(terminate_json)
+  validationResponse = json_validator.validateTerminateInstantiation(terminate_json)
   
   #[0] error_message or valid_json, [1] status code
   if (validationResponse[1] == 200):
