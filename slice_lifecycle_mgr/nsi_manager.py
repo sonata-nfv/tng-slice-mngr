@@ -72,8 +72,6 @@ class thread_instantiate(Thread):
       if (nsr_item['sla-ref'] != "None"):
         data['sla_id'] = nsr_item['sla-ref']
 
-      LOG.info("NSI_MNGR: Data of instantiation requests: " + str(data))
-      time.sleep(0.1)
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
 
@@ -89,30 +87,13 @@ class update_service_instantiation(Thread):
     mutex.acquire()
     try:
       LOG.info("NSI_MNGR_Update: Updating NSI instantiation")
+      time.sleep(0.1)
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
       #TODO: improve the next 2 lines to not use this delete.
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
       serviceInstance = {}
-      # if list is empty, full it with the first element
-      # if not jsonNSI['netServInstance_Uuid']:
-      #   serviceInstance['servId'] = self.request_json['service_uuid']
-      #   serviceInstance['servName'] = self.request_json['name']
-      #   serviceInstance['workingStatus'] = self.request_json['status']
-      #   serviceInstance['requestID'] = self.request_json['id']
-      #   if(self.request_json['instance_uuid'] == None):
-      #     serviceInstance['servInstanceId'] = " "
-      #   else:
-      #     serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
-
-      #   # adds the service instance into the NSI json
-      #   jsonNSI['netServInstance_Uuid'].append(serviceInstance)
-
-      # list has at least one element
-      #else:
-      #  service_added = False
-
       # looks all the already added services and updates the right
       for service_item in jsonNSI['nsr-list']:
         # if the current request already exists, update it.
@@ -129,20 +110,7 @@ class update_service_instantiation(Thread):
           
           break;
 
-        # # the current request doesn't exist in the list, adds it.
-        # if (service_added == False):
-        #   serviceInstance['servId'] = self.request_json['service_uuid']
-        #   serviceInstance['servName'] = self.request_json['name']
-        #   serviceInstance['workingStatus'] = self.request_json['status']
-        #   serviceInstance['requestID'] = self.request_json['id']
-        #   if(self.request_json['instance_uuid'] == None):
-        #     serviceInstance['servInstanceId'] = " "
-        #   else:
-        #     serviceInstance['servInstanceId'] = self.request_json['instance_uuid']
-
-        # # adds the service instance into the NSI json
-        # jsonNSI['netServInstance_Uuid'].append(serviceInstance)
-
+      # sends updated nsi to the DDBB (tng-repositories)
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
 
@@ -160,6 +128,7 @@ class notify_slice_instantiated(Thread):
     mutex.acquire()
     try:
       LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
+      time.sleep(0.1)
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
       #TODO: improve the next 2 lines to not use this delete.
       jsonNSI["id"] = jsonNSI["uuid"]
@@ -215,6 +184,7 @@ class thread_terminate(Thread):
     self.nsiId = nsiId
   def run(self):
     LOG.info("NSI_MNGR_Terminate: Terminating Services")
+    time.sleep(0.1)
     jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
     for nsr_item in jsonNSI['nsr-list']:
       if (nsr_item['working-status'] != "ERROR"):
@@ -270,6 +240,7 @@ class notify_slice_terminated(Thread):
     mutex.acquire()
     try:
       LOG.info("NSI_MNGR_Notify: Slice terminationg Notification to GTK.")
+      time.sleep(0.1)
       jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
       #TODO: improve the next 2 lines to not use this delete.
       jsonNSI["id"] = jsonNSI["uuid"]
@@ -324,23 +295,16 @@ def createNSI(nsi_json):
   nst_json = catalogue_response['nstd']
 
   # creates NSI with the received information
-  LOG.info("NSI_MNGR: Creating Basic NSI structure")
-  time.sleep(0.1)
   new_nsir = createBasicNSI(nst_json, nsi_json)
-  LOG.info("NSI_MNGR: Adding subnets infromationg into the basic structure")
-  time.sleep(0.1)
   new_nsir = addSubnets2NSi(new_nsir, nst_json["slice_ns_subnets"])
   # new_nsir = addVLD2NSi(new_nsir, nst_json["slice_ns_subnets"])    #TODO: function to add VLD information into the NSI
 
   # saving the NSI into the repositories
-  LOG.info("NSI_MNGR: Saving NSI into repositories")
-  time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  LOG.info("NSI_MNGR: Calling the instantiation thread.")
-  time.sleep(0.1)
   thread_instantiation = thread_instantiate(new_nsir)
+  time.sleep(0.1)
   thread_instantiation.start()
 
   return nsirepo_jsonresponse, 201
@@ -401,21 +365,19 @@ def addSubnets2NSi(nsi_json, subnets_list):
   return nsi_json
 
 # Updates a NSI with the latest informationg coming from the MANO/GK
-#TODO: make updateInstantiatingNSI & updateTerminatingNSI one single function to update any NSI
 def updateInstantiatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR: Updates the NSI with the latest incoming information.")
+  time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
   if (jsonNSI):
-    LOG.info("NSI_MNGR: Calling thread to update nsi.")
-    time.sleep(0.1)
     # starts the thread to update instantiation info within the services
     thread_update_instance = update_service_instantiation(nsiId, request_json)
+    time.sleep(0.1)
     thread_update_instance.start()
 
-    LOG.info("NSI_MNGR: Calling thread to notify slice ready.")
-    time.sleep(0.1)
     # starts the thread to notify the GTK if the slice is ready
     thread_notify_instantiation = notify_slice_instantiated(nsiId)
+    time.sleep(0.1)
     thread_notify_instantiation.start()
 
     return (jsonNSI, 200)
@@ -442,6 +404,7 @@ def nstd_usagesstatus_update(nstId, nstd_item):
 # Does all the process to terminate the NSI
 def terminateNSI(nsiId, TerminOrder):
   LOG.info("NSI_MNGR: Terminates a NSI.")
+  time.sleep(0.1)
 
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
   #TODO: improve the next 2 lines to not use this delete.
@@ -465,11 +428,11 @@ def terminateNSI(nsiId, TerminOrder):
       if (terminate_nsr_item['working-status'] != "ERROR"):
         terminate_nsr_item['working-status'] = "TERMINATING"
 
-    LOG.info("NSI_MNGR: Updating initial nsi with this dict:" + str(jsonNSI))
     repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
 
     # starts the thread to terminate while sending back the response
     thread_termination = thread_terminate(nsiId)
+    time.sleep(0.1)
     thread_termination.start()
     
     value = 200
@@ -488,21 +451,23 @@ def terminateNSI(nsiId, TerminOrder):
 # Updates a NSI being terminated with the latest informationg coming from the MANO/GK.
 def updateTerminatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
+  time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
   if (jsonNSI):
     # starts the thread to update termination info within the services
     thread_update_termination = update_service_termination(nsiId, request_json)
+    time.sleep(0.1)
     thread_update_termination.start()
 
     # starts the thread to notify the GTK if the slice is ready
     thread_notify_termination = notify_slice_terminated(nsiId)
+    time.sleep(0.1)
     thread_notify_termination.start()
 
     return (jsonNSI, 200)
   else:
     return ('{"error":"There is no NSIR in the db."}', 500)
 
-#TODO: remove funct -> look for any INSTANTIATED nsi based on the nst: if any do nothing, else change NST usage.
 # Removes a NSI_id from the NST list of NSIs to keep track of them
 def removeNSIinNST(nstId):
   # ------ OLD VERSION ---------
@@ -523,6 +488,8 @@ def removeNSIinNST(nstId):
     if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] == "INSTANTIATED" or nsis_item['nsi-status'] == "INSTANTIATING" or nsis_item['nsi-status'] == "READY"):
         all_nsis_terminated = False
         break;
+    else:
+      pass
 
   if (all_nsis_terminated):
     nst_descriptor = nst_catalogue.get_saved_nst(nstId)

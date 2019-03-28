@@ -139,7 +139,7 @@ def delete_NST(nstId):
 def NSI_instantiation():
   new_NSI = request.json
   logging.info("SLICE_MAIN: received json with NST_uuid from portal to instantiate: " + str(new_NSI))
-  
+  #TODO: vvalidate that the incoming json ahs all the fields or return 500 error: missing field X
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
   #validationResponse = json_validator.validateCreateInstantiation(new_NSI)
   
