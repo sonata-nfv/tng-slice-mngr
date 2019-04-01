@@ -42,18 +42,21 @@ import slice2ns_mapper.mapper as mapper
 import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
 
-mutex = Lock()
+# INFORMATION
+# mutex used to ensure one single access to ddbb (repositories) for the nsi records creation/update/removal
+mutex_slice2db_access = Lock()
 
+# definition of LOG variable to hace the slice logs idetified amonge the other possible 5GTango components.
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
 
 
 ################################## THREADs to manage services/slice requests #################################
-# SENDS SERVICE INSTANTIATION REQUESTS
-## Objctive:
-## Params:
-class thread_instantiate(Thread):
+# SENDS NETWORK SERVICE (NS) INSTANTIATION REQUESTS
+## Objctive: reads NS list in Network Slice Instance (NSI) and sends requests2GTK to instantiate them 
+## Params: NSI - nsi created with the parameters given by the user and the NST saved in catalogues.
+class thread_ns_instantiate(Thread):
   def __init__(self, NSI):
     Thread.__init__(self)
     self.NSI = NSI
@@ -76,15 +79,15 @@ class thread_instantiate(Thread):
       instantiation_response = mapper.net_serv_instantiate(data)
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
-## Objctive:
-## Params:
-class update_service_instantiation(Thread):
+## Objctive: updates a the specific NS information belonging to a NSI instantiation
+## Params: nsiId (uuid within the incoming request URL), request_json (incoming request payload)
+class update_slice_instantiation(Thread):
   def __init__(self, nsiId, request_json):
     Thread.__init__(self)
     self.nsiId = nsiId
     self.request_json = request_json
   def run(self):
-    mutex.acquire()
+    mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Update: Updating NSI instantiation")
       time.sleep(0.1)
@@ -115,17 +118,17 @@ class update_service_instantiation(Thread):
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
 
     finally:
-      mutex.release()
+      mutex_slice2db_access.release()
 
 # NOTIFIES THE GTK ABOUT A SLICE INSTANTIATION
-## Objctive: used to inform about both slice instantiation or termination processes
-## Params:
+## Objctive: if a slice has all services instantiated, calls the GTK to inform thet the slice (NSI) is ready.
+## Params: nsiId (uuid within the incoming request URL)
 class notify_slice_instantiated(Thread):
   def __init__(self, nsiId):
     Thread.__init__(self)
     self.nsiId = nsiId
   def run(self):
-    mutex.acquire()
+    mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
       time.sleep(0.1)
@@ -164,7 +167,7 @@ class notify_slice_instantiated(Thread):
             updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
     
     finally:
-      mutex.release()
+      mutex_slice2db_access.release()
       #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
       if (all_services_ready == True):
         # creates a thread with the callback URL to advise the GK this slice is READY
@@ -175,10 +178,10 @@ class notify_slice_instantiated(Thread):
 
         thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
 
-# SENDS SERVICE TERMINATION REQUESTS
-## Objctive:
-## Params:
-class thread_terminate(Thread):
+# SENDS NETWORK SERVICE (NS) TERMINATION REQUESTS
+## Objctive: gets the specific nsi record from db and sends the ns termination requests 2 GTK
+## Params: nsiId (uuid within the incoming request URL)
+class thread_ns_terminate(Thread):
   def __init__(self,nsiId):
     Thread.__init__(self)
     self.nsiId = nsiId
@@ -196,15 +199,15 @@ class thread_terminate(Thread):
         termination_response = mapper.net_serv_terminate(data)
 
 # UPDATES THE SLICE TERMINATION INFORMATION
-## Objctive:
-## Params:
-class update_service_termination(Thread):
+## Objctive: updates a the specific NS information belonging to a NSI termination
+## Params: nsiId (uuid within the incoming request URL), request_json (incoming request payload)
+class update_slice_termination(Thread):
   def __init__(self, nsiId, request_json):
     Thread.__init__(self)
     self.nsiId = nsiId
     self.request_json = request_json
   def run(self):
-    mutex.acquire()
+    mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Update: Updating NSI Termination")
       time.sleep(0.1)
@@ -227,17 +230,17 @@ class update_service_termination(Thread):
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
     
     finally:
-      mutex.release()
+      mutex_slice2db_access.release()
 
 # NOTIFIES THE GTK ABOUT A SLICE TERMINATION
-## Objctive: used to inform about both slice instantiation or termination processes
-## Params:
+## Objctive: if a slice has all services terminated, calls the GTK to inform thet the slice (NSI) is terminated.
+## Params: nsiId (uuid within the incoming request URL)
 class notify_slice_terminated(Thread):
   def __init__(self, nsiId):
     Thread.__init__(self)
     self.nsiId = nsiId
   def run(self):
-    mutex.acquire()
+    mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Notify: Slice terminationg Notification to GTK.")
       time.sleep(0.1)
@@ -272,7 +275,7 @@ class notify_slice_terminated(Thread):
         removeNSIinNST(jsonNSI['nst-ref'])
 
     finally:
-      mutex.release()
+      mutex_slice2db_access.release()
 
       #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
       if (all_services_ready == True):
@@ -303,9 +306,9 @@ def createNSI(nsi_json):
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  thread_instantiation = thread_instantiate(new_nsir)
+  thread_ns_instantiation = thread_ns_instantiate(new_nsir)
   time.sleep(0.1)
-  thread_instantiation.start()
+  thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
@@ -371,14 +374,14 @@ def updateInstantiatingNSI(nsiId, request_json):
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
   if (jsonNSI):
     # starts the thread to update instantiation info within the services
-    thread_update_instance = update_service_instantiation(nsiId, request_json)
+    thread_update_slice_instantiation = update_slice_instantiation(nsiId, request_json)
     time.sleep(0.1)
-    thread_update_instance.start()
+    thread_update_slice_instantiation.start()
 
     # starts the thread to notify the GTK if the slice is ready
-    thread_notify_instantiation = notify_slice_instantiated(nsiId)
+    thread_notify_slice_instantiatied = notify_slice_instantiated(nsiId)
     time.sleep(0.1)
-    thread_notify_instantiation.start()
+    thread_notify_slice_instantiatied.start()
 
     return (jsonNSI, 200)
   else:
@@ -386,12 +389,6 @@ def updateInstantiatingNSI(nsiId, request_json):
 
 # Updateds the usages status of a nstd
 def nstd_usagesstatus_update(nstId, nstd_item):
-  #nst_json = nst_catalogue.get_saved_nst(nstId)['nstd']
-  #if (nstd_item['usageState'] == "NOT_IN_USE"):
-    # updates (adds) the list of NSIref of original NST
-    # nstParameter2update = "NSI_list_ref.append="+str(nsiId)
-    # updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-
   # updates the usageState parameter
   if (nstd_item['usageState'] == "NOT_IN_USE"):
     nstParameter2update = "usageState=IN_USE"
@@ -431,9 +428,9 @@ def terminateNSI(nsiId, TerminOrder):
     repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
 
     # starts the thread to terminate while sending back the response
-    thread_termination = thread_terminate(nsiId)
+    thread_ns_termination = thread_ns_terminate(nsiId)
     time.sleep(0.1)
-    thread_termination.start()
+    thread_ns_termination.start()
     
     value = 200
 
@@ -455,33 +452,21 @@ def updateTerminatingNSI(nsiId, request_json):
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
   if (jsonNSI):
     # starts the thread to update termination info within the services
-    thread_update_termination = update_service_termination(nsiId, request_json)
+    thread_update_slice_termination = update_slice_termination(nsiId, request_json)
     time.sleep(0.1)
-    thread_update_termination.start()
+    thread_update_slice_termination.start()
 
     # starts the thread to notify the GTK if the slice is ready
-    thread_notify_termination = notify_slice_terminated(nsiId)
+    thread_notify_slice_terminated = notify_slice_terminated(nsiId)
     time.sleep(0.1)
-    thread_notify_termination.start()
+    thread_notify_slice_terminated.start()
 
     return (jsonNSI, 200)
   else:
     return ('{"error":"There is no NSIR in the db."}', 500)
 
-# Removes a NSI_id from the NST list of NSIs to keep track of them
+# Checks if there is any other NSI based on a NST. If not, changes the nst usageStatus parameter to "NOT_IN_USE"
 def removeNSIinNST(nstId):
-  # ------ OLD VERSION ---------
-  #nstParameter2update = "NSI_list_ref.pop="+str(nsiId)
-  #updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-
-  # if there are no more NSI assigned to the NST, updates usageState parameter
-  # catalogue_response = nst_catalogue.get_saved_nst(nstId)
-  # nst_json = catalogue_response['nstd']
-  # if not nst_json['NSI_list_ref']:
-  #   if (nst_json['usageState'] == "IN_USE"):
-  #     nstParameter2update = "usageState=NOT_IN_USE"
-  #     updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-  # ----------------------------
   nsis_list = nsi_repo.getAll_saved_nsi()
   all_nsis_terminated = True
   for nsis_item in nsis_list:
