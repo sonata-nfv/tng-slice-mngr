@@ -43,9 +43,10 @@ import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
 
 # INFORMATION
-# mutex used to ensure one single access to ddbb
-mutex = Lock()
+# mutex used to ensure one single access to ddbb (repositories) for the nsi records creation/update/removal
+mutex_slice2db_access = Lock()
 
+# definition of LOG variable to hace the slice logs idetified amonge the other possible 5GTango components.
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
@@ -53,8 +54,8 @@ LOG.setLevel(logging.INFO)
 
 ################################## THREADs to manage services/slice requests #################################
 # SENDS NETWORK SERVICE (NS) INSTANTIATION REQUESTS
-## Objctive:
-## Params:
+## Objctive: reads NS list in Network Slice Instance (NSI) and sends requests2GTK to instantiate them 
+## Params: NSI - nsi created with the parameters given by the user and the NST saved in catalogues.
 class thread_ns_instantiate(Thread):
   def __init__(self, NSI):
     Thread.__init__(self)
@@ -78,15 +79,15 @@ class thread_ns_instantiate(Thread):
       instantiation_response = mapper.net_serv_instantiate(data)
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
-## Objctive:
-## Params:
+## Objctive: updates a the specific NS information belonging to a NSI instantiation
+## Params: nsiId (uuid within the incoming request URL), request_json (incoming request payload)
 class update_slice_instantiation(Thread):
   def __init__(self, nsiId, request_json):
     Thread.__init__(self)
     self.nsiId = nsiId
     self.request_json = request_json
   def run(self):
-    mutex.acquire()
+    mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Update: Updating NSI instantiation")
       time.sleep(0.1)
@@ -117,17 +118,17 @@ class update_slice_instantiation(Thread):
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
 
     finally:
-      mutex.release()
+      mutex_slice2db_access.release()
 
 # NOTIFIES THE GTK ABOUT A SLICE INSTANTIATION
-## Objctive: used to inform about both slice instantiation or termination processes
-## Params:
+## Objctive: if a slice has all services instantiated, calls the GTK to inform thet the slice (NSI) is ready.
+## Params: nsiId (uuid within the incoming request URL)
 class notify_slice_instantiated(Thread):
   def __init__(self, nsiId):
     Thread.__init__(self)
     self.nsiId = nsiId
   def run(self):
-    mutex.acquire()
+    mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
       time.sleep(0.1)
@@ -166,7 +167,7 @@ class notify_slice_instantiated(Thread):
             updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
     
     finally:
-      mutex.release()
+      mutex_slice2db_access.release()
       #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
       if (all_services_ready == True):
         # creates a thread with the callback URL to advise the GK this slice is READY
@@ -178,8 +179,8 @@ class notify_slice_instantiated(Thread):
         thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
 
 # SENDS NETWORK SERVICE (NS) TERMINATION REQUESTS
-## Objctive:
-## Params:
+## Objctive: gets the specific nsi record from db and sends the ns termination requests 2 GTK
+## Params: nsiId (uuid within the incoming request URL)
 class thread_ns_terminate(Thread):
   def __init__(self,nsiId):
     Thread.__init__(self)
@@ -198,15 +199,15 @@ class thread_ns_terminate(Thread):
         termination_response = mapper.net_serv_terminate(data)
 
 # UPDATES THE SLICE TERMINATION INFORMATION
-## Objctive:
-## Params:
+## Objctive: updates a the specific NS information belonging to a NSI termination
+## Params: nsiId (uuid within the incoming request URL), request_json (incoming request payload)
 class update_slice_termination(Thread):
   def __init__(self, nsiId, request_json):
     Thread.__init__(self)
     self.nsiId = nsiId
     self.request_json = request_json
   def run(self):
-    mutex.acquire()
+    mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Update: Updating NSI Termination")
       time.sleep(0.1)
@@ -229,17 +230,17 @@ class update_slice_termination(Thread):
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
     
     finally:
-      mutex.release()
+      mutex_slice2db_access.release()
 
 # NOTIFIES THE GTK ABOUT A SLICE TERMINATION
-## Objctive: used to inform about both slice instantiation or termination processes
-## Params:
+## Objctive: if a slice has all services terminated, calls the GTK to inform thet the slice (NSI) is terminated.
+## Params: nsiId (uuid within the incoming request URL)
 class notify_slice_terminated(Thread):
   def __init__(self, nsiId):
     Thread.__init__(self)
     self.nsiId = nsiId
   def run(self):
-    mutex.acquire()
+    mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Notify: Slice terminationg Notification to GTK.")
       time.sleep(0.1)
@@ -274,7 +275,7 @@ class notify_slice_terminated(Thread):
         removeNSIinNST(jsonNSI['nst-ref'])
 
     finally:
-      mutex.release()
+      mutex_slice2db_access.release()
 
       #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
       if (all_services_ready == True):
