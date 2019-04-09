@@ -55,7 +55,7 @@ def return_vim_list(msg, vim_list):
   return vim_list
 
 # Coonnects and subscribes to receive the latest information about the VIM list within the IA
-def get VIM_list():
+def get_VIM_list():
   #list with all the VIMs information associated to the SP
   vim_list = []
 

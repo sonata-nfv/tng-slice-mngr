@@ -303,7 +303,7 @@ def createNSI(nsi_json):
   
   # adds the VLD information within the NSI record
   # new_nsir = addVLD2NSi(new_nsir, nst_json["slice_ns_subnets"])
-  vim_list = nsi_ia.VIM_list()
+  vim_list = nsi_ia.get_VIM_list()
   LOG.info("This is the list of vims coming from the IA: " + str(vim_list))
   
   # adds the NetServices (subnets) information within the NSI record
