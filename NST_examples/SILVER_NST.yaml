@@ -1,0 +1,16 @@
+
+name: "SILVER_CommunicationsPilot_NST"
+description: "NST for the communication pilot with SILVER QoS."
+vendor: "5gtango"
+version: "2.0"
+sliceServices:
+  - servID: "f51543f1-b9e4-405c-9a20-d121d7c42a20"
+    servname: "Videoconference"
+    slaID: "1dc41374-03bc-471b-b96f-d3ecd800a704"
+QoS_5qi_value: 2
+notificationTypes: "NstOnboardingNotification"
+onboardingState: "ENABLED"
+operationalState: "ENABLED"
+usageState: "NOT_IN_USE"
+userDefinedData: ""
+

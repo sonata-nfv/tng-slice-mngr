@@ -38,9 +38,10 @@ import dateutil.parser
 from threading import Thread, Lock
 
 import objects.nsi_content as nsi
-import slice2ns_mapper.mapper as mapper
-import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo
-import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
+import slice2ns_mapper.mapper as mapper                             # sends requests to the GTK-SP
+import slice_lifecycle_mgr.nsi_manager2ia as nsi_ia                 # sends requests to the IA
+import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo             # sends requests to the repositories
+import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue   # sends requests to the catalogues
 
 # INFORMATION
 # mutex used to ensure one single access to ddbb (repositories) for the nsi records creation/update/removal
@@ -299,16 +300,21 @@ def createNSI(nsi_json):
 
   # creates NSI with the received information
   new_nsir = createBasicNSI(nst_json, nsi_json)
+  
+  # adds the VLD information within the NSI record
+  # new_nsir = addVLD2NSi(new_nsir, nst_json["slice_ns_subnets"])
+  vim_list = nsi_ia.VIM_list()
+  LOG.info("This is the list of vims coming from the IA: " + str(vim_list))
+  
+  # adds the NetServices (subnets) information within the NSI record
   new_nsir = addSubnets2NSi(new_nsir, nst_json["slice_ns_subnets"])
-  # new_nsir = addVLD2NSi(new_nsir, nst_json["slice_ns_subnets"])    #TODO: function to add VLD information into the NSI
 
   # saving the NSI into the repositories
-  nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
+  #nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  thread_ns_instantiation = thread_ns_instantiate(new_nsir)
-  time.sleep(0.1)
-  thread_ns_instantiation.start()
+  #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+  #thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
@@ -341,6 +347,11 @@ def createBasicNSI(nst_json, nsi_json):
   nsir_dict['vldr-list'] = []
 
   return nsir_dict
+
+# Adds the basic subnets information to the NSI record
+def addVLD2NSi(nsi_json, nst_subnets_json):
+
+  return nsi_json
 
 # Adds the basic subnets information to the NSI record
 def addSubnets2NSi(nsi_json, subnets_list):
