@@ -351,13 +351,14 @@ def create_basic_nsi(nst_json, nsi_json):
 def add_vlds(new_nsir, nst_vld_list):
   vldr_list = []
   for vld_item in nst_vld_list:
+    print(str(vld_item))
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
     vld_record['vimAccountId'] = str(uuid.uuid4())  #TODO: comes with the request, to be improved
     vld_record['vim-net-id']  = str(uuid.uuid4())   #TODO: filled when the GTK sends back the uuid
     if (vld_item['mgmt-network']):
-      vld_record['mgmt-network'] = vld_item['mgmt-network']
+      vld_record['mgmt-network'] = True
     vld_record['type'] = vld_item['type']
     #vld_record['root-bandwidth']
     #vld_record['leaf-bandwidth']                   #TODO: check how to use this 4 parameters
