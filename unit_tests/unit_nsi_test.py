@@ -32,6 +32,7 @@ class TestCase(unittest.TestCase):
         mock_nsi_json = {"name": "tango_NSI", "description": "5gTango_descriptor", "nstId": "096c26f9-6142-43d2-8521-57cea9e76c6c", 'callback':'gtk_callback', 'datacenter':'00000000-0000-0000-0000-000000000000'}
         #Creates NSI object and json (to send to the repositories in integration tests)
         response_NSI = create_basic_nsi(mock_nst_json, mock_nsi_json)
+        print mock_nst_json["slice_vld"]
         response_NSI = add_vlds(response_NSI, mock_nst_json["slice_vld"])
         response_NSI = add_subnets(response_NSI, mock_nst_json["slice_ns_subnets"], mock_user_request["services_sla"])
 
