@@ -351,7 +351,6 @@ def create_basic_nsi(nst_json, nsi_json):
 def add_vlds(new_nsir, nst_vld_list):
   vldr_list = []
   for vld_item in nst_vld_list:
-    print(str(vld_item))
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
@@ -386,8 +385,8 @@ def add_subnets(new_nsir, subnets_list, services_sla):
     subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
     for serv_sla_item in services_sla:
       if serv_sla_item['service_uuid'] == subnet_item['nsd-ref']:
-        subnet_record['sla-name'] = serv_sla_item['sla-name']                           #TODO: add instantiation parameters
-        subnet_record['sla-ref'] = serv_sla_item['sla-uuid']                             #TODO: add instantiation parameters
+        subnet_record['sla-name'] = serv_sla_item['sla_name']                           #TODO: add instantiation parameters
+        subnet_record['sla-ref'] = serv_sla_item['sla_uuid']                             #TODO: add instantiation parameters
     subnet_record['working-status'] = 'INSTANTIATING'
     subnet_record['requestId'] = ''
     subnet_record['vimAccountId'] = new_nsir['datacenter']                        #TODO: add instantiation parameters
