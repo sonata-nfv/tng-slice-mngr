@@ -15,14 +15,13 @@ import objects.nsi_content as nsi
 import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo
 from database import database as db
 
-from slice_lifecycle_mgr.nsi_manager import create_basic_nsi
+from slice_lifecycle_mgr.nsi_manager import add_basic_nsi_info
 from slice_lifecycle_mgr.nsi_manager import add_vlds
 from slice_lifecycle_mgr.nsi_manager import add_subnets
 
 
 class TestCase(unittest.TestCase):
     #def setUp(self):
-
     #def tearDown():
 
     def test_create_NSI(self):
@@ -31,7 +30,7 @@ class TestCase(unittest.TestCase):
         mock_nst_json = {"name":"NST_Example","description":"This is the description of a NST.","version":"3.0","author":"CTTC","vendor":"5GTango","SNSSAI_identifier":{"slice-service-type":"eMBB"},"onboardingState":"ENABLED","operationalState":"ENABLED","usageState":"NOT_IN_USE","5qi_value":3,"slice_ns_subnets":[{"id":"Service_subnet_1","nsd-ref":"6a01afdc-9d42-4bc9-866c-a8a3868fdf5e","nsd-name":"Service_1","sla-name":"GOLD_SLA_2","sla-ref":"aabbccdd-9d42-4bc9-866c-a8a3868fdf5e","is-shared":False},{"id":"Service_subnet_2","nsd-ref":"eeff1122-9d42-4bc9-866c-a8a3868fdf5e","nsd-name":"Service_2","sla-name":"GOLD_SLA_2","sla-ref":"44556677-9d42-4bc9-866c-a8a3868fdf5e","is-shared":True},{"id":"Service_subnet_3","nsd-ref":"99887766-9d42-4bc9-866c-a8a3868fdf5e","nsd-name":"Service_3","sla-name":"None","sla-ref":"None","is-shared":False}],"slice_vld":[{"id":"mgmt","name":"mgmt","mgmt-network":True,"type":"E-LAN","nsd-connection-point-ref":[{"subnet-ref":"Service_subnet_1","nsd-cp-ref":"cp_mgmt"},{"subnet-ref":"Service_subnet_2","nsd-cp-ref":"cp_mgmt"},{"subnet-ref":"Service_subnet_3","nsd-cp-ref":"cp_mgmt"}]},{"id":"data-east","name":"data-east","type":"E-LAN","nsd-connection-point-ref":[{"subnet-ref":"Service_subnet_1","nsd-cp-ref":"cp_1"},{"subnet-ref":"Service_subnet_2","nsd-cp-ref":"cp_1"}]},{"id":"data_west","name":"data_west","type":"E-LAN","nsd-connection-point-ref":[{"subnet-ref":"Service_subnet_2","nsd-cp-ref":"cp_2"},{"subnet-ref":"Service_subnet_3","nsd-cp-ref":"cp_1"}]}]}
         mock_nsi_json = {"name": "tango_NSI", "description": "5gTango_descriptor", "nstId": "096c26f9-6142-43d2-8521-57cea9e76c6c", 'callback':'gtk_callback', 'datacenter':'00000000-0000-0000-0000-000000000000'}
         #Creates NSI object and json (to send to the repositories in integration tests)
-        response_NSI = create_basic_nsi(mock_nst_json, mock_nsi_json)
+        response_NSI = add_basic_nsi_info(mock_nst_json, mock_nsi_json)
         response_NSI = add_vlds(response_NSI, mock_nst_json["slice_vld"])
         response_NSI = add_subnets(response_NSI, mock_nst_json["slice_ns_subnets"], mock_user_request["services_sla"])
 
