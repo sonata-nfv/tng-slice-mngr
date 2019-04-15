@@ -357,7 +357,7 @@ def add_vlds(new_nsir, nst_vld_list):
     vld_record['name'] = vld_item['name']
     vld_record['vimAccountId'] = str(uuid.uuid4())  #TODO: comes with the request, to be improved
     vld_record['vim-net-id']  = str(uuid.uuid4())   #TODO: filled when the GTK sends back the uuid
-    if (vld_item['mgmt-network']):
+    if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True
     vld_record['type'] = vld_item['type']
     #vld_record['root-bandwidth']
