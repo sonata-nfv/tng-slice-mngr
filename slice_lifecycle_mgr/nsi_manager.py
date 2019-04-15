@@ -352,21 +352,21 @@ def add_vlds(new_nsir, nst_vld_list):
   vldr_list = []
   for vld_item in nst_vld_list:
     vld_record = {}
-    vld_record["id"] = vld_item["id"]
-    vld_record["name"] = vld_item["name"]
-    vld_record["vimAccountId"] = str(uuid.uuid4())  #TODO: comes with the request, to be improved
-    vld_record["vim-net-id"]  = str(uuid.uuid4())   #TODO: filled when the GTK sends back the uuid
-    if vld_item["mgmt-network"] in vld_item:
-      vld_record["mgmt-network"] = vld_item["mgmt-network"]
-    vld_record["type"] = vld_item["type"]
-    #vld_record["root-bandwidth"]
-    #vld_record["leaf-bandwidth"]                   #TODO: check how to use this 4 parameters
-    #vld_record["physical-network"]
-    #vld_record["segmentation_id"]
-    vld_record["vld-status"] = "INACTIVE"
-    vld_record["shared-nsrs-list"] = []   # this is filled when a shared service is instantiated on this VLD
-    vld_record["ns-conn-point-ref"] = []  # this is filled when a service is instantiated on this VLD   
-    vld_record["requestId"] = str(uuid.uuid4())    #TODO: filled when the GTK sends back the uuid
+    vld_record['id'] = vld_item['id']
+    vld_record['name'] = vld_item['name']
+    vld_record['vimAccountId'] = str(uuid.uuid4())  #TODO: comes with the request, to be improved
+    vld_record['vim-net-id']  = str(uuid.uuid4())   #TODO: filled when the GTK sends back the uuid
+    if (vld_item['mgmt-network']):
+      vld_record['mgmt-network'] = vld_item['mgmt-network']
+    vld_record['type'] = vld_item['type']
+    #vld_record['root-bandwidth']
+    #vld_record['leaf-bandwidth']                   #TODO: check how to use this 4 parameters
+    #vld_record['physical-network']
+    #vld_record['segmentation_id']
+    vld_record['vld-status'] = 'INACTIVE'
+    vld_record['shared-nsrs-list'] = []   # this is filled when a shared service is instantiated on this VLD
+    vld_record['ns-conn-point-ref'] = []  # this is filled when a service is instantiated on this VLD   
+    vld_record['requestId'] = str(uuid.uuid4())    #TODO: filled when the GTK sends back the uuid
 
     vldr_list.append(vld_record)
   
