@@ -39,7 +39,7 @@ from threading import Thread, Lock
 
 import objects.nsi_content as nsi
 import slice2ns_mapper.mapper as mapper                             # sends requests to the GTK-SP
-import slice_lifecycle_mgr.nsi_manager2ia as nsi_ia                 # sends requests to the IA
+#import slice2ns_mapper.slicer_wrapper_ia as slicer2ia               # sends requests to the IA
 import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo             # sends requests to the repositories
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue   # sends requests to the catalogues
 
@@ -47,7 +47,7 @@ import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue   # sends requ
 # mutex used to ensure one single access to ddbb (repositories) for the nsi records creation/update/removal
 mutex_slice2db_access = Lock()
 
-# definition of LOG variable to hace the slice logs idetified amonge the other possible 5GTango components.
+# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
@@ -290,7 +290,7 @@ class notify_slice_terminated(Thread):
 
 
 ################################ NSI CREATION & INSTANTIATION SECTION ##################################
-# Does all the process to create the NSI object (gathering the information and sending orders to GK)
+# Network Slice Instance Object Creation
 def createNSI(nsi_json):
   LOG.info("NSI_MNGR: Creates and Instantiates a new NSI.")
   time.sleep(0.1)
@@ -299,18 +299,16 @@ def createNSI(nsi_json):
   nst_json = catalogue_response['nstd']
 
   # creates NSI with the received information
-  new_nsir = createBasicNSI(nst_json, nsi_json)
+  new_nsir = create_basic_nsi(nst_json, nsi_json)
   
   # adds the VLD information within the NSI record
-  # new_nsir = addVLD2NSi(new_nsir, nst_json["slice_ns_subnets"])
-  vim_list = nsi_ia.get_VIM_list()
-  LOG.info("This is the list of vims coming from the IA: " + str(vim_list))
+  new_nsir = add_vlds(new_nsir, nst_json["slice_vld"])
   
   # adds the NetServices (subnets) information within the NSI record
-  new_nsir = addSubnets2NSi(new_nsir, nst_json["slice_ns_subnets"])
+  new_nsir = add_subnets(new_nsir, nst_json["slice_ns_subnets"], nsi_json["services_sla"])
 
   # saving the NSI into the repositories
-  #nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
+  nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
   #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
@@ -318,8 +316,8 @@ def createNSI(nsi_json):
 
   return nsirepo_jsonresponse, 201
 
-# Creates the initial NSI object to send to the repositories
-def createBasicNSI(nst_json, nsi_json):
+# Basic NSI structure
+def create_basic_nsi(nst_json, nsi_json):
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
@@ -348,26 +346,50 @@ def createBasicNSI(nst_json, nsi_json):
 
   return nsir_dict
 
-# Adds the basic subnets information to the NSI record
-def addVLD2NSi(nsi_json, nst_subnets_json):
+# Sends requests to create vim networks and adds their information into the NSIr
+#TODO: check what is necessary to send to the GTK ( reference json in nsi_manager.py)
+def add_vlds(new_nsir, nst_vld_list):
+  vldr_list = []
+  for vld_item in nst_vld_list:
+    vld_record = {}
+    vld_record["id"] = vld_item["id"]
+    vld_record["name"] = vld_item["name"]
+    vld_record["vimAccountId"] = str(uuid.uuid4())  #TODO: comes with the request, to be improved
+    vld_record["vim-net-id"]  = str(uuid.uuid4())   #TODO: filled when the GTK sends back the uuid
+    if vld_item["mgmt-network"]:
+      vld_record["mgmt-network"] = vld_item["mgmt-network"]
+    vld_record["type"] = vld_item["type"]
+    #vld_record["root-bandwidth"]
+    #vld_record["leaf-bandwidth"]                   #TODO: check how to use this 4 parameters
+    #vld_record["physical-network"]
+    #vld_record["segmentation_id"]
+    vld_record["vld-status"] = "INACTIVE"
+    vld_record["shared-nsrs-list"] = []   # this is filled when a shared service is instantiated on this VLD
+    vld_record["ns-conn-point-ref"] = []  # this is filled when a service is instantiated on this VLD   
+    vld_record["requestId"] = str(uuid.uuid4())    #TODO: filled when the GTK sends back the uuid
 
-  return nsi_json
+    vldr_list.append(vld_record)
+  
+  new_nsir['vldr-list'] = vldr_list
+  return new_nsir
 
 # Adds the basic subnets information to the NSI record
-def addSubnets2NSi(nsi_json, subnets_list):
+def add_subnets(new_nsir, subnets_list, services_sla):
   nsr_list = []
   serv_seq = 1
   for subnet_item in subnets_list:
     subnet_record = {}
-    subnet_record['nsrName'] = nsi_json['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
+    subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
     subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
     subnet_record['subnet-ref'] = subnet_item['id']
     subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
-    subnet_record['sla-name'] = subnet_item['sla-name']                           #TODO: add instantiation parameters
-    subnet_record['sla-ref'] = subnet_item['sla-ref']                             #TODO: add instantiation parameters
+    for serv_sla_item in services_sla:
+      if serv_sla_item['service_uuid'] == subnet_item['nsd-ref']:
+        subnet_record['sla-name'] = serv_sla_item['sla-name']                           #TODO: add instantiation parameters
+        subnet_record['sla-ref'] = serv_sla_item['sla-uuid']                             #TODO: add instantiation parameters
     subnet_record['working-status'] = 'INSTANTIATING'
     subnet_record['requestId'] = ''
-    subnet_record['vimAccountId'] = nsi_json['datacenter']                        #TODO: add instantiation parameters
+    subnet_record['vimAccountId'] = new_nsir['datacenter']                        #TODO: add instantiation parameters
     subnet_record['isshared'] = subnet_item['is-shared']
     subnet_record['isinstantiated'] = False
     subnet_record['vld'] = []
@@ -375,10 +397,10 @@ def addSubnets2NSi(nsi_json, subnets_list):
     nsr_list.append(subnet_record)
     serv_seq = serv_seq + 1
   
-  nsi_json['nsr-list'] = nsr_list
-  return nsi_json
+  new_nsir['nsr-list'] = nsr_list
+  return new_nsir
 
-# Updates a NSI with the latest informationg coming from the MANO/GK
+# Updates a NSI with the latest information coming from the MANO/GK
 def updateInstantiatingNSI(nsiId, request_json):
   LOG.info("NSI_MNGR: Updates the NSI with the latest incoming information.")
   time.sleep(0.1)

@@ -39,6 +39,12 @@ import objects.nst_content as nst
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
 import database.database as db
 
+#TODO: apply it
+# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
+logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger("slicemngr:repo")
+LOG.setLevel(logging.INFO)
+
 ######################### NETWORK SLICE TEMPLATE CREATION/UPDATE/REMOVE SECTION ##############################
 # Creates a NST and sends it to catalogues
 def createNST(jsondata):

@@ -41,11 +41,17 @@ import slice_lifecycle_mgr.nst_manager as nst_manager
 import slice_lifecycle_mgr.nsi_manager as nsi_manager
 import slice_lifecycle_mgr.validate_incoming_json as json_validator
 import slice2ns_mapper.mapper as mapper
-from database import database as db
+#import slice2ns_mapper.slicer_wrapper_ia as slicer2ia
+from database import database as db                                 #TODO: check if it is still used to remove or not
 
+#TODO: apply logs as the rest of the project (2 options)
+####### Option 1
 #from logger import TangoLogger
-
 #LOG = TangoLogger.getLogger("slicemngr:repo", log_level=logging.INFO, log_json=True)
+####### Option 2
+#logging.basicConfig(level=logging.DEBUG)
+#LOG = logging.getLogger("k8s-wrapper:main")
+#LOG.setLevel(logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -56,7 +62,6 @@ API_NST="/nst"
 API_VERSION="/v1"
 API_NSILCM="/nsilcm"
 API_NSI="/nsi"
-
 
 
 ############################################# NETWORK SLICE PING ############################################
@@ -213,7 +218,7 @@ def getNSI(nsiId):
 
 ########################################## MAIN SERVER FUNCTION #########################################
 if __name__ == '__main__':
-  #READ CONFIG
+  # READ CONFIG
   conf_parser = argparse.ArgumentParser( description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=True )
   conf_parser.add_argument("-c", "--conf_file", help="Specify config file", metavar="FILE", default='config.cfg')
   args, remaining_argv = conf_parser.parse_known_args()
@@ -221,5 +226,8 @@ if __name__ == '__main__':
   config.read(args.conf_file)
   db.settings = config
 
-  #RUN SERVER
+  # PREPARE IA/MQRabbit Connection Thread
+  #slicer_2_ia = slicer2ia.slicewrapper()
+
+  # RUN MAIN SERVER THREAD
   app.run(debug=True, host='0.0.0.0', port=os.environ.get("SLICE_MGR_PORT"))
