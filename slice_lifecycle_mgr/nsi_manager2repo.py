@@ -65,7 +65,7 @@ def safe_nsi(NSI_dict):
     return jsonresponse
 
 # GET all NSI items from the repositories
-def getAll_saved_nsi():
+def get_all_saved_nsi():
     url = get_base_url() + '/records/nsir/ns-instances'
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     LOG.info(response.text)

@@ -163,7 +163,6 @@ class notify_slice_instantiated(Thread):
         if(jsonNSI['nsi-status'] == "INSTANTIATED"):
           nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
           if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
-            #updateNST_jsonresponse = nstd_usagesstatus_update(jsonNSI['nst-ref'], nst_descriptor['nstd'])
             nstParameter2update = "usageState=IN_USE"
             updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
     
@@ -291,7 +290,7 @@ class notify_slice_terminated(Thread):
 
 ################################ NSI CREATION & INSTANTIATION SECTION ##################################
 # Network Slice Instance Object Creation
-def createNSI(nsi_json):
+def create_nsi(nsi_json):
   LOG.info("NSI_MNGR: Creates and Instantiates a new NSI.")
   time.sleep(0.1)
   nstId = nsi_json['nstId']
@@ -299,7 +298,7 @@ def createNSI(nsi_json):
   nst_json = catalogue_response['nstd']
 
   # creates NSI with the received information
-  new_nsir = create_basic_nsi(nst_json, nsi_json)
+  new_nsir = add_basic_nsi_info(nst_json, nsi_json)
   
   # adds the VLD information within the NSI record
   new_nsir = add_vlds(new_nsir, nst_json["slice_vld"])
@@ -317,7 +316,7 @@ def createNSI(nsi_json):
   return nsirepo_jsonresponse, 201
 
 # Basic NSI structure
-def create_basic_nsi(nst_json, nsi_json):
+def add_basic_nsi_info(nst_json, nsi_json):
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
@@ -401,7 +400,7 @@ def add_subnets(new_nsir, subnets_list, services_sla):
   return new_nsir
 
 # Updates a NSI with the latest information coming from the MANO/GK
-def updateInstantiatingNSI(nsiId, request_json):
+def update_instantiating_nsi(nsiId, request_json):
   LOG.info("NSI_MNGR: Updates the NSI with the latest incoming information.")
   time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
@@ -420,19 +419,10 @@ def updateInstantiatingNSI(nsiId, request_json):
   else:
     return ('{"error":"There is no NSIR in the db."}', 500)
 
-# Updateds the usages status of a nstd
-def nstd_usagesstatus_update(nstId, nstd_item):
-  # updates the usageState parameter
-  if (nstd_item['usageState'] == "NOT_IN_USE"):
-    nstParameter2update = "usageState=IN_USE"
-    updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-
-  return updatedNST_jsonresponse
-
     
 ########################################## NSI TERMINATE SECTION #######################################
 # Does all the process to terminate the NSI
-def terminateNSI(nsiId, TerminOrder):
+def terminate_nsi(nsiId, TerminOrder):
   LOG.info("NSI_MNGR: Terminates a NSI.")
   time.sleep(0.1)
 
@@ -479,7 +469,7 @@ def terminateNSI(nsiId, TerminOrder):
   return (repo_responseStatus, value)
 
 # Updates a NSI being terminated with the latest informationg coming from the MANO/GK.
-def updateTerminatingNSI(nsiId, request_json):
+def update_terminating_nsi(nsiId, request_json):
   LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
   time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
@@ -500,7 +490,7 @@ def updateTerminatingNSI(nsiId, request_json):
 
 # Checks if there is any other NSI based on a NST. If not, changes the nst usageStatus parameter to "NOT_IN_USE"
 def removeNSIinNST(nstId):
-  nsis_list = nsi_repo.getAll_saved_nsi()
+  nsis_list = nsi_repo.get_all_saved_nsi()
   all_nsis_terminated = True
   for nsis_item in nsis_list:
     if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] == "INSTANTIATED" or nsis_item['nsi-status'] == "INSTANTIATING" or nsis_item['nsi-status'] == "READY"):
@@ -519,15 +509,15 @@ def removeNSIinNST(nstId):
 
 ############################################ NSI GET SECTION ############################################
 # Gets one single NSI item information
-def getNSI(nsiId):
+def get_nsi(nsiId):
   LOG.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))
   nsirepo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
 
   return nsirepo_jsonresponse
 
 # Gets all the existing NSI items
-def getAllNsi():
+def get_all_nsi():
   LOG.info("NSI_MNGR: Retrieve all existing NSIs")
-  nsirepo_jsonresponse = nsi_repo.getAll_saved_nsi()
+  nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
 
   return nsirepo_jsonresponse

@@ -46,7 +46,7 @@ JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 #################################### GENERAL URLs TO THE GATEKEEPERS #####################################
 # Prepare the URL to ask for the available network services to create NST.
-def get_base_url_NetService_info():
+def get_base_url_ns_info():
   ip_address = os.environ.get("SONATA_GTK_COMMON")
   port = os.environ.get("SONATA_GTK_COMMON_PORT")
   base_url = 'http://'+ip_address+':'+port
@@ -120,7 +120,7 @@ def sliceUpdated(slice_callback, json_slice_info):
 
 #TODO: check if the next two requests are necessary...
 # GET /requests to pull the information of all Network Services INSTANCES
-def getAllNetServInstances():
+def get_all_all_nsr():
   url = get_base_url() + "/requests"
 
   #REAL or EMULATED usage of Sonata SP 
@@ -138,7 +138,7 @@ def getAllNetServInstances():
     return jsonresponse
 
 # GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
-def getRequestedNetServInstance(request_uuid):
+def get_requested_nsr(request_uuid):
   url = get_base_url() + "/requests/" + str(request_uuid)
 
   #REAL or EMULATED usage of Sonata SP 
@@ -186,7 +186,7 @@ Request payload:
 }
 Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
-def vim_network(network_data):
+def create_vim_network(network_data):
   url = get_base_url() + '/requests'    #TODO: ask JOSE's API
   data_json = json.dumps(service_data)
   
@@ -296,7 +296,7 @@ def getListNetServices():
   LOG.info("MAPPER: Preparing the request to get the NetServices Information")
   # cleans the current nsInfo_list to have the information updated
   del db.nsInfo_list[:]
-  url = get_base_url_NetService_info() + "/services"
+  url = get_base_url_ns_info() + "/services"
 
   #SONATA SP or EMULATED Mode 
   if use_sonata() == "True":
