@@ -377,7 +377,7 @@ def create_nsi(nsi_json):
   new_nsir = add_vlds(new_nsir, nst_json["slice_vld"])
   
   # adds the NetServices (subnets) information within the NSI record
-  new_nsir = add_subnets(new_nsir, nst_json["slice_ns_subnets"], nsi_json["services_sla"])
+  new_nsir = add_subnets(new_nsir, nst_json["slice_ns_subnets"], nsi_json)
 
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
@@ -446,19 +446,26 @@ def add_vlds(new_nsir, nst_vld_list):
   return new_nsir
 
 # Adds the basic subnets information to the NSI record
-def add_subnets(new_nsir, subnets_list, services_sla):
+def add_subnets(new_nsir, subnets_list, request_nsi_json):
   nsr_list = []
   serv_seq = 1
+  
   for subnet_item in subnets_list:
     subnet_record = {}
     subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
     subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
     subnet_record['subnet-ref'] = subnet_item['id']
     subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
-    for serv_sla_item in services_sla:
-      if serv_sla_item['service_uuid'] == subnet_item['nsd-ref']:
-        subnet_record['sla-name'] = serv_sla_item['sla_name']                           #TODO: add instantiation parameters
-        subnet_record['sla-ref'] = serv_sla_item['sla_uuid']                             #TODO: add instantiation parameters
+    
+    if 'services_sla' in  request_nsi_json:
+      for serv_sla_item in services_sla:
+        if serv_sla_item['service_uuid'] == subnet_item['nsd-ref']:
+          subnet_record['sla-name'] = serv_sla_item['sla_name']                           #TODO: add instantiation parameters
+          subnet_record['sla-ref'] = serv_sla_item['sla_uuid']                            #TODO: add instantiation parameters
+    else:
+      subnet_record['sla-name'] = "None"
+      subnet_record['sla-ref'] = "None"
+    
     subnet_record['working-status'] = 'INSTANTIATING'
     subnet_record['requestId'] = ''
     subnet_record['vimAccountId'] = new_nsir['datacenter']                        #TODO: add instantiation parameters
