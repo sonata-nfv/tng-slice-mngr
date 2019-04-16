@@ -61,7 +61,8 @@ class thread_ns_instantiate(Thread):
   def __init__(self, NSI):
     Thread.__init__(self)
     self.NSI = NSI
-  def run(self):
+  
+  def send_instantiation_requests(self):
     # to put in order the services within a slice in the portal
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
@@ -78,6 +79,78 @@ class thread_ns_instantiate(Thread):
 
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
+  
+  def update_nsi_notify_gtk(self):
+    mutex_slice2db_access.acquire()
+    try:
+      LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
+      time.sleep(0.1)
+      jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+      #TODO: improve the next 2 lines to not use this delete.
+      jsonNSI["id"] = jsonNSI["uuid"]
+      del jsonNSI["uuid"]
+
+      # updates the slice information befor notifying the GTK
+      jsonNSI['nsi-status'] = "INSTANTIATED"ç
+      jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
+
+      # validates if any service has error status to apply it to the slice status
+      for service_item in jsonNSI['nsr-list']:
+        if (service_item['working-status'] == "ERROR"):
+          jsonNSI['nsi-status'] = "ERROR"
+          break;
+
+      # sends the updated NetSlice instance to the repositories
+      repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.NSI['id'])
+
+      # updates NetSlice template usageState
+      if(jsonNSI['nsi-status'] == "INSTANTIATED"):
+        nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
+        if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
+          nstParameter2update = "usageState=IN_USE"
+          updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
+    
+    finally:
+      mutex_slice2db_access.release()
+      #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
+      if (all_services_ready == True):
+        # creates a thread with the callback URL to advise the GK this slice is READY
+        slice_callback = jsonNSI['sliceCallback']
+        json_slice_info = {}
+        json_slice_info['status'] = jsonNSI['nsi-status']
+        json_slice_info['updateTime'] = jsonNSI['updateTime']
+
+        thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+
+  def run(self):
+    # TODO:Sends all the requests to create all the VLDs within the slice
+    
+    # TODO:Waits until all the VLDs are created/ready or error
+
+    # Sends all the requests to instantiate the NSs within the slice
+    self.send_instantiation_requests()
+
+    # Waits until all the NSs are instantiated/ready or error
+    deployment_timeout = 2 * 3600   # Two hours
+    while deployment_timeout > 0:
+      LOG.info("Waiting all services are ready/instantiated or error...")
+      # Check ns instantiation status
+      nsi_ready = False
+      jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+      for nsr_item in jsonNSI['nsr-list']: 
+        if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
+          nsi_ready = False
+      
+      # if all services are instantiated or error, break the while loop to notify the GTK
+      if nsi_ready:
+        LOG.info("All service instantiations are ready!")
+        break
+   
+      time.sleep(5)
+      deployment_timeout -= 5
+    
+    # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
+    self.update_nsi_notify_gtk(self.NSI['id'])
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI instantiation
@@ -310,8 +383,8 @@ def create_nsi(nsi_json):
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
-  #thread_ns_instantiation.start()
+  thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+  thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
@@ -411,9 +484,9 @@ def update_instantiating_nsi(nsiId, request_json):
     thread_update_slice_instantiation.start()
 
     # starts the thread to notify the GTK if the slice is ready
-    thread_notify_slice_instantiatied = notify_slice_instantiated(nsiId)
-    time.sleep(0.1)
-    thread_notify_slice_instantiatied.start()
+    #thread_notify_slice_instantiatied = notify_slice_instantiated(nsiId)
+    #time.sleep(0.1)
+    #thread_notify_slice_instantiatied.start()
 
     return (jsonNSI, 200)
   else:
