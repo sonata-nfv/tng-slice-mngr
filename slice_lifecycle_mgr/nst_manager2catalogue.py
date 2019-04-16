@@ -69,7 +69,7 @@ def safe_nst(nst_string):
     return jsonresponse, response.status_code
        
 # GET all NST information from the catalogues
-def getAll_saved_nst():
+def get_all_saved_nst():
     LOG.info("NST_MNGR2CAT: Requesting all NSTD information from catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts'
     response = requests.get(url, headers=JSON_CONTENT_HEADER)

@@ -39,9 +39,15 @@ import objects.nst_content as nst
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
 import database.database as db
 
+#TODO: apply it
+# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
+logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger("slicemngr:repo")
+LOG.setLevel(logging.INFO)
+
 ######################### NETWORK SLICE TEMPLATE CREATION/UPDATE/REMOVE SECTION ##############################
 # Creates a NST and sends it to catalogues
-def createNST(jsondata):
+def create_nst(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
   return nstcatalogue_jsonresponse[0], nstcatalogue_jsonresponse[1]
@@ -54,7 +60,7 @@ def updateNST(nstId, NST_string):
   return nstcatalogue_jsonresponse
 
 # Deletes a NST kept in catalogues
-def deleteNST(nstId):
+def remove_nst(nstId):
   logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
   if (nstcatalogue_jsonresponse['nstd']["usageState"] == "NOT_IN_USE"):
@@ -66,14 +72,14 @@ def deleteNST(nstId):
 
 ############################################ GET NST SECTION ############################################
 # Returns the information of all the NST in catalogues
-def getAllNst():
+def get_all_nst():
   logging.info("NST_MNGR: Retrieving all existing NSTs")
-  nstcatalogue_jsonresponse = nst_catalogue.getAll_saved_nst()
+  nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst()
   
   return nstcatalogue_jsonresponse
 
 # Returns the information of a selected NST in catalogues
-def getNST(nstId):
+def get_nst(nstId):
   logging.info("NST_MNGR: Retrieving NST with id: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
   

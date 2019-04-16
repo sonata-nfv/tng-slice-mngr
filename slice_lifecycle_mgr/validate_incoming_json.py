@@ -53,7 +53,7 @@ def is_valid_uuid(uuid_to_test, version=4):
 
 
 # CASE: Create NetSlice Template
-def validateCreateTemplate (jsonData):
+def validate_create_template (jsonData):
   for item in jsonData['sliceServices']:
     if (is_valid_uuid (item['nsdID']) == True or item['slaID'] == "None"):
       returnData["missing_field"] = "Everything is OK!!"
@@ -63,7 +63,7 @@ def validateCreateTemplate (jsonData):
       return (returnData, 400)
 
 # CASE: Create NetSlice instantiation
-def validateCreateInstantiation (jsonData):
+def validate_create_instantiation (jsonData):
   if (is_valid_uuid(jsonData['nstId']) == True):
     returnData["missing_field"] = "Everything is OK!!"
     return (returnData, 200)
@@ -74,7 +74,7 @@ def validateCreateInstantiation (jsonData):
 
 # CASE: Terminate NetSlice Instantiation
 # Possible values for <time> --> instant_termination: 0 / future termination: 2019-07-16T14:01:31.447547
-def validateTerminateInstantiation (jsonData):
+def validate_terminate_instantiation (jsonData):
   if (jsonData['terminateTime'] == 0 or jsonData['terminateTime'] == "0"):
     returnData["missing_field"] = "Everything is OK!!"
     return (returnData, 200)

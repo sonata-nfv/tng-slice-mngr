@@ -38,15 +38,16 @@ import dateutil.parser
 from threading import Thread, Lock
 
 import objects.nsi_content as nsi
-import slice2ns_mapper.mapper as mapper
-import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo
-import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
+import slice2ns_mapper.mapper as mapper                             # sends requests to the GTK-SP
+#import slice2ns_mapper.slicer_wrapper_ia as slicer2ia               # sends requests to the IA
+import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo             # sends requests to the repositories
+import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue   # sends requests to the catalogues
 
 # INFORMATION
 # mutex used to ensure one single access to ddbb (repositories) for the nsi records creation/update/removal
 mutex_slice2db_access = Lock()
 
-# definition of LOG variable to hace the slice logs idetified amonge the other possible 5GTango components.
+# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger("slicemngr:repo")
 LOG.setLevel(logging.INFO)
@@ -60,7 +61,8 @@ class thread_ns_instantiate(Thread):
   def __init__(self, NSI):
     Thread.__init__(self)
     self.NSI = NSI
-  def run(self):
+  
+  def send_instantiation_requests(self):
     # to put in order the services within a slice in the portal
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
@@ -77,6 +79,78 @@ class thread_ns_instantiate(Thread):
 
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
+  
+  def update_nsi_notify_gtk(self):
+    mutex_slice2db_access.acquire()
+    try:
+      LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
+      time.sleep(0.1)
+      jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+      #TODO: improve the next 2 lines to not use this delete.
+      jsonNSI["id"] = jsonNSI["uuid"]
+      del jsonNSI["uuid"]
+
+      # updates the slice information befor notifying the GTK
+      jsonNSI['nsi-status'] = "INSTANTIATED"
+      jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
+
+      # validates if any service has error status to apply it to the slice status
+      for service_item in jsonNSI['nsr-list']:
+        if (service_item['working-status'] == "ERROR"):
+          jsonNSI['nsi-status'] = "ERROR"
+          break;
+
+      # sends the updated NetSlice instance to the repositories
+      repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.NSI['id'])
+
+      # updates NetSlice template usageState
+      if(jsonNSI['nsi-status'] == "INSTANTIATED"):
+        nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
+        if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
+          nstParameter2update = "usageState=IN_USE"
+          updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
+    
+    finally:
+      mutex_slice2db_access.release()
+      #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
+      if (all_services_ready == True):
+        # creates a thread with the callback URL to advise the GK this slice is READY
+        slice_callback = jsonNSI['sliceCallback']
+        json_slice_info = {}
+        json_slice_info['status'] = jsonNSI['nsi-status']
+        json_slice_info['updateTime'] = jsonNSI['updateTime']
+
+        thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+
+  def run(self):
+    # TODO:Sends all the requests to create all the VLDs within the slice
+    
+    # TODO:Waits until all the VLDs are created/ready or error
+
+    # Sends all the requests to instantiate the NSs within the slice
+    self.send_instantiation_requests()
+
+    # Waits until all the NSs are instantiated/ready or error
+    deployment_timeout = 2 * 3600   # Two hours
+    while deployment_timeout > 0:
+      LOG.info("Waiting all services are ready/instantiated or error...")
+      # Check ns instantiation status
+      nsi_ready = False
+      jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+      for nsr_item in jsonNSI['nsr-list']: 
+        if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
+          nsi_ready = False
+      
+      # if all services are instantiated or error, break the while loop to notify the GTK
+      if nsi_ready:
+        LOG.info("All service instantiations are ready!")
+        break
+   
+      time.sleep(5)
+      deployment_timeout -= 5
+    
+    # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
+    self.update_nsi_notify_gtk(self.NSI['id'])
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI instantiation
@@ -162,7 +236,6 @@ class notify_slice_instantiated(Thread):
         if(jsonNSI['nsi-status'] == "INSTANTIATED"):
           nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
           if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
-            #updateNST_jsonresponse = nstd_usagesstatus_update(jsonNSI['nst-ref'], nst_descriptor['nstd'])
             nstParameter2update = "usageState=IN_USE"
             updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
     
@@ -289,8 +362,8 @@ class notify_slice_terminated(Thread):
 
 
 ################################ NSI CREATION & INSTANTIATION SECTION ##################################
-# Does all the process to create the NSI object (gathering the information and sending orders to GK)
-def createNSI(nsi_json):
+# Network Slice Instance Object Creation
+def create_nsi(nsi_json):
   LOG.info("NSI_MNGR: Creates and Instantiates a new NSI.")
   time.sleep(0.1)
   nstId = nsi_json['nstId']
@@ -298,22 +371,25 @@ def createNSI(nsi_json):
   nst_json = catalogue_response['nstd']
 
   # creates NSI with the received information
-  new_nsir = createBasicNSI(nst_json, nsi_json)
-  new_nsir = addSubnets2NSi(new_nsir, nst_json["slice_ns_subnets"])
-  # new_nsir = addVLD2NSi(new_nsir, nst_json["slice_ns_subnets"])    #TODO: function to add VLD information into the NSI
+  new_nsir = add_basic_nsi_info(nst_json, nsi_json)
+  
+  # adds the VLD information within the NSI record
+  new_nsir = add_vlds(new_nsir, nst_json["slice_vld"])
+  
+  # adds the NetServices (subnets) information within the NSI record
+  new_nsir = add_subnets(new_nsir, nst_json["slice_ns_subnets"], nsi_json["services_sla"])
 
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
   thread_ns_instantiation = thread_ns_instantiate(new_nsir)
-  time.sleep(0.1)
   thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
-# Creates the initial NSI object to send to the repositories
-def createBasicNSI(nst_json, nsi_json):
+# Basic NSI structure
+def add_basic_nsi_info(nst_json, nsi_json):
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
@@ -342,21 +418,50 @@ def createBasicNSI(nst_json, nsi_json):
 
   return nsir_dict
 
+# Sends requests to create vim networks and adds their information into the NSIr
+#TODO: check what is necessary to send to the GTK ( reference json in nsi_manager.py)
+def add_vlds(new_nsir, nst_vld_list):
+  vldr_list = []
+  for vld_item in nst_vld_list:
+    vld_record = {}
+    vld_record['id'] = vld_item['id']
+    vld_record['name'] = vld_item['name']
+    vld_record['vimAccountId'] = str(uuid.uuid4())  #TODO: comes with the request, to be improved
+    vld_record['vim-net-id']  = str(uuid.uuid4())   #TODO: filled when the GTK sends back the uuid
+    if 'mgmt-network' in vld_item.keys():
+      vld_record['mgmt-network'] = True
+    vld_record['type'] = vld_item['type']
+    #vld_record['root-bandwidth']
+    #vld_record['leaf-bandwidth']                   #TODO: check how to use this 4 parameters
+    #vld_record['physical-network']
+    #vld_record['segmentation_id']
+    vld_record['vld-status'] = 'INACTIVE'
+    vld_record['shared-nsrs-list'] = []   # this is filled when a shared service is instantiated on this VLD
+    vld_record['ns-conn-point-ref'] = []  # this is filled when a service is instantiated on this VLD   
+    vld_record['requestId'] = str(uuid.uuid4())    #TODO: filled when the GTK sends back the uuid
+
+    vldr_list.append(vld_record)
+  
+  new_nsir['vldr-list'] = vldr_list
+  return new_nsir
+
 # Adds the basic subnets information to the NSI record
-def addSubnets2NSi(nsi_json, subnets_list):
+def add_subnets(new_nsir, subnets_list, services_sla):
   nsr_list = []
   serv_seq = 1
   for subnet_item in subnets_list:
     subnet_record = {}
-    subnet_record['nsrName'] = nsi_json['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
+    subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
     subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
     subnet_record['subnet-ref'] = subnet_item['id']
     subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
-    subnet_record['sla-name'] = subnet_item['sla-name']                           #TODO: add instantiation parameters
-    subnet_record['sla-ref'] = subnet_item['sla-ref']                             #TODO: add instantiation parameters
+    for serv_sla_item in services_sla:
+      if serv_sla_item['service_uuid'] == subnet_item['nsd-ref']:
+        subnet_record['sla-name'] = serv_sla_item['sla_name']                           #TODO: add instantiation parameters
+        subnet_record['sla-ref'] = serv_sla_item['sla_uuid']                             #TODO: add instantiation parameters
     subnet_record['working-status'] = 'INSTANTIATING'
     subnet_record['requestId'] = ''
-    subnet_record['vimAccountId'] = nsi_json['datacenter']                        #TODO: add instantiation parameters
+    subnet_record['vimAccountId'] = new_nsir['datacenter']                        #TODO: add instantiation parameters
     subnet_record['isshared'] = subnet_item['is-shared']
     subnet_record['isinstantiated'] = False
     subnet_record['vld'] = []
@@ -364,11 +469,11 @@ def addSubnets2NSi(nsi_json, subnets_list):
     nsr_list.append(subnet_record)
     serv_seq = serv_seq + 1
   
-  nsi_json['nsr-list'] = nsr_list
-  return nsi_json
+  new_nsir['nsr-list'] = nsr_list
+  return new_nsir
 
-# Updates a NSI with the latest informationg coming from the MANO/GK
-def updateInstantiatingNSI(nsiId, request_json):
+# Updates a NSI with the latest information coming from the MANO/GK
+def update_instantiating_nsi(nsiId, request_json):
   LOG.info("NSI_MNGR: Updates the NSI with the latest incoming information.")
   time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
@@ -379,27 +484,18 @@ def updateInstantiatingNSI(nsiId, request_json):
     thread_update_slice_instantiation.start()
 
     # starts the thread to notify the GTK if the slice is ready
-    thread_notify_slice_instantiatied = notify_slice_instantiated(nsiId)
-    time.sleep(0.1)
-    thread_notify_slice_instantiatied.start()
+    #thread_notify_slice_instantiatied = notify_slice_instantiated(nsiId)
+    #time.sleep(0.1)
+    #thread_notify_slice_instantiatied.start()
 
     return (jsonNSI, 200)
   else:
     return ('{"error":"There is no NSIR in the db."}', 500)
 
-# Updateds the usages status of a nstd
-def nstd_usagesstatus_update(nstId, nstd_item):
-  # updates the usageState parameter
-  if (nstd_item['usageState'] == "NOT_IN_USE"):
-    nstParameter2update = "usageState=IN_USE"
-    updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
-
-  return updatedNST_jsonresponse
-
     
 ########################################## NSI TERMINATE SECTION #######################################
 # Does all the process to terminate the NSI
-def terminateNSI(nsiId, TerminOrder):
+def terminate_nsi(nsiId, TerminOrder):
   LOG.info("NSI_MNGR: Terminates a NSI.")
   time.sleep(0.1)
 
@@ -446,7 +542,7 @@ def terminateNSI(nsiId, TerminOrder):
   return (repo_responseStatus, value)
 
 # Updates a NSI being terminated with the latest informationg coming from the MANO/GK.
-def updateTerminatingNSI(nsiId, request_json):
+def update_terminating_nsi(nsiId, request_json):
   LOG.info("NSI_MNGR: get the specific NSI to update the right service information.")
   time.sleep(0.1)
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
@@ -467,7 +563,7 @@ def updateTerminatingNSI(nsiId, request_json):
 
 # Checks if there is any other NSI based on a NST. If not, changes the nst usageStatus parameter to "NOT_IN_USE"
 def removeNSIinNST(nstId):
-  nsis_list = nsi_repo.getAll_saved_nsi()
+  nsis_list = nsi_repo.get_all_saved_nsi()
   all_nsis_terminated = True
   for nsis_item in nsis_list:
     if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] == "INSTANTIATED" or nsis_item['nsi-status'] == "INSTANTIATING" or nsis_item['nsi-status'] == "READY"):
@@ -486,15 +582,15 @@ def removeNSIinNST(nstId):
 
 ############################################ NSI GET SECTION ############################################
 # Gets one single NSI item information
-def getNSI(nsiId):
+def get_nsi(nsiId):
   LOG.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))
   nsirepo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
 
   return nsirepo_jsonresponse
 
 # Gets all the existing NSI items
-def getAllNsi():
+def get_all_nsi():
   LOG.info("NSI_MNGR: Retrieve all existing NSIs")
-  nsirepo_jsonresponse = nsi_repo.getAll_saved_nsi()
+  nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
 
   return nsirepo_jsonresponse
