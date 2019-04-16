@@ -91,7 +91,7 @@ class thread_ns_instantiate(Thread):
       del jsonNSI["uuid"]
 
       # updates the slice information befor notifying the GTK
-      jsonNSI['nsi-status'] = "INSTANTIATED"ç
+      jsonNSI['nsi-status'] = "INSTANTIATED"
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
 
       # validates if any service has error status to apply it to the slice status
