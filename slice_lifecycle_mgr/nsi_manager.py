@@ -80,7 +80,7 @@ class thread_ns_instantiate(Thread):
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
   
-  def update_nsi_notify_gtk(self):
+  def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
@@ -111,16 +111,16 @@ class thread_ns_instantiate(Thread):
           updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
     
     finally:
+      # release the mutex for other threads
       mutex_slice2db_access.release()
-      #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
-      if (all_services_ready == True):
-        # creates a thread with the callback URL to advise the GK this slice is READY
-        slice_callback = jsonNSI['sliceCallback']
-        json_slice_info = {}
-        json_slice_info['status'] = jsonNSI['nsi-status']
-        json_slice_info['updateTime'] = jsonNSI['updateTime']
+      
+      # creates a thread with the callback URL to advise the GK this slice is READY
+      slice_callback = jsonNSI['sliceCallback']
+      json_slice_info = {}
+      json_slice_info['status'] = jsonNSI['nsi-status']
+      json_slice_info['updateTime'] = jsonNSI['updateTime']
 
-        thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+      thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
 
   def run(self):
     # TODO:Sends all the requests to create all the VLDs within the slice
@@ -135,22 +135,23 @@ class thread_ns_instantiate(Thread):
     while deployment_timeout > 0:
       LOG.info("Waiting all services are ready/instantiated or error...")
       # Check ns instantiation status
-      nsi_ready = True
+      nsi_instantiated = True
       jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
       for nsr_item in jsonNSI['nsr-list']: 
         if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
-          nsi_ready = False
+          nsi_instantiated = False
       
       # if all services are instantiated or error, break the while loop to notify the GTK
-      if nsi_ready:
+      if nsi_instantiated:
         LOG.info("All service instantiations are ready!")
         break
    
       time.sleep(10)
       deployment_timeout -= 10
     
+    LOG.info("Updating and notifying GTK")
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
-    self.update_nsi_notify_gtk(self.NSI['id'])
+    self.update_nsi_notify_instantiate()
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI instantiation
@@ -207,6 +208,7 @@ class update_slice_instantiation(Thread):
 # NOTIFIES THE GTK ABOUT A SLICE INSTANTIATION
 ## Objctive: if a slice has all services instantiated, calls the GTK to inform thet the slice (NSI) is ready.
 ## Params: nsiId (uuid within the incoming request URL)
+#TODO: not used anymore as it was moved to the thread_ns_instantiate
 class notify_slice_instantiated(Thread):
   def __init__(self, nsiId):
     Thread.__init__(self)
@@ -268,7 +270,8 @@ class thread_ns_terminate(Thread):
   def __init__(self,nsiId):
     Thread.__init__(self)
     self.nsiId = nsiId
-  def run(self):
+  
+  def send_termination_requests(self):
     LOG.info("NSI_MNGR_Terminate: Terminating Services")
     time.sleep(0.1)
     jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
@@ -280,6 +283,90 @@ class thread_ns_terminate(Thread):
         data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.nsiId)+"/terminate-change"
 
         termination_response = mapper.net_serv_terminate(data)
+
+  def update_nsi_notify_terminate(self):
+    mutex_slice2db_access.acquire()
+    try:
+      LOG.info("NSI_MNGR_Notify: Slice termination Notification to GTK.")
+      time.sleep(0.1)
+      jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
+      #TODO: improve the next 2 lines to not use this delete.
+      jsonNSI["id"] = jsonNSI["uuid"]
+      del jsonNSI["uuid"]
+
+      # updateds nsir fields
+      jsonNSI['nsi-status'] = "TERMINATED"
+      jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
+      jsonNSI['updateTime'] = jsonNSI['terminateTime']
+      
+      # validates if any service has error status to apply it to the slice status
+      for service_item in jsonNSI['nsr-list']:
+        if (service_item['working-status'] == "ERROR"):
+          jsonNSI['nsi-status'] = "ERROR"
+          break;
+
+      # sends the updated nsi to the repositories
+      repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
+
+      # updates NetSlice template usageState if no other nsi is instantiated/ready
+      nsis_list = nsi_repo.get_all_saved_nsi()
+      all_nsis_terminated = True
+      for nsis_item in nsis_list:
+        if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY"]):
+            all_nsis_terminated = False
+            break;
+        else:
+          pass
+      if (all_nsis_terminated):
+        nst_descriptor = nst_catalogue.get_saved_nst(nstId)
+        nst_json = nst_descriptor['nstd']
+        if (nst_json['usageState'] == "IN_USE"):
+          nstParameter2update = "usageState=NOT_IN_USE"
+          updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+
+    finally:
+      # release the mutex for other threads
+      mutex_slice2db_access.release()
+
+      # sends the request to notify the GTK the slice is READY
+      slice_callback = jsonNSI['sliceCallback']
+      json_slice_info = {}
+      json_slice_info['status'] = jsonNSI['nsi-status']
+      json_slice_info['updateTime'] = jsonNSI['updateTime']
+
+      thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+
+  def run(self):
+    # Sends all the requests to instantiate the NSs within the slice
+    self.send_termination_requests()
+
+    # Waits until all the NSs are terminated/ready or error
+    deployment_timeout = 2 * 3600   # Two hours
+    while deployment_timeout > 0:
+      LOG.info("Waiting all services are terminated or error...")
+      # Check ns instantiation status
+      nsi_terminated = True
+      jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
+      for nsr_item in jsonNSI['nsr-list']: 
+        if nsr_item['working-status'] not in ["TERMINATED", "ERROR", "READY"]:
+          nsi_terminated = False
+      
+      # if all services are instantiated or error, break the while loop to notify the GTK
+      if nsi_terminated:
+        LOG.info("All service termination are ready!")
+        break
+   
+      time.sleep(10)
+      deployment_timeout -= 10
+    
+    # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
+
+    # TODO:Sends all the requests to create all the VLDs within the slice
+    
+    # TODO:Waits until all the VLDs are created/ready or error
+
+    # Notifies the GTK that the Network Slice termination process is done (either complete or error)
+    self.update_nsi_notify_terminate()
 
 # UPDATES THE SLICE TERMINATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI termination
@@ -318,6 +405,7 @@ class update_slice_termination(Thread):
 # NOTIFIES THE GTK ABOUT A SLICE TERMINATION
 ## Objctive: if a slice has all services terminated, calls the GTK to inform thet the slice (NSI) is terminated.
 ## Params: nsiId (uuid within the incoming request URL)
+#TODO: not used anymore as it was moved to the thread_ns_instantiate
 class notify_slice_terminated(Thread):
   def __init__(self, nsiId):
     Thread.__init__(self)
@@ -570,9 +658,9 @@ def update_terminating_nsi(nsiId, request_json):
     thread_update_slice_termination.start()
 
     # starts the thread to notify the GTK if the slice is ready
-    thread_notify_slice_terminated = notify_slice_terminated(nsiId)
-    time.sleep(0.1)
-    thread_notify_slice_terminated.start()
+    # thread_notify_slice_terminated = notify_slice_terminated(nsiId)
+    # time.sleep(0.1)
+    # thread_notify_slice_terminated.start()
 
     return (jsonNSI, 200)
   else:
