@@ -57,12 +57,13 @@ app = Flask(__name__)
 
 #/api/nst/v1/
 #/api/nsilcm/v1/nsi
+#/api/slices
 API_ROOT="/api"
 API_NST="/nst"
 API_VERSION="/v1"
 API_NSILCM="/nsilcm"
 API_NSI="/nsi"
-
+API_slices="/slices"
 
 ############################################# NETWORK SLICE PING ############################################
 # PING function to validate if the slice-docker is active
@@ -82,6 +83,7 @@ def getAllNetServ():
   logging.info('Returning all network services')
 
   return jsonify(ServDict), 200
+
 
 
 ######################################### NETSLICE TEMPLATE Actions #########################################
@@ -207,8 +209,14 @@ def get_slice_instance(nsiId):
 
   return jsonify(returnedNSI), 200
 
+########################################### GET VIM/WIM INFORMATION #########################################
+#  GETS for a specific NetSlice instances (NSI) information
+# @app.route(API_ROOT+API_slices+'/resources', methods=['GET'])
+# def get_slice_instance(nsiId):
+#   returned_resources = mapper.get_vim_resources()
+#   return jsonify(returned_resources), 200
 
-########################################## MAIN SERVER FUNCTION #########################################
+########################################### MAIN SERVER FUNCTION ############################################
 if __name__ == '__main__':
   # READ CONFIG
   conf_parser = argparse.ArgumentParser( description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter, add_help=True )

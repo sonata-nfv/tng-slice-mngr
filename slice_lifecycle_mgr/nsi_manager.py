@@ -135,7 +135,7 @@ class thread_ns_instantiate(Thread):
     while deployment_timeout > 0:
       LOG.info("Waiting all services are ready/instantiated or error...")
       # Check ns instantiation status
-      nsi_ready = False
+      nsi_ready = True
       jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
       for nsr_item in jsonNSI['nsr-list']: 
         if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
@@ -146,8 +146,8 @@ class thread_ns_instantiate(Thread):
         LOG.info("All service instantiations are ready!")
         break
    
-      time.sleep(5)
-      deployment_timeout -= 5
+      time.sleep(10)
+      deployment_timeout -= 10
     
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
     self.update_nsi_notify_gtk(self.NSI['id'])
@@ -170,11 +170,15 @@ class update_slice_instantiation(Thread):
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
+      LOG.info("NSI_MNGR_Update: Checking information to update...")
+      time.sleep(0.1)
       serviceInstance = {}
       # looks all the already added services and updates the right
       for service_item in jsonNSI['nsr-list']:
         # if the current request already exists, update it.
         if (service_item['nsrName'] == self.request_json['name']):
+          LOG.info("NSI_MNGR_Update: Service found, let's update it")
+          time.sleep(0.1)
           service_item['requestId'] = self.request_json['id']
           
           if (self.request_json['status'] == "READY"):
@@ -182,15 +186,21 @@ class update_slice_instantiation(Thread):
           else:
             service_item['working-status'] = self.request_json['status']
           
+          LOG.info("NSI_MNGR_Update: Service updated")
+          time.sleep(0.1)
+          
           if (self.request_json['instance_uuid'] != None):
             service_item['nsrId'] = self.request_json['instance_uuid']                                  # used to avoid a for-else loop with the next if
           
           break;
 
+      LOG.info("NSI_MNGR_Update: Sending NSIr updated to repositories")
+      time.sleep(0.1)
       # sends updated nsi to the DDBB (tng-repositories)
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
-
+      LOG.info("NSI_MNGR_Update_NSI_done: " +str(jsonNSI))
+      time.sleep(0.1)
     finally:
       mutex_slice2db_access.release()
 
