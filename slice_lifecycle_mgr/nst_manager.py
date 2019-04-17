@@ -37,6 +37,7 @@ import os, sys, logging, uuid, json, time
 import objects.nst_content as nst
 
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
+import slice2ns_mapper.mapper as mapper
 import database.database as db
 
 #TODO: apply it
@@ -49,6 +50,19 @@ LOG.setLevel(logging.INFO)
 # Creates a NST and sends it to catalogues
 def create_nst(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
+
+  # Get the current services list to get the uuid for each slice-subnet (NSD) reference
+  current_services_list = mapper.getListNetServices()
+
+  # Looks for the NSD that fullfils the service conditions (name/vendor/version) ofthe subnet within the slice.
+  for subnet_item  in jsondata["slice_ns_subnets"]:
+    for service_item in current_services_list:
+      if (subnet_item["nsd-name"] == service_item["name"] and subnet_item["nsd-vendor"] == service_item["vendor"] and subnet_item["nsd-version"] == service_item["version"]):
+        subnet_item["nsd-ref"] = service_item["uuid"]
+      else:
+        return '{"error_msg": "NSD with one of these values (NAME, VENDOR or VERSION) is not in DB"}', 400
+  
+  #Sends the new NST to the catalogues (DB)
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
   return nstcatalogue_jsonresponse[0], nstcatalogue_jsonresponse[1]
 
