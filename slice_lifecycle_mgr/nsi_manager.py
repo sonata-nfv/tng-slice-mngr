@@ -63,7 +63,6 @@ class thread_ns_instantiate(Thread):
     self.NSI = NSI
   
   def send_instantiation_requests(self):
-    # to put in order the services within a slice in the portal
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
     for nsr_item in self.NSI['nsr-list']:
@@ -80,7 +79,68 @@ class thread_ns_instantiate(Thread):
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
   
-  def update_nsi_notify_gtk(self):
+  '''
+  CURRENT JSON VERSION SENT TO CREATE NETWORKS IN A VIM (check mapper.create_vim_network info to know the full json)
+  {
+    "instance_id": "String",
+    "vim_list": [
+      {
+        "uuid": "String",
+        "virtual_links": [
+          {
+            "id": "String",
+            "access": "String"
+          }
+        ]
+      }
+    ]
+  }
+  '''
+  def send_networks_creation_request(self):
+    LOG.info("NSI_MNGR: Requesting slice networks creationg to the GTK.")
+    time.sleep(0.1)
+    # creates the overall json structure
+    network_data = {}
+    network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
+    
+    # creates the vim_list item to add it to the final json for the IA
+    vim_list = []
+    for vldr_item in self.NSI['vldr-list']:
+      # if the vim_list is empty, creates a new vim unit otherwise fulls it to the right place
+      if vim_list.empty:
+        vim_item = {}                                          # TODO: future version improve to do placement, now just one VIM
+        vim_item['uuid'] = vldr_item['vimAccountId']
+        vim_item['virtual_links'] = []
+        vim_list.append(vim_item)
+      else:
+        # checks if the VIM is already in the list to create a new vim_item or not within the vim_list
+        for vim_item in vim_list:
+          if vim_item == vldr_item['vimAccountId']:
+            break
+          else:
+            vim_item = {}                                      # TODO: future version improve to do placement, now just one VIM
+            vim_item['uuid'] = vldr_item['vimAccountId']
+            vim_item['virtual_links'] = []
+            vim_list.append(vim_item)
+
+    # adds each network information into the right element of the vim_list previously created
+    for vim_item in vim_list:
+      for vldr_item in self.NSI['vldr-list']:
+        if vldr_item['vimAccountId'] == vim_item['uuid']:
+          virtual_link_unit = {}
+          virtual_link_unit['id'] = vldr_item['vim-net-id']
+          virtual_link_unit['access'] = True
+          vim_item['virtual_links'].append(virtual_link_unit)
+
+    # adds all the information inside the list variable of the network_data
+    network_data['vim_list'] = vim_list
+    LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
+    time.sleep(0.1)
+
+    # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
+    # nets_creation_response = mapper.create_vim_network(network_data)
+
+  def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
@@ -111,19 +171,20 @@ class thread_ns_instantiate(Thread):
           updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
     
     finally:
+      # release the mutex for other threads
       mutex_slice2db_access.release()
-      #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
-      if (all_services_ready == True):
-        # creates a thread with the callback URL to advise the GK this slice is READY
-        slice_callback = jsonNSI['sliceCallback']
-        json_slice_info = {}
-        json_slice_info['status'] = jsonNSI['nsi-status']
-        json_slice_info['updateTime'] = jsonNSI['updateTime']
+      
+      # creates a thread with the callback URL to advise the GK this slice is READY
+      slice_callback = jsonNSI['sliceCallback']
+      json_slice_info = {}
+      json_slice_info['status'] = jsonNSI['nsi-status']
+      json_slice_info['updateTime'] = jsonNSI['updateTime']
 
-        thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+      thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
 
   def run(self):
     # TODO:Sends all the requests to create all the VLDs within the slice
+    self.send_networks_creation_request()
     
     # TODO:Waits until all the VLDs are created/ready or error
 
@@ -131,26 +192,28 @@ class thread_ns_instantiate(Thread):
     self.send_instantiation_requests()
 
     # Waits until all the NSs are instantiated/ready or error
-    deployment_timeout = 2 * 3600   # Two hours
+    #deployment_timeout = 2 * 3600   # Two hours
+    deployment_timeout = 1800   # 30min   #TODO: change once the GTK connection-bug is solved.
     while deployment_timeout > 0:
       LOG.info("Waiting all services are ready/instantiated or error...")
       # Check ns instantiation status
-      nsi_ready = True
+      nsi_instantiated = True
       jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
       for nsr_item in jsonNSI['nsr-list']: 
         if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
-          nsi_ready = False
+          nsi_instantiated = False
       
       # if all services are instantiated or error, break the while loop to notify the GTK
-      if nsi_ready:
+      if nsi_instantiated:
         LOG.info("All service instantiations are ready!")
         break
    
-      time.sleep(10)
-      deployment_timeout -= 10
+      time.sleep(15)
+      deployment_timeout -= 15
     
+    LOG.info("Updating and notifying GTK")
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
-    self.update_nsi_notify_gtk(self.NSI['id'])
+    self.update_nsi_notify_instantiate()
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI instantiation
@@ -183,6 +246,7 @@ class update_slice_instantiation(Thread):
           
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "INSTANTIATED"
+            service_item['isinstantiated'] = True
           else:
             service_item['working-status'] = self.request_json['status']
           
@@ -204,82 +268,168 @@ class update_slice_instantiation(Thread):
     finally:
       mutex_slice2db_access.release()
 
-# NOTIFIES THE GTK ABOUT A SLICE INSTANTIATION
-## Objctive: if a slice has all services instantiated, calls the GTK to inform thet the slice (NSI) is ready.
-## Params: nsiId (uuid within the incoming request URL)
-class notify_slice_instantiated(Thread):
-  def __init__(self, nsiId):
-    Thread.__init__(self)
-    self.nsiId = nsiId
-  def run(self):
-    mutex_slice2db_access.acquire()
-    try:
-      LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
-      time.sleep(0.1)
-      jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
-      #TODO: improve the next 2 lines to not use this delete.
-      jsonNSI["id"] = jsonNSI["uuid"]
-      del jsonNSI["uuid"]
-
-      # checks if all services are READY/ERROR to update the slice_status
-      all_services_ready = True
-      for service_item in jsonNSI['nsr-list']:
-        if (service_item['working-status'] == "INSTANTIATING"):
-          all_services_ready = False
-          break;
-
-      if (all_services_ready == True):
-        jsonNSI['nsi-status'] = "INSTANTIATED"
-
-        # validates if any service has error status to apply it to the slice status
-        for service_item in jsonNSI['nsr-list']:
-          if (service_item['working-status'] == "ERROR"):
-            jsonNSI['nsi-status'] = "ERROR"
-            break;
-
-        # sends the updated NetSlice instance to the repositories
-        jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
-
-        repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
-
-        # updates NetSlice template usageState
-        if(jsonNSI['nsi-status'] == "INSTANTIATED"):
-          nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
-          if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
-            nstParameter2update = "usageState=IN_USE"
-            updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
-    
-    finally:
-      mutex_slice2db_access.release()
-      #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
-      if (all_services_ready == True):
-        # creates a thread with the callback URL to advise the GK this slice is READY
-        slice_callback = jsonNSI['sliceCallback']
-        json_slice_info = {}
-        json_slice_info['status'] = jsonNSI['nsi-status']
-        json_slice_info['updateTime'] = jsonNSI['updateTime']
-
-        thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
-
 # SENDS NETWORK SERVICE (NS) TERMINATION REQUESTS
 ## Objctive: gets the specific nsi record from db and sends the ns termination requests 2 GTK
 ## Params: nsiId (uuid within the incoming request URL)
 class thread_ns_terminate(Thread):
-  def __init__(self,nsiId):
+  def __init__(self,NSI):
     Thread.__init__(self)
-    self.nsiId = nsiId
-  def run(self):
+    self.NSI = NSI
+  
+  def send_termination_requests(self):
     LOG.info("NSI_MNGR_Terminate: Terminating Services")
     time.sleep(0.1)
-    jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
-    for nsr_item in jsonNSI['nsr-list']:
+    for nsr_item in self.NSI['nsr-list']:
       if (nsr_item['working-status'] != "ERROR"):
         data = {}
         data["instance_uuid"] = str(nsr_item["nsrId"])
         data["request_type"] = "TERMINATE_SERVICE"
-        data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.nsiId)+"/terminate-change"
+        data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/terminate-change"
 
         termination_response = mapper.net_serv_terminate(data)
+
+  '''
+  {
+    instance_id: String,
+    vim_list: [
+      {
+        uuid: String,
+        virtual_links: [
+          {
+            id: String
+          }
+        ]
+      }
+    ]
+  }
+  '''
+  def send_networks_removal_request(self):
+    LOG.info("NSI_MNGR: Requesting slice networks creationg to the GTK.")
+    time.sleep(0.1)
+    # creates the overall json structure
+    network_data = {}
+    network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
+    
+    # creates the vim_list item to add it to the final json for the IA
+    vim_list = []
+    for vldr_item in self.NSI['vldr-list']:
+      # if the vim_list is empty, creates a new vim unit otherwise fulls it to the right place
+      if vim_list.empty:
+        vim_item = {}                                          # TODO: future version improve to do placement, now just one VIM
+        vim_item['uuid'] = vldr_item['vimAccountId']
+        vim_item['virtual_links'] = []
+        vim_list.append(vim_item)
+      else:
+        # checks if the VIM is already in the list to create a new vim_item or not within the vim_list
+        for vim_item in vim_list:
+          if vim_item == vldr_item['vimAccountId']:
+            break
+          else:
+            vim_item = {}                                      # TODO: future version improve to do placement, now just one VIM
+            vim_item['uuid'] = vldr_item['vimAccountId']
+            vim_item['virtual_links'] = []
+            vim_list.append(vim_item)
+
+    # adds each network id into the right element of the vim_list previously created
+    for vim_item in vim_list:
+      for vldr_item in self.NSI['vldr-list']:
+        if vldr_item['vimAccountId'] == vim_item['uuid']:
+          virtual_link_unit = {}
+          virtual_link_unit['id'] = vldr_item['vim-net-id']
+          vim_item['virtual_links'].append(virtual_link_unit)
+
+    # adds all the information inside the list variable of the network_data
+    network_data['vim_list'] = vim_list
+    LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
+    time.sleep(0.1)
+
+    # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
+    #nets_creation_response = mapper.delete_vim_network(network_data)
+
+  def update_nsi_notify_terminate(self):
+    mutex_slice2db_access.acquire()
+    try:
+      LOG.info("NSI_MNGR_Notify: Slice termination Notification to GTK.")
+      time.sleep(0.1)
+      jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+      #TODO: improve the next 2 lines to not use this delete.
+      jsonNSI["id"] = jsonNSI["uuid"]
+      del jsonNSI["uuid"]
+
+      # updateds nsir fields
+      jsonNSI['nsi-status'] = "TERMINATED"
+
+      jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
+      jsonNSI['updateTime'] = jsonNSI['terminateTime']
+      
+      # validates if any service has error status to apply it to the slice status
+      for service_item in jsonNSI['nsr-list']:
+        if (service_item['working-status'] == "ERROR"):
+          jsonNSI['nsi-status'] = "ERROR"
+          break;
+
+      # sends the updated nsi to the repositories
+      repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.NSI['id'])
+
+      # updates NetSlice template usageState if no other nsi is instantiated/ready
+      nsis_list = nsi_repo.get_all_saved_nsi()
+      all_nsis_terminated = True
+      for nsis_item in nsis_list:
+        if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY"]):
+            all_nsis_terminated = False
+            break;
+        else:
+          pass
+      if (all_nsis_terminated):
+        nst_descriptor = nst_catalogue.get_saved_nst(nstId)
+        nst_json = nst_descriptor['nstd']
+        if (nst_json['usageState'] == "IN_USE"):
+          nstParameter2update = "usageState=NOT_IN_USE"
+          updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+
+    finally:
+      # release the mutex for other threads
+      mutex_slice2db_access.release()
+
+      # sends the request to notify the GTK the slice is READY
+      slice_callback = jsonNSI['sliceCallback']
+      json_slice_info = {}
+      json_slice_info['status'] = jsonNSI['nsi-status']
+      json_slice_info['updateTime'] = jsonNSI['updateTime']
+
+      thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+
+  def run(self):
+    # Sends all the requests to instantiate the NSs within the slice
+    self.send_termination_requests()
+
+    # Waits until all the NSs are terminated/ready or error
+    # deployment_timeout = 2 * 3600   # Two hours
+    deployment_timeout = 1800         # 30 minutes  # TODO: remove once it works without errors
+    while deployment_timeout > 0:
+      LOG.info("Waiting all services are terminated or error...")
+      # Check ns instantiation status
+      nsi_terminated = True
+      jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+      for nsr_item in jsonNSI['nsr-list']: 
+        if nsr_item['working-status'] not in ["TERMINATED", "ERROR", "READY"]:
+          nsi_terminated = False
+      
+      # if all services are instantiated or error, break the while loop to notify the GTK
+      if nsi_terminated:
+        LOG.info("All service termination are ready!")
+        break
+   
+      time.sleep(10)
+      deployment_timeout -= 10
+    
+    # TODO:Sends all the requests to create all the VLDs within the slice
+    self.send_networks_removal_request()
+
+    # TODO:Waits until all the VLDs are created/ready or error
+
+    # Notifies the GTK that the Network Slice termination process is done (either complete or error)
+    self.update_nsi_notify_terminate()
 
 # UPDATES THE SLICE TERMINATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI termination
@@ -305,6 +455,7 @@ class update_slice_termination(Thread):
           service_item['requestId'] = self.request_json['id']
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "TERMINATED"
+            service_item['isinstantiated'] = False
           else:
             service_item['working-status'] = self.request_json['status']
           break;
@@ -315,61 +466,6 @@ class update_slice_termination(Thread):
     finally:
       mutex_slice2db_access.release()
 
-# NOTIFIES THE GTK ABOUT A SLICE TERMINATION
-## Objctive: if a slice has all services terminated, calls the GTK to inform thet the slice (NSI) is terminated.
-## Params: nsiId (uuid within the incoming request URL)
-class notify_slice_terminated(Thread):
-  def __init__(self, nsiId):
-    Thread.__init__(self)
-    self.nsiId = nsiId
-  def run(self):
-    mutex_slice2db_access.acquire()
-    try:
-      LOG.info("NSI_MNGR_Notify: Slice terminationg Notification to GTK.")
-      time.sleep(0.1)
-      jsonNSI = nsi_repo.get_saved_nsi(self.nsiId)
-      #TODO: improve the next 2 lines to not use this delete.
-      jsonNSI["id"] = jsonNSI["uuid"]
-      del jsonNSI["uuid"]
-
-      # checks if all services are READY/ERROR to update the slice_status
-      all_services_ready = True
-      for service_item in jsonNSI['nsr-list']:
-        if (service_item['working-status'] == "TERMINATING"):
-          all_services_ready = False
-          break;
-
-      if (all_services_ready == True):
-        jsonNSI['nsi-status'] = "TERMINATED"
-
-        # validates if any service has error status to apply it to the slice status
-        for service_item in jsonNSI['nsr-list']:
-          if (service_item['working-status'] == "ERROR"):
-            jsonNSI['nsi-status'] = "ERROR"
-            break;
-
-        # sends the updated NetSlice instance to the repositories
-        jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
-        jsonNSI['updateTime'] = jsonNSI['terminateTime']
-
-        repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
-
-        # updates NetSlice template list of slice_instances based on that template
-        removeNSIinNST(jsonNSI['nst-ref'])
-
-    finally:
-      mutex_slice2db_access.release()
-
-      #INFO: leave here & don't join with the same previous IF, as the multiple return(s) depend on this order
-      if (all_services_ready == True):
-        # sends the request to notify the GTK the slice is READY
-        slice_callback = jsonNSI['sliceCallback']
-        json_slice_info = {}
-        json_slice_info['status'] = jsonNSI['nsi-status']
-        json_slice_info['updateTime'] = jsonNSI['updateTime']
-
-        thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
-
 
 ################################ NSI CREATION & INSTANTIATION SECTION ##################################
 # Network Slice Instance Object Creation
@@ -379,6 +475,13 @@ def create_nsi(nsi_json):
   nstId = nsi_json['nstId']
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
   nst_json = catalogue_response['nstd']
+
+  # check if there is any other nsir with the same name, vendor, nstd_version
+  nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
+  for nsir_item in nsirepo_jsonresponse:
+    if (nsir_item["name"] == nsi_json['name'] and nsir_item["nst-version"] == nst_json['version'] and nsir_item["vendor"] == nst_json['vendor']):
+      error_msg = '{"error":"There is already a slice with thie name/version/vendor. Change one of the values."}'
+      return (error_msg, 500)
 
   # creates NSI with the received information
   new_nsir = add_basic_nsi_info(nst_json, nsi_json)
@@ -400,6 +503,8 @@ def create_nsi(nsi_json):
 
 # Basic NSI structure
 def add_basic_nsi_info(nst_json, nsi_json):
+  datacenter_vim = str(uuid.uuid4())  #TODO: comes with the request or getVIMs(), to be improved
+
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
@@ -416,7 +521,7 @@ def add_basic_nsi_info(nst_json, nsi_json):
   #if (nsi_json['datacenter']):
   #    nsir_dict['datacenter'] = nsi_json['datacenter']
   #else:
-  nsir_dict['datacenter'] = '00000000-0000-0000-0000-000000000000'
+  nsir_dict['datacenter'] = datacenter_vim
   nsir_dict['instantiateTime'] = str(datetime.datetime.now().isoformat())
   nsir_dict['terminateTime'] = ''
   nsir_dict['scaleTime'] = ''
@@ -436,8 +541,8 @@ def add_vlds(new_nsir, nst_vld_list):
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
-    vld_record['vimAccountId'] = str(uuid.uuid4())  #TODO: comes with the request, to be improved
-    vld_record['vim-net-id']  = str(uuid.uuid4())   #TODO: filled when the GTK sends back the uuid
+    vld_record['vimAccountId'] = new_nsir['datacenter']  #TODO: improve with placement
+    vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
     if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True
     vld_record['type'] = vld_item['type']
@@ -457,8 +562,8 @@ def add_vlds(new_nsir, nst_vld_list):
 
 # Adds the basic subnets information to the NSI record
 def add_subnets(new_nsir, subnets_list, request_nsi_json):
-  nsr_list = []
-  serv_seq = 1
+  nsr_list = []                         # empty list to add all the created slice-subnets
+  serv_seq = 1                          # to put in order the services within a slice in the portal
   
   for subnet_item in subnets_list:
     subnet_record = {}
@@ -517,46 +622,47 @@ def terminate_nsi(nsiId, TerminOrder):
   time.sleep(0.1)
 
   jsonNSI = nsi_repo.get_saved_nsi(nsiId)
-  #TODO: improve the next 2 lines to not use this delete.
-  jsonNSI["id"] = jsonNSI["uuid"]
-  del jsonNSI["uuid"]
+  if (jsonNSI):
+    #TODO: improve the next 2 lines to not use this delete.
+    jsonNSI["id"] = jsonNSI["uuid"]
+    del jsonNSI["uuid"]
 
-  # prepares time values to check if termination is done in the future
-  if (TerminOrder['terminateTime'] == "0" or TerminOrder['terminateTime'] == 0):
-    termin_time = 0
+    # prepares time values to check if termination is done in the future
+    if (TerminOrder['terminateTime'] == "0" or TerminOrder['terminateTime'] == 0):
+      termin_time = 0
+    else:
+      termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
+      instan_time = dateutil.parser.parse(jsonNSI['instantiateTime'])
+
+    # depending on the termin_time executes one action or another
+    if termin_time == 0 and jsonNSI['nsi-status'] == "INSTANTIATED":
+      jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
+      jsonNSI['sliceCallback'] = TerminOrder['callback']
+      jsonNSI['nsi-status'] = "TERMINATING"
+
+      for terminate_nsr_item in jsonNSI['nsr-list']:
+        if (terminate_nsr_item['working-status'] != "ERROR"):
+          terminate_nsr_item['working-status'] = "TERMINATING"
+
+      repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
+
+      # starts the thread to terminate while sending back the response
+      thread_ns_termination = thread_ns_terminate(jsonNSI)
+      time.sleep(0.1)
+      thread_ns_termination.start()
+      
+      value = 200
+    elif (instan_time < termin_time):                       # TODO: manage future termination orders
+      jsonNSI['terminateTime'] = str(termin_time)
+      repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
+      value = 200
+    else:
+      repo_responseStatus = {"error":"Wrong value: 0 for instant termination or date time later than "+NSI.instantiateTime+", to terminate in the future."}
+      value = 400
+
+    return (repo_responseStatus, value)
   else:
-    termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
-    instan_time = dateutil.parser.parse(jsonNSI['instantiateTime'])
-
-  # depending on the termin_time executes one action or another
-  if termin_time == 0 and jsonNSI['nsi-status'] == "INSTANTIATED":
-    jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
-    jsonNSI['sliceCallback'] = TerminOrder['callback']
-    jsonNSI['nsi-status'] = "TERMINATING"
-
-    for terminate_nsr_item in jsonNSI['nsr-list']:
-      if (terminate_nsr_item['working-status'] != "ERROR"):
-        terminate_nsr_item['working-status'] = "TERMINATING"
-
-    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
-
-    # starts the thread to terminate while sending back the response
-    thread_ns_termination = thread_ns_terminate(nsiId)
-    time.sleep(0.1)
-    thread_ns_termination.start()
-    
-    value = 200
-
-  # TODO: manage future termination orders
-  elif (instan_time < termin_time):
-    jsonNSI['terminateTime'] = str(termin_time)
-    repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
-    value = 200
-  else:
-    repo_responseStatus = {"error":"Wrong value: 0 for instant termination or date time later than "+NSI.instantiateTime+", to terminate in the future."}
-    value = 400
-
-  return (repo_responseStatus, value)
+    return ('{"error":"There is no NSIR in the db."}', 500)
 
 # Updates a NSI being terminated with the latest informationg coming from the MANO/GK.
 def update_terminating_nsi(nsiId, request_json):
@@ -568,12 +674,6 @@ def update_terminating_nsi(nsiId, request_json):
     thread_update_slice_termination = update_slice_termination(nsiId, request_json)
     time.sleep(0.1)
     thread_update_slice_termination.start()
-
-    # starts the thread to notify the GTK if the slice is ready
-    thread_notify_slice_terminated = notify_slice_terminated(nsiId)
-    time.sleep(0.1)
-    thread_notify_slice_terminated.start()
-
     return (jsonNSI, 200)
   else:
     return ('{"error":"There is no NSIR in the db."}', 500)
@@ -602,12 +702,16 @@ def removeNSIinNST(nstId):
 def get_nsi(nsiId):
   LOG.info("NSI_MNGR: Retrieving NSI with id: " +str(nsiId))
   nsirepo_jsonresponse = nsi_repo.get_saved_nsi(nsiId)
-
-  return nsirepo_jsonresponse
+  if (nsirepo_jsonresponse):
+    return (nsirepo_jsonresponse, 200)
+  else:
+    return ('{"error":"There are no NSIR in the db."}', 500)
 
 # Gets all the existing NSI items
 def get_all_nsi():
   LOG.info("NSI_MNGR: Retrieve all existing NSIs")
   nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
-
-  return nsirepo_jsonresponse
+  if (nsirepo_jsonresponse):
+    return (nsirepo_jsonresponse, 200)
+  else:
+    return ('{"error":"There are no NSIR with this uuid in the db."}', 500)
