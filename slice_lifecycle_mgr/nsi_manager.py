@@ -705,7 +705,7 @@ def get_nsi(nsiId):
   if (nsirepo_jsonresponse):
     return (nsirepo_jsonresponse, 200)
   else:
-    return ('{"error":"There is no NSIR in the db."}', 500)
+    return ('{"error":"There are no NSIR in the db."}', 500)
 
 # Gets all the existing NSI items
 def get_all_nsi():
@@ -714,4 +714,4 @@ def get_all_nsi():
   if (nsirepo_jsonresponse):
     return (nsirepo_jsonresponse, 200)
   else:
-    return ('{"error":"There are no NSIR in the db."}', 500)
+    return ('{"error":"There are no NSIR with this uuid in the db."}', 500)

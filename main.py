@@ -116,14 +116,14 @@ def create_slice_template():
 def get_all_slice_templates():
   listNST = nst_manager.get_all_nst()
 
-  return jsonify(listNST), 200
+  return jsonify(listNST[0]), listNST[1]
 
 #GETS for a specific NetSlice Template (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['GET'])
 def get_slice_template(nstId):
   returnedNST = nst_manager.get_nst(nstId)
 
-  return jsonify(returnedNST), 200
+  return jsonify(returnedNST[0]), returnedNST[0]
 
 # DELETES a NetSlice Template
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
@@ -200,14 +200,15 @@ def update_slice_termination(nsiId):
 def get_slice_instances():
   allNSI = nsi_manager.get_all_nsi()
 
-  return jsonify(allNSI), 200
+  return jsonify(allNSI[0]), allNSI[1]
+
 
 # GETS for a specific NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['GET'])
 def get_slice_instance(nsiId):
   returnedNSI = nsi_manager.get_nsi(nsiId)
 
-  return jsonify(returnedNSI), 200
+  return jsonify(returnedNSI[0]), returnedNSI[1]
 
 ########################################### GET VIM/WIM INFORMATION #########################################
 #  GETS for a specific NetSlice instances (NSI) information

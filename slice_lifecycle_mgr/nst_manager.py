@@ -90,11 +90,17 @@ def get_all_nst():
   logging.info("NST_MNGR: Retrieving all existing NSTs")
   nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst()
   
-  return nstcatalogue_jsonresponse
+  if (nstcatalogue_jsonresponse):
+    return (nstcatalogue_jsonresponse, 200)
+  else:
+    return ('{"error":"There are no NSTD in the db."}', 500)
 
 # Returns the information of a selected NST in catalogues
 def get_nst(nstId):
   logging.info("NST_MNGR: Retrieving NST with id: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
-  
-  return nstcatalogue_jsonresponse
+
+  if (nstcatalogue_jsonresponse):
+    return (nstcatalogue_jsonresponse, 200)
+  else:
+    return ('{"error":"There is no NSTD with this uuid in the db."}', 500)
