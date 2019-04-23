@@ -107,7 +107,7 @@ class thread_ns_instantiate(Thread):
     vim_list = []
     for vldr_item in self.NSI['vldr-list']:
       # if the vim_list is empty, creates a new vim unit otherwise fulls it to the right place
-      if vim_list.empty:
+      if not vim_list:
         vim_item = {}                                          # TODO: future version improve to do placement, now just one VIM
         vim_item['uuid'] = vldr_item['vimAccountId']
         vim_item['virtual_links'] = []
@@ -314,7 +314,7 @@ class thread_ns_terminate(Thread):
     vim_list = []
     for vldr_item in self.NSI['vldr-list']:
       # if the vim_list is empty, creates a new vim unit otherwise fulls it to the right place
-      if vim_list.empty:
+      if not vim_list:
         vim_item = {}                                          # TODO: future version improve to do placement, now just one VIM
         vim_item['uuid'] = vldr_item['vimAccountId']
         vim_item['virtual_links'] = []
