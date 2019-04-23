@@ -105,14 +105,20 @@ class thread_ns_instantiate(Thread):
     
     # creates the vim_list item to add it to the final json for the IA
     vim_list = []
+    LOG.info("NSI_MNGR: Creating the networks json...")
+    time.sleep(0.1)
     for vldr_item in self.NSI['vldr-list']:
       # if the vim_list is empty, creates a new vim unit otherwise fulls it to the right place
       if not vim_list:
+        LOG.info("NSI_MNGR: Vim list is empty... adding the first vim_item")
+        time.sleep(0.1)
         vim_item = {}                                          # TODO: future version improve to do placement, now just one VIM
         vim_item['uuid'] = vldr_item['vimAccountId']
         vim_item['virtual_links'] = []
         vim_list.append(vim_item)
       else:
+        LOG.info("NSI_MNGR: Adding new vim_item")
+        time.sleep(0.1)
         # checks if the VIM is already in the list to create a new vim_item or not within the vim_list
         for vim_item in vim_list:
           if vim_item == vldr_item['vimAccountId']:
@@ -122,11 +128,15 @@ class thread_ns_instantiate(Thread):
             vim_item['uuid'] = vldr_item['vimAccountId']
             vim_item['virtual_links'] = []
             vim_list.append(vim_item)
-
+    
+    LOG.info("NSI_MNGR: Adding netoworks information into each VIM_item")
+    time.sleep(0.1)
     # adds each network information into the right element of the vim_list previously created
     for vim_item in vim_list:
       for vldr_item in self.NSI['vldr-list']:
         if vldr_item['vimAccountId'] == vim_item['uuid']:
+          LOG.info("NSI_MNGR: Adding network information into vldr_item")
+          time.sleep(0.1)
           virtual_link_unit = {}
           virtual_link_unit['id'] = vldr_item['vim-net-id']
           virtual_link_unit['access'] = True
