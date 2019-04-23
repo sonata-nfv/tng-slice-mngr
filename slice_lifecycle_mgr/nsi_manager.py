@@ -290,42 +290,27 @@ class thread_ns_terminate(Thread):
   }
   '''
   def send_networks_removal_request(self):
-    LOG.info("NSI_MNGR: Requesting slice networks creationg to the GTK.")
+    LOG.info("NSI_MNGR: Requesting slice networks removal to the GTK.")
     time.sleep(0.1)
+    # gets the datacenter/VIM id at the first nsir level (TODO: no subnets/vlds are checked -> next step)
+    vim_item = {}
+    vim_item['uuid'] = self.NSI['datacenter']
+
+    # creates the virutal_lins list to add into the vim_item['virtual_links'] field
+    virtual_links_list = []
+    for vldr_item in self.NSI['vldr-list']:
+      LOG.info("NSI_MNGR: Adding network information into vldr_item")
+      time.sleep(0.1)
+      virtual_link_unit = {}
+      virtual_link_unit['id'] = vldr_item['vim-net-id']
+      virtual_links_list.append(virtual_link_unit)
+    
+    vim_item['virtual_links'] = virtual_links_list
+
     # creates the overall json structure
     network_data = {}
     network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
-    
-    # creates the vim_list item to add it to the final json for the IA
-    vim_list = []
-    for vldr_item in self.NSI['vldr-list']:
-      # if the vim_list is empty, creates a new vim unit otherwise fulls it to the right place
-      if not vim_list:
-        vim_item = {}                                          # TODO: future version improve to do placement, now just one VIM
-        vim_item['uuid'] = vldr_item['vimAccountId']
-        vim_item['virtual_links'] = []
-        vim_list.append(vim_item)
-      else:
-        # checks if the VIM is already in the list to create a new vim_item or not within the vim_list
-        for vim_item in vim_list:
-          if vim_item == vldr_item['vimAccountId']:
-            break
-          else:
-            vim_item = {}                                      # TODO: future version improve to do placement, now just one VIM
-            vim_item['uuid'] = vldr_item['vimAccountId']
-            vim_item['virtual_links'] = []
-            vim_list.append(vim_item)
-
-    # adds each network id into the right element of the vim_list previously created
-    for vim_item in vim_list:
-      for vldr_item in self.NSI['vldr-list']:
-        if vldr_item['vimAccountId'] == vim_item['uuid']:
-          virtual_link_unit = {}
-          virtual_link_unit['id'] = vldr_item['vim-net-id']
-          vim_item['virtual_links'].append(virtual_link_unit)
-
-    # adds all the information inside the list variable of the network_data
-    network_data['vim_list'] = vim_list
+    network_data['vim_list'] = vim_item
     LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
     time.sleep(0.1)
 
@@ -476,7 +461,7 @@ def create_nsi(nsi_json):
   new_nsir = add_vlds(new_nsir, nst_json["slice_vld"])
   
   # adds the NetServices (subnets) information within the NSI record
-  new_nsir = add_subnets(new_nsir, nst_json["slice_ns_subnets"], nsi_json)
+  new_nsir = add_subnets(new_nsir, nst_json, nsi_json)
 
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
@@ -547,11 +532,11 @@ def add_vlds(new_nsir, nst_vld_list):
   return new_nsir
 
 # Adds the basic subnets information to the NSI record
-def add_subnets(new_nsir, subnets_list, request_nsi_json):
+def add_subnets(new_nsir, nst_json, request_nsi_json):
   nsr_list = []                         # empty list to add all the created slice-subnets
   serv_seq = 1                          # to put in order the services within a slice in the portal
   
-  for subnet_item in subnets_list:
+  for subnet_item in nst_json["slice_ns_subnets"]:
     subnet_record = {}
     subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
     subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
@@ -572,7 +557,18 @@ def add_subnets(new_nsir, subnets_list, request_nsi_json):
     subnet_record['vimAccountId'] = new_nsir['datacenter']                        #TODO: add instantiation parameters
     subnet_record['isshared'] = subnet_item['is-shared']
     subnet_record['isinstantiated'] = False
-    subnet_record['vld'] = []
+    
+    # adding the vld id where each subnet is connected to
+    subnet_vld_list = []
+    for vld_item in nst_json["slice_vld"]:
+      for nsd_cp_item in vld_item['nsd-connection-point-ref']:
+        if subnet_item['id'] == nsd_cp_item['subnet-ref']:
+          subnet_vld_item = {}
+          subnet_vld_item['vld-ref'] = vld_item['id']
+          subnet_vld_list.append(subnet_vld_item)
+          break #TODO: is it be possible that a subnet has 2 connection points to the same VLD??
+
+    subnet_record['vld'] = subnet_vld_list
 
     nsr_list.append(subnet_record)
     serv_seq = serv_seq + 1
