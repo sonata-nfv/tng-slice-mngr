@@ -55,7 +55,7 @@ LOG.setLevel(logging.INFO)
 
 ################################## THREADs to manage services/slice requests #################################
 # SENDS NETWORK SERVICE (NS) INSTANTIATION REQUESTS
-## Objctive: reads NS list in Network Slice Instance (NSI) and sends requests2GTK to instantiate them 
+## Objctive: reads subnets list in Network Slice Instance (NSI) and sends requests2GTK to instantiate them 
 ## Params: NSI - nsi created with the parameters given by the user and the NST saved in catalogues.
 class thread_ns_instantiate(Thread):
   def __init__(self, NSI):
@@ -82,87 +82,41 @@ class thread_ns_instantiate(Thread):
   
   def send_networks_creation_request(self):
     LOG.info("NSI_MNGR: Requesting slice networks creationg to the GTK.")
-    time.sleep(0.1)
 
-    '''
-      # gets the datacenter/VIM id at the first nsir level (TODO: no subnets/vlds are checked -> next step)
-      vim_item = {}
-      vim_item['uuid'] = self.NSI['datacenter']
-
-      # creates the virutal_lins list to add into the vim_item['virtual_links'] field
-      virtual_links_list = []
-      for vldr_item in self.NSI['vldr-list']:
-        LOG.info("NSI_MNGR: Adding network information into vldr_item")
-        time.sleep(0.1)
-        virtual_link_unit = {}
-        virtual_link_unit['id'] = vldr_item['vim-net-id']
-        virtual_link_unit['access'] = True                  #TODO: who decides if true or false?? (mgmt nets?)
-        virtual_links_list.append(virtual_link_unit)
-      
-      vim_item['virtual_links'] = virtual_links_list
-
-      # creates the overall json structure
-      network_data = {}
-      network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
-      network_data['vim_list'] = vim_item
-      LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
-      time.sleep(0.1)
-    '''
     # creates the 1st json level structure {instance_id: ___, vim_list: []}
-    LOG.info("NSI_MNGR: Creates first level of the json structure")
-    time.sleep(0.1)
     network_data = {}
     network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
     network_data['vim_list'] = []
 
     # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and adds them into the 'vim_list'
-    LOG.info("NSI_MNGR: Creates second level of the json structure")
-    time.sleep(0.1)
     for vldr_item in self.NSI['vldr-list']:
       vim_item = {}
       vim_item['uuid'] = vldr_item['vimAccountId']
       vim_item['virtual_links'] = []
       if not network_data['vim_list']:
         network_data['vim_list'].append(vim_item)
-        LOG.info("NSI_MNGR: Adding new element to empty list")
-        time.sleep(0.1)
       else:
         if vim_item not in network_data['vim_list']:
           network_data['vim_list'].append(vim_item)
-          LOG.info("NSI_MNGR: Adding new element")
-          time.sleep(0.1)
         else:
-          LOG.info("NSI_MNGR: Nothing added, let's continue")
-          time.sleep(0.1)
           continue
     
-    # creates the elements of the 3rdjson level struture {id: ___, access: bool} and adds them into the 'virtual_links'
-    LOG.info("NSI_MNGR: Creates third level of the json structure")
-    time.sleep(0.1)
+    # creates the elements of the 3rd json level struture {id: ___, access: bool} and adds them into the 'virtual_links'
     for vldr_item in self.NSI['vldr-list']:
       for vim_item in network_data['vim_list']:
-        LOG.info("NSI_MNGR: Comparing values: vldr_item_vimAccount: " + str(vldr_item['vimAccountId']) + "vim_item_uuid" + str(vim_item['uuid']))
-        time.sleep(0.1)
         if vldr_item['vimAccountId'] == vim_item['uuid']:
           virtual_link_item = {}
           virtual_link_item['id'] = vldr_item['vim-net-id']
-          virtual_link_item['access'] = True          #TODO: how do I decide wheater is Ture or False??
+          virtual_link_item['access'] = "true"          #TODO: how do I decide wheater is Ture or False??
           if not vim_item['virtual_links']:
             vim_item['virtual_links'].append(virtual_link_item)
-            LOG.info("NSI_MNGR: Adding new element to empty list")
-            time.sleep(0.1)
           else:
             if virtual_link_item not in vim_item['virtual_links']:
               vim_item['virtual_links'].append(virtual_link_item)
-              LOG.info("NSI_MNGR: Adding new element")
-              time.sleep(0.1)
             else:
-              LOG.info("NSI_MNGR: Nothing added, let's continue")
-              time.sleep(0.1)
               continue
 
     LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
-    time.sleep(0.1)
 
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
     # nets_creation_response = mapper.create_vim_network(network_data)
@@ -315,45 +269,42 @@ class thread_ns_terminate(Thread):
 
         termination_response = mapper.net_serv_terminate(data)
 
-  '''
-  {
-    instance_id: String,
-    vim_list: [
-      {
-        uuid: String,
-        virtual_links: [
-          {
-            id: String
-          }
-        ]
-      }
-    ]
-  }
-  '''
   def send_networks_removal_request(self):
     LOG.info("NSI_MNGR: Requesting slice networks removal to the GTK.")
-    time.sleep(0.1)
-    # gets the datacenter/VIM id at the first nsir level (TODO: no subnets/vlds are checked -> next step)
-    vim_item = {}
-    vim_item['uuid'] = self.NSI['datacenter']
 
-    # creates the virutal_lins list to add into the vim_item['virtual_links'] field
-    virtual_links_list = []
-    for vldr_item in self.NSI['vldr-list']:
-      LOG.info("NSI_MNGR: Adding network information into vldr_item")
-      time.sleep(0.1)
-      virtual_link_unit = {}
-      virtual_link_unit['id'] = vldr_item['vim-net-id']
-      virtual_links_list.append(virtual_link_unit)
-    
-    vim_item['virtual_links'] = virtual_links_list
-
-    # creates the overall json structure
+    # creates the 1st json level structure {instance_id: ___, vim_list: []}
     network_data = {}
     network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
-    network_data['vim_list'] = vim_item
-    LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
-    time.sleep(0.1)
+    network_data['vim_list'] = []
+
+    # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and adds them into the 'vim_list'
+    for vldr_item in self.NSI['vldr-list']:
+      vim_item = {}
+      vim_item['uuid'] = vldr_item['vimAccountId']
+      vim_item['virtual_links'] = []
+      if not network_data['vim_list']:
+        network_data['vim_list'].append(vim_item)
+      else:
+        if vim_item not in network_data['vim_list']:
+          network_data['vim_list'].append(vim_item)
+        else:
+          continue
+    
+    # creates the elements of the 3rd json level struture {id: ___, access: bool} and adds them into the 'virtual_links'
+    for vldr_item in self.NSI['vldr-list']:
+      for vim_item in network_data['vim_list']:
+        if vldr_item['vimAccountId'] == vim_item['uuid']:
+          virtual_link_item = {}
+          virtual_link_item['id'] = vldr_item['vim-net-id']
+          if not vim_item['virtual_links']:
+            vim_item['virtual_links'].append(virtual_link_item)
+          else:
+            if virtual_link_item not in vim_item['virtual_links']:
+              vim_item['virtual_links'].append(virtual_link_item)
+            else:
+              continue
+
+    LOG.info("NSI_MNGR_Instantiate: json to remove networks: " + str(network_data))
 
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
     #nets_creation_response = mapper.delete_vim_network(network_data)
@@ -431,9 +382,12 @@ class thread_ns_terminate(Thread):
       if nsi_terminated:
         LOG.info("All service termination are ready!")
         break
-   
+  
       time.sleep(10)
       deployment_timeout -= 10
+    
+    if deployment_timeout <= 0:
+      raise LCMException("Timeout waiting nsi to be terminated. nsi_id={}".format(self.NSI['id']))
     
     # TODO:Sends all the requests to create all the VLDs within the slice
     self.send_networks_removal_request()
@@ -495,6 +449,9 @@ def create_nsi(nsi_json):
       error_msg = '{"error":"There is already a slice with thie name/version/vendor. Change one of the values."}'
       return (error_msg, 500)
 
+  # get the VIMs information registered to the SP
+  vims_list = mapper.get_vims_info()
+
   # creates NSI with the received information
   new_nsir = add_basic_nsi_info(nst_json, nsi_json)
   
@@ -552,7 +509,7 @@ def add_vlds(new_nsir, nst_vld_list):
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
-    vld_record['vimAccountId'] = str(uuid.uuid4()) #new_nsir['datacenter']  #TODO: improve with placement
+    vld_record['vimAccountId'] = new_nsir['datacenter']  #TODO: improve with placement
     vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
     if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True

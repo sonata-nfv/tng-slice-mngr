@@ -51,6 +51,8 @@ LOG.setLevel(logging.INFO)
 def create_nst(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
 
+  #TODO: validate that no existing NSTD has the same NAME-VENDOR-VERSION
+
   # Get the current services list to get the uuid for each slice-subnet (NSD) reference
   current_services_list = mapper.getListNetServices()
 
