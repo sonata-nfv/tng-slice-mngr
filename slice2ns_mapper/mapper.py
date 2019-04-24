@@ -304,15 +304,14 @@ def getListNetServices():
     
     if (response.status_code == 200):
         services_array = json.loads(response.text)
-        LOG.info("MAPPER: services_array_1 --> " +str(services_array))
         for service_item in services_array:
-          LOG.info("MAPPER: services_array_2 --> " +str(service_item))
-          LOG.info("MAPPER: services_array_3 --> " +str(service_item['nsd']))
-          # each element of the list is a dictionary
-          nsd=parseNetworkService(service_item)
-          nsd_string = vars(nsd)
-          # adds the dictionary element into the list
-          db.nsInfo_list.append(nsd_string)
+          if 'nsd' not in service_item:   # to avoid possible problems with other MANO NSD structures
+            # each element of the list is a dictionary
+            nsd=parseNetworkService(service_item)
+            nsd_string = vars(nsd)
+            # adds the dictionary element into the list
+            db.nsInfo_list.append(nsd_string)
+        
         service_response = db.nsInfo_list
     else:
         service_response = {'http_code': response.status_code,'message': response.json()}
