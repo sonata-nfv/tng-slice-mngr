@@ -66,6 +66,7 @@ class thread_ns_instantiate(Thread):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
     for nsr_item in self.NSI['nsr-list']:
+      # TODO: SHARED FUNCT -> if the nsr_item is shared and already has a nsrId = DON'T SEND REQUEST
       data = {}
       data['name'] = nsr_item['nsrName']
       data['service_uuid'] = nsr_item['subnet-nsdId-ref']
@@ -79,50 +80,90 @@ class thread_ns_instantiate(Thread):
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
   
-  '''
-  CURRENT JSON VERSION SENT TO CREATE NETWORKS IN A VIM (check mapper.create_vim_network info to know the full json)
-  {
-    "instance_id": "String",
-    "vim_list": [
-      {
-        "uuid": "String",
-        "virtual_links": [
-          {
-            "id": "String",
-            "access": "String"
-          }
-        ]
-      }
-    ]
-  }
-  '''
   def send_networks_creation_request(self):
     LOG.info("NSI_MNGR: Requesting slice networks creationg to the GTK.")
     time.sleep(0.1)
 
-    # gets the datacenter/VIM id at the first nsir level (TODO: no subnets/vlds are checked -> next step)
-    vim_item = {}
-    vim_item['uuid'] = self.NSI['datacenter']
+    '''
+      # gets the datacenter/VIM id at the first nsir level (TODO: no subnets/vlds are checked -> next step)
+      vim_item = {}
+      vim_item['uuid'] = self.NSI['datacenter']
 
-    # creates the virutal_lins list to add into the vim_item['virtual_links'] field
-    virtual_links_list = []
-    for vldr_item in self.NSI['vldr-list']:
-      LOG.info("NSI_MNGR: Adding network information into vldr_item")
+      # creates the virutal_lins list to add into the vim_item['virtual_links'] field
+      virtual_links_list = []
+      for vldr_item in self.NSI['vldr-list']:
+        LOG.info("NSI_MNGR: Adding network information into vldr_item")
+        time.sleep(0.1)
+        virtual_link_unit = {}
+        virtual_link_unit['id'] = vldr_item['vim-net-id']
+        virtual_link_unit['access'] = True                  #TODO: who decides if true or false?? (mgmt nets?)
+        virtual_links_list.append(virtual_link_unit)
+      
+      vim_item['virtual_links'] = virtual_links_list
+
+      # creates the overall json structure
+      network_data = {}
+      network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
+      network_data['vim_list'] = vim_item
+      LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
       time.sleep(0.1)
-      virtual_link_unit = {}
-      virtual_link_unit['id'] = vldr_item['vim-net-id']
-      virtual_link_unit['access'] = True                  #TODO: who decides if true or false?? (mgmt nets?)
-      virtual_links_list.append(virtual_link_unit)
-    
-    vim_item['virtual_links'] = virtual_links_list
-
-    # creates the overall json structure
+    '''
+    # creates the 1st json level structure {instance_id: ___, vim_list: []}
+    LOG.info("NSI_MNGR: Creates first level of the json structure")
+    time.sleep(0.1)
     network_data = {}
     network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
-    network_data['vim_list'] = vim_item
+    network_data['vim_list'] = []
+
+    # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and adds them into the 'vim_list'
+    LOG.info("NSI_MNGR: Creates second level of the json structure")
+    time.sleep(0.1)
+    for vldr_item in self.NSI['vldr-list']:
+      vim_item = {}
+      vim_item['uuid'] = vldr_item['vimAccountId']
+      vim_item['virtual_links'] = []
+      if not network_data['vim_list']:
+        network_data['vim_list'].append(vim_item)
+        LOG.info("NSI_MNGR: Adding new element to empty list")
+        time.sleep(0.1)
+      else:
+        if vim_item not in network_data['vim_list']:
+          network_data['vim_list'].append(vim_item)
+          LOG.info("NSI_MNGR: Adding new element")
+          time.sleep(0.1)
+        else:
+          LOG.info("NSI_MNGR: Nothing added, let's continue")
+          time.sleep(0.1)
+          continue
+    
+    # creates the elements of the 3rdjson level struture {id: ___, access: bool} and adds them into the 'virtual_links'
+    LOG.info("NSI_MNGR: Creates third level of the json structure")
+    time.sleep(0.1)
+    for vldr_item in self.NSI['vldr-list']:
+      for vim_item in network_data['vim_list']:
+        LOG.info("NSI_MNGR: Comparing values: vldr_item_vimAccount: " + str(vldr_item['vimAccountId']) + "vim_item_uuid" + str(vim_item['uuid']))
+        time.sleep(0.1)
+        if vldr_item['vimAccountId'] == vim_item['uuid']:
+          virtual_link_item = {}
+          virtual_link_item['id'] = vldr_item['vim-net-id']
+          virtual_link_item['access'] = True          #TODO: how do I decide wheater is Ture or False??
+          if not vim_item['virtual_links']:
+            vim_item['virtual_links'].append(virtual_link_item)
+            LOG.info("NSI_MNGR: Adding new element to empty list")
+            time.sleep(0.1)
+          else:
+            if virtual_link_item not in vim_item['virtual_links']:
+              vim_item['virtual_links'].append(virtual_link_item)
+              LOG.info("NSI_MNGR: Adding new element")
+              time.sleep(0.1)
+            else:
+              LOG.info("NSI_MNGR: Nothing added, let's continue")
+              time.sleep(0.1)
+              continue
+
     LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
     time.sleep(0.1)
-    
+
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
     # nets_creation_response = mapper.create_vim_network(network_data)
 
@@ -505,7 +546,6 @@ def add_basic_nsi_info(nst_json, nsi_json):
   return nsir_dict
 
 # Sends requests to create vim networks and adds their information into the NSIr
-#TODO: check what is necessary to send to the GTK ( reference json in nsi_manager.py)
 def add_vlds(new_nsir, nst_vld_list):
   vldr_list = []
   for vld_item in nst_vld_list:
@@ -524,7 +564,9 @@ def add_vlds(new_nsir, nst_vld_list):
     vld_record['vld-status'] = 'INACTIVE'
     vld_record['shared-nsrs-list'] = []   # this is filled when a shared service is instantiated on this VLD
     vld_record['ns-conn-point-ref'] = []  # this is filled when a service is instantiated on this VLD   
-    vld_record['requestId'] = str(uuid.uuid4())    #TODO: filled when the GTK sends back the uuid
+    
+    #TODO: filled when the GTK sends back the uuid. To confirm with José it is not necessary (nets request is sync)
+    vld_record['requestId'] = str(uuid.uuid4())
 
     vldr_list.append(vld_record)
   
@@ -539,7 +581,11 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
   for subnet_item in nst_json["slice_ns_subnets"]:
     subnet_record = {}
     subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
+    
+    # TODO:  SHARED FUNCT -> check if the service is shared, then look if there is any other nsi ...
+    # ... with that same service (uuid or name/vendor/version) instantiated and take its nsrId.
     subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
+    
     subnet_record['subnet-ref'] = subnet_item['id']
     subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
     
