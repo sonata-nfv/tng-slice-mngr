@@ -552,7 +552,7 @@ def add_vlds(new_nsir, nst_vld_list):
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
-    vld_record['vimAccountId'] = new_nsir['datacenter']  #TODO: improve with placement
+    vld_record['vimAccountId'] = str(uuid.uuid4()) #new_nsir['datacenter']  #TODO: improve with placement
     vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
     if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True
