@@ -33,7 +33,7 @@
 ## partner consortium (www.5gtango.eu).
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, datetime
 import os, sys, logging, json, argparse, time
 from configparser import ConfigParser
 
@@ -69,7 +69,7 @@ API_slices="/slices"
 # PING function to validate if the slice-docker is active
 @app.route('/pings', methods=['GET'])
 def getPings():
-  ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC'}
+  ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC', 'current_time': str(datetime.datetime.now().isoformat())}
 
   return jsonify(ping_response), 200
 
