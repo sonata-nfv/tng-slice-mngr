@@ -65,16 +65,17 @@ def create_nst(jsondata):
   # Validates if the necessary NSDs exist in the DDBB by looking name/vendor/version compared to the subnets parameters.
   for subnet_item  in jsondata["slice_ns_subnets"]:
     for service_item in current_services_list:
-      logging.info("NST_MNGR: subnet_item[nsd-name]: " + str(subnet_item["nsd-name"]) + "service_item[name]: " + str(service_item["name"]))
-      logging.info("NST_MNGR: subnet_item[nsd-vendor]: " + str(subnet_item["nsd-vendor"]) + "service_item[vendor]: " + str(service_item["vendor"]))
-      logging.info("NST_MNGR: subnet_item[nsd-version]: " + str(subnet_item["nsd-version"]) + "service_item[version]: " + str(service_item["version"]))
       if (subnet_item["nsd-name"] == service_item["name"] and subnet_item["nsd-vendor"] == service_item["vendor"] and subnet_item["nsd-version"] == service_item["version"]):
         subnet_item["nsd-ref"] = service_item["uuid"]
-  # Checks if all subnets have the field nsd-ref with the copied nsd-id
-  for subnet_item  in jsondata["slice_ns_subnets"]:
+  
+  #for subnet_item  in jsondata["slice_ns_subnets"]:
+    # Checks if all subnets have the field nsd-ref with the copied nsd-id
     if 'nsd-ref' not in subnet_item:
       return_msg = {}
-      return_msg['error'] = "This NSTD has a non-existing NSD, check your subnets choice (name, version,vendor) respect the services available in the SP."
+      return_msg['error'] = "The following NSD does not exist in the SP database."
+      return_msg['nsd-name'] = subnet_item["nsd-name"]
+      return_msg['nsd-vendor'] = subnet_item["nsd-vendor"]
+      return_msg['nsd-version'] = subnet_item["nsd-version"]
       return return_msg, 400
   
   #Sends the new NST to the catalogues (DB)
