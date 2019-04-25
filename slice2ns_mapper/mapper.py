@@ -305,7 +305,8 @@ def getListNetServices():
     if (response.status_code == 200):
         services_array = json.loads(response.text)
         for service_item in services_array:
-          if 'nsd' not in service_item:   # to avoid possible problems with other MANO NSD structures
+          if service_item['nsd'].keys() & {'name', 'vendor', 'version'}:
+          #if 'name' not in service_item['nsd']:   # to avoid possible problems with other MANO NSD structures
             # each element of the list is a dictionary
             nsd=parseNetworkService(service_item)
             nsd_string = vars(nsd)

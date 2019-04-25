@@ -52,7 +52,13 @@ def create_nst(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
 
   #TODO: validate that no existing NSTD has the same NAME-VENDOR-VERSION
-
+  nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst()
+  if nstcatalogue_jsonresponse:
+    for nstd_item in nstcatalogue_jsonresponse:
+      if (nstd_item['nstd']['name'] == jsondata['name'] and nstd_item['nstd']['vendor'] == jsondata['vendor'] and nstd_item['nstd']['version'] == jsondata['version']):
+        nstd_duplicated = True
+        return '{"error_msg": "NSTD with this description parameters (NAME, VENDOR or VERSION) already exists."}', 400
+  
   # Get the current services list to get the uuid for each slice-subnet (NSD) reference
   current_services_list = mapper.getListNetServices()
 
@@ -62,11 +68,12 @@ def create_nst(jsondata):
       if (subnet_item["nsd-name"] == service_item["name"] and subnet_item["nsd-vendor"] == service_item["vendor"] and subnet_item["nsd-version"] == service_item["version"]):
         subnet_item["nsd-ref"] = service_item["uuid"]
       else:
-        return '{"error_msg": "NSD with one of these values (NAME, VENDOR or VERSION) is not in DB"}', 400
+        return '{"error_msg": "This NSTD tries has a non-existing NSD, check your NSDs parameters (NAME, VENDOR or VERSION)."}', 400
   
   #Sends the new NST to the catalogues (DB)
-  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
-  return nstcatalogue_jsonresponse[0], nstcatalogue_jsonresponse[1]
+  if nstd_duplicated == False and nsd_ok == True:
+    nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
+    return nstcatalogue_jsonresponse[0], nstcatalogue_jsonresponse[1]
 
 # Updates the information of a selected NST in catalogues
 def updateNST(nstId, NST_string):

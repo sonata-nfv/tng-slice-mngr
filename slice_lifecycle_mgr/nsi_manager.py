@@ -442,6 +442,8 @@ def create_nsi(nsi_json):
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
   nst_json = catalogue_response['nstd']
 
+  #TODO: validate if there is any NSTD
+
   # check if there is any other nsir with the same name, vendor, nstd_version
   nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
   for nsir_item in nsirepo_jsonresponse:
@@ -666,6 +668,9 @@ def update_terminating_nsi(nsiId, request_json):
 # Checks if there is any other NSI based on a NST. If not, changes the nst usageStatus parameter to "NOT_IN_USE"
 def removeNSIinNST(nstId):
   nsis_list = nsi_repo.get_all_saved_nsi()
+
+  #TODO: validate if there are nsis to return it as error
+
   all_nsis_terminated = True
   for nsis_item in nsis_list:
     if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] == "INSTANTIATED" or nsis_item['nsi-status'] == "INSTANTIATING" or nsis_item['nsi-status'] == "READY"):
@@ -690,7 +695,9 @@ def get_nsi(nsiId):
   if (nsirepo_jsonresponse):
     return (nsirepo_jsonresponse, 200)
   else:
-    return ('{"error":"There are no NSIR in the db."}', 500)
+    return_msg = {}
+    return_msg['msg'] = "There are no NSIR with this uuid in the db."
+    return (return_msg, 200)
 
 # Gets all the existing NSI items
 def get_all_nsi():
@@ -699,4 +706,6 @@ def get_all_nsi():
   if (nsirepo_jsonresponse):
     return (nsirepo_jsonresponse, 200)
   else:
-    return ('{"error":"There are no NSIR with this uuid in the db."}', 500)
+    return_msg = {}
+    return_msg['msg'] = "There are no NSIR in the db."
+    return (return_msg, 200)

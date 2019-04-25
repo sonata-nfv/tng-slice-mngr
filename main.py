@@ -210,12 +210,6 @@ def get_slice_instance(nsiId):
 
   return jsonify(returnedNSI[0]), returnedNSI[1]
 
-########################################### GET VIM/WIM INFORMATION #########################################
-#  GETS for a specific NetSlice instances (NSI) information
-# @app.route(API_ROOT+API_slices+'/resources', methods=['GET'])
-# def get_slice_instance(nsiId):
-#   returned_resources = mapper.get_vim_resources()
-#   return jsonify(returned_resources), 200
 
 ########################################### MAIN SERVER FUNCTION ############################################
 if __name__ == '__main__':
