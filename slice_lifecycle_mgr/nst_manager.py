@@ -65,6 +65,9 @@ def create_nst(jsondata):
   # Looks for the NSD that fullfils the service conditions (name/vendor/version) ofthe subnet within the slice.
   for subnet_item  in jsondata["slice_ns_subnets"]:
     for service_item in current_services_list:
+      logging.info("NST_MNGR: subnet_item[nsd-name]: " + str(subnet_item["nsd-name"]) + "service_item[name]: " + str(service_item["name"]))
+      logging.info("NST_MNGR: subnet_item[nsd-vendor]: " + str(subnet_item["nsd-vendor"]) + "service_item[vendor]: " + str(service_item["vendor"]))
+      logging.info("NST_MNGR: subnet_item[nsd-version]: " + str(subnet_item["nsd-version"]) + "service_item[version]: " + str(service_item["version"]))
       if (subnet_item["nsd-name"] == service_item["name"] and subnet_item["nsd-vendor"] == service_item["vendor"] and subnet_item["nsd-version"] == service_item["version"]):
         subnet_item["nsd-ref"] = service_item["uuid"]
       else:
