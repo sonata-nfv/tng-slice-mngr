@@ -62,10 +62,31 @@ class thread_ns_instantiate(Thread):
     Thread.__init__(self)
     self.NSI = NSI
   
+  '''
+  mapping:
+    network_functions:
+       - {'vnf_id': <vnf_id of VNF1, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
+       - {'vnf_id':<vnf_id of VNF2, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
+       - {'vnf_id': <vnf_id of VNF3, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
+    virtual_links:
+       - {'vl_id': <id of the management virtual link inside nsd> , 'external_net': vld_mgmt-id, 'vim_id': 11111-1111-111111-111111}
+       - {'vl_id': <id of the  virtual link inside nsd that is connected to the western cp>, 'external_net': vld_east-id, 'vim_id': 11111-1111-111111-111111}
+  '''
   def send_instantiation_requests(self):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
     for nsr_item in self.NSI['nsr-list']:
+      mapping = {}
+      mapping['network_functions'] = []
+      # get NSD and extract each VNF information
+      # check the resources and select the right vim_id
+      # join all the info to one single dict object: {'vnf_id': __, 'vim_id': __}
+
+      mapping['virtual_links'] = []
+      # get the vld within the NSD
+      # get the corresponding slice-vld
+      # join all the info to one single dict object: {'vl_id': __, 'external_net': __, 'vim_id': __}
+      
       # TODO: SHARED FUNCT -> if the nsr_item is shared and already has a nsrId = DON'T SEND REQUEST
       data = {}
       data['name'] = nsr_item['nsrName']
@@ -76,6 +97,7 @@ class thread_ns_instantiate(Thread):
       #data['blacklist'] = []
       if (nsr_item['sla-ref'] != "None"):
         data['sla_id'] = nsr_item['sla-ref']
+      #data['mapping'] = mapping
 
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
