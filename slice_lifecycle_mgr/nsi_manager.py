@@ -75,21 +75,31 @@ class thread_ns_instantiate(Thread):
   def send_instantiation_requests(self):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
+    
     for nsr_item in self.NSI['nsr-list']:
+      
+      # Preparing the dict to stitch the NS to the Networks (VLDs)
       mapping = {}
-      mapping['network_functions'] = []
-      #nsd_itm = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+      network_functions_list = []
+      virtual_links_list = []
 
-      # get NSD and extract each VNF information
-      # check the resources and select the right vim_id
-      # join all the info to one single dict object: {'vnf_id': __, 'vim_id': __}
+      repo_item = mapper.get_nsd_list(nsr_item['subnet-nsdId-ref'])
+      nsd_item = repo_item['nsd']
+      for vnf_item in nsd_item['network_functions']:
+        net_funct = {}
+        net_funct['vnf_id'] = vnf_item['vnf_id']
+        net_funct['vim_id'] = self.NSI['datacenter']  #TODO: FUTURE think about placement
+        network_functions_list.append(net_funct)
+      
+      mapping['network_functions'] = network_functions_list
 
-      mapping['virtual_links'] = []
       # get the vld within the NSD
       # get the corresponding slice-vld
       # join all the info to one single dict object: {'vl_id': __, 'external_net': __, 'vim_id': __}
-      
+      mapping['virtual_links'] = []
+
       # TODO: SHARED FUNCT -> if the nsr_item is shared and already has a nsrId = DON'T SEND REQUEST
+      # Sending Network Services Instantiation requests
       data = {}
       data['name'] = nsr_item['nsrName']
       data['service_uuid'] = nsr_item['subnet-nsdId-ref']

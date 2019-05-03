@@ -293,8 +293,23 @@ def delete_vim_network(network_data):
 
 
 ################################## REQUEST TO CHECK EXISTING SERVICES ####################################
+# GET /services/<uuid> tu pull a single Network Service information
+def get_nsd(nsd_uuid):
+  LOG.info("MAPPER: Preparing the request to get the NetServices Information")
+  # cleans the current nsInfo_list to have the information updated
+  del db.nsInfo_list[:]
+  url = get_base_url_ns_info() + "/services/" + str(nsd_uuid)
+
+  response = requests.get(url)
+    
+  if (response.status_code == 200):
+      service_response = json.loads(response.text)
+  else:
+      service_response = {'http_code': response.status_code,'message': response.json()}
+  return service_response
+
 # GET /services to pull all Network Services information
-def getListNetServices():
+def get_nsd_list():
   LOG.info("MAPPER: Preparing the request to get the NetServices Information")
   # cleans the current nsInfo_list to have the information updated
   del db.nsInfo_list[:]

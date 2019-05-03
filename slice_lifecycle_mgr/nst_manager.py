@@ -61,7 +61,7 @@ def create_nst(jsondata):
         return return_msg, 400
   
   # Get the current services list to get the uuid for each slice-subnet (NSD) reference
-  current_services_list = mapper.getListNetServices()
+  current_services_list = mapper.get_nsd_list()
   
   # Validates if the necessary NSDs exist in the DDBB by looking name/vendor/version compared to the subnets parameters.
   for subnet_item  in jsondata["slice_ns_subnets"]:

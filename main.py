@@ -78,7 +78,7 @@ def getPings():
 # GETS all the available NetService Descriptors to the Sonata SP
 @app.route('/api/services', methods=['GET'])
 def getAllNetServ():
-  ServDict = mapper.getListNetServices()
+  ServDict = mapper.get_nsd_list()
   #LOG.info('Returning all network services')
   logging.info('Returning all network services')
 
