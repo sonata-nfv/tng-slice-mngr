@@ -488,7 +488,7 @@ def create_nsi(nsi_json):
   if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
     return_msg = {}
     return_msg['error'] = "Not found any VIM information."
-    return return_msg, 400
+    return return_msg, 500
   LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
   
   #TODO: improve placement
