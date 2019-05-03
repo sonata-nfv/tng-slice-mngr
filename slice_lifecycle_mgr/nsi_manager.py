@@ -478,12 +478,12 @@ def create_nsi(nsi_json):
     return return_msg, 400
 
   # check if there is any other nsir with the same name, vendor, nstd_version
-  LOG.info("NSI_MNGR: Checking there is no duplicated NSI."
+  LOG.info("NSI_MNGR: Checking there is no duplicated NSI.")
   nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
   if nsirepo_jsonresponse:
     for nsir_item in nsirepo_jsonresponse:
       if (nsir_item["name"] == nsi_json['name'] and nsir_item["nst-version"] == nst_json['version'] and \
-          nsir_item["vendor"] == nst_json['vendor']):
+        nsir_item["vendor"] == nst_json['vendor']):
         error_msg = '{"error":"There is already a slice with thie name/version/vendor. Change one of the values."}'
         return (error_msg, 500)
 
