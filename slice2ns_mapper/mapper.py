@@ -195,11 +195,8 @@ def get_vims_info():
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    LOG.info("MAPPER: vims_response_text: " +str(response.text))
-    
     if (response.status_code == 200):
         jsonresponse = json.loads(response.text)
-        LOG.info("MAPPER: vims_response_json: " +str(jsonresponse))
     else:
         jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
   

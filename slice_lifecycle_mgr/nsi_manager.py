@@ -485,17 +485,21 @@ def create_nsi(nsi_json):
 
   # get the VIMs information registered to the SP
   vims_list = mapper.get_vims_info()
-  if not vims_list:
+  if not vims_list:         # validates if there's no vim to return a msg.
     return_msg = {}
     return_msg['error'] = "Not found any VIM information."
     return return_msg, 400
   LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
-
+  
+  #TODO: improve placement
+  main_datacenter = vims_list['vim_list'][0]['vim_uuid']
+  LOG.info("NSI_MNGR: VIMs list information: " +str(main_datacenter))
+  
   # creates NSI with the received information
-  new_nsir = add_basic_nsi_info(nst_json, nsi_json)
+  new_nsir = add_basic_nsi_info(nst_json, nsi_json, main_datacenter)
   
   # adds the VLD information within the NSI record
-  new_nsir = add_vlds(new_nsir, nst_json["slice_vld"])
+  new_nsir = add_vlds(new_nsir, nst_json['slice_vld'])
   
   # adds the NetServices (subnets) information within the NSI record
   new_nsir = add_subnets(new_nsir, nst_json, nsi_json)
@@ -510,9 +514,7 @@ def create_nsi(nsi_json):
   return nsirepo_jsonresponse, 201
 
 # Basic NSI structure
-def add_basic_nsi_info(nst_json, nsi_json):
-  datacenter_vim = str(uuid.uuid4())  #TODO: comes with the request or getVIMs(), to be improved
-
+def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
@@ -526,10 +528,7 @@ def add_basic_nsi_info(nst_json, nsi_json):
   nsir_dict['nst-version'] = nst_json['version']
   nsir_dict['nsi-status'] = 'INSTANTIATING'
   nsir_dict['errorLog'] = ''
-  #if (nsi_json['datacenter']):
-  #    nsir_dict['datacenter'] = nsi_json['datacenter']
-  #else:
-  nsir_dict['datacenter'] = datacenter_vim
+  nsir_dict['datacenter'] = main_datacenter
   nsir_dict['instantiateTime'] = str(datetime.datetime.now().isoformat())
   nsir_dict['terminateTime'] = ''
   nsir_dict['scaleTime'] = ''
