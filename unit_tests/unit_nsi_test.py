@@ -32,7 +32,7 @@ class TestCase(unittest.TestCase):
         #Creates NSI object and json (to send to the repositories in integration tests)
         response_NSI = add_basic_nsi_info(mock_nst_json, mock_nsi_json)
         response_NSI = add_vlds(response_NSI, mock_nst_json["slice_vld"])
-        response_NSI = add_subnets(response_NSI, mock_nst_json["slice_ns_subnets"], mock_user_request["services_sla"])
+        response_NSI = add_subnets(response_NSI, mock_nst_json, mock_user_request["services_sla"])
 
         #Prints the final NSI record (json in string format)
         print (str(response_NSI))

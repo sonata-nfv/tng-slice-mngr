@@ -51,16 +51,32 @@ LOG.setLevel(logging.INFO)
 def create_nst(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
 
+  # Validates that no existing NSTD has the same NAME-VENDOR-VERSION (avoid duplicate NSTDs)
+  nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst()
+  if nstcatalogue_jsonresponse:
+    for nstd_item in nstcatalogue_jsonresponse:
+      if (nstd_item['nstd']['name'] == jsondata['name'] and nstd_item['nstd']['vendor'] == jsondata['vendor'] and nstd_item['nstd']['version'] == jsondata['version']):
+        return_msg = {}
+        return_msg['error'] = "NSTD with this description parameters (NAME, VENDOR or VERSION) already exists."
+        return return_msg, 400
+  
   # Get the current services list to get the uuid for each slice-subnet (NSD) reference
   current_services_list = mapper.getListNetServices()
-
-  # Looks for the NSD that fullfils the service conditions (name/vendor/version) ofthe subnet within the slice.
+  
+  # Validates if the necessary NSDs exist in the DDBB by looking name/vendor/version compared to the subnets parameters.
   for subnet_item  in jsondata["slice_ns_subnets"]:
     for service_item in current_services_list:
       if (subnet_item["nsd-name"] == service_item["name"] and subnet_item["nsd-vendor"] == service_item["vendor"] and subnet_item["nsd-version"] == service_item["version"]):
         subnet_item["nsd-ref"] = service_item["uuid"]
-      else:
-        return '{"error_msg": "NSD with one of these values (NAME, VENDOR or VERSION) is not in DB"}', 400
+
+    # Checks if all subnets have the field nsd-ref with the copied nsd-id
+    if 'nsd-ref' not in subnet_item:
+      return_msg = {}
+      return_msg['error'] = "The following NSD does not exist in the SP database."
+      return_msg['nsd-name'] = subnet_item["nsd-name"]
+      return_msg['nsd-vendor'] = subnet_item["nsd-vendor"]
+      return_msg['nsd-version'] = subnet_item["nsd-version"]
+      return return_msg, 400
   
   #Sends the new NST to the catalogues (DB)
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
@@ -93,7 +109,7 @@ def get_all_nst():
   if (nstcatalogue_jsonresponse):
     return (nstcatalogue_jsonresponse, 200)
   else:
-    return ('{"error":"There are no NSTD in the db."}', 500)
+    return ('{"msg":"There are no NSTD in the db."}', 200)
 
 # Returns the information of a selected NST in catalogues
 def get_nst(nstId):
@@ -103,4 +119,4 @@ def get_nst(nstId):
   if (nstcatalogue_jsonresponse):
     return (nstcatalogue_jsonresponse, 200)
   else:
-    return ('{"error":"There is no NSTD with this uuid in the db."}', 500)
+    return ('{"msg":"There is no NSTD with this uuid in the db."}', 200)

@@ -34,7 +34,7 @@
 """
 
 from flask import Flask, request, jsonify
-import os, sys, logging, json, argparse, time
+import os, sys, logging, json, argparse, time, datetime
 from configparser import ConfigParser
 
 import slice_lifecycle_mgr.nst_manager as nst_manager
@@ -69,7 +69,7 @@ API_slices="/slices"
 # PING function to validate if the slice-docker is active
 @app.route('/pings', methods=['GET'])
 def getPings():
-  ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC'}
+  ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC', 'current_time': str(datetime.datetime.now().isoformat())}
 
   return jsonify(ping_response), 200
 
@@ -83,7 +83,6 @@ def getAllNetServ():
   logging.info('Returning all network services')
 
   return jsonify(ServDict), 200
-
 
 
 ######################################### NETSLICE TEMPLATE Actions #########################################
@@ -210,12 +209,6 @@ def get_slice_instance(nsiId):
 
   return jsonify(returnedNSI[0]), returnedNSI[1]
 
-########################################### GET VIM/WIM INFORMATION #########################################
-#  GETS for a specific NetSlice instances (NSI) information
-# @app.route(API_ROOT+API_slices+'/resources', methods=['GET'])
-# def get_slice_instance(nsiId):
-#   returned_resources = mapper.get_vim_resources()
-#   return jsonify(returned_resources), 200
 
 ########################################### MAIN SERVER FUNCTION ############################################
 if __name__ == '__main__':

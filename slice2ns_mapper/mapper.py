@@ -158,7 +158,58 @@ def get_requested_nsr(request_uuid):
     return jsonresponse 
 
 
-##################################### NETWORKS MANAGEMENT REQUESTS #######################################
+##################################### VIM NETWORKS MANAGEMENT REQUESTS #######################################
+# request to get all registered VIMs information
+'''
+Params: null
+Request payload: null
+Return:
+{
+  vim_list: [
+    {
+      vim_uuid: String,
+      type: String,
+      vim_city: String,
+      vim_domain: String,
+      vim_name: String,
+      vim_endpoint: String,
+      memory_total: int,
+      memory_used: int,
+      core_total: int,
+      core_used: int
+    }
+  ],
+  nep_list: [
+    {
+      nep_uuid: String,
+      type: String,
+      nep_name: String
+    }
+  ]
+} 
+'''
+def get_vims_info():
+  LOG.info("MAPPER: Requesting VIMs information.")
+  url = get_base_url() + '/slices/vims'
+
+  #REAL or EMULATED usage of Sonata SP 
+  if use_sonata() == "True":
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
+    LOG.info("MAPPER: vims_response_text: " +str(response.text))
+    
+    if (response.status_code == 200):
+        jsonresponse = json.loads(response.text)
+        LOG.info("MAPPER: vims_response_json: " +str(jsonresponse))
+    else:
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
+  
+    return jsonresponse  
+  
+  else:
+    jsonresponse = "SONATA EMULATED GET VIM INFO --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
+    LOG.info(jsonresponse)
+    return jsonresponse
+
 # request to create the networks for a slice deployment
 '''
 Params: network_data - contains payload with the network characteristics
@@ -187,7 +238,7 @@ Request payload:
 Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def create_vim_network(network_data):
-  url = get_base_url() + '/requests'    #TODO: ask JOSE's API
+  url = get_base_url() + '/slices/networks'
   data_json = json.dumps(service_data)
   
   #REAL or EMULATED usage of Sonata SP 
@@ -225,13 +276,13 @@ Request payload:
 Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def delete_vim_network(network_data):
-  url = get_base_url() + '/requests'    #TODO: ask JOSE's API
+  url = get_base_url() + '/slices/networks'
   data_json = json.dumps(service_data)
   
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
     LOG.info("MAPPER: Sending network management request")
-    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:
@@ -241,52 +292,6 @@ def delete_vim_network(network_data):
     print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
     uuident = uuid.uuid4()
     jsonresponse = json.loads('{"id":"'+str(uuident)+'"}') #TODO: ask José the response
-    return jsonresponse
-
-# request to get all registered VIMs information
-'''
-Params:
-Request payload:
-Return:
-{
-  vim_list: [
-    {
-      vim_uuid: String,
-      type: String,
-      vim_city: String,
-      vim_domain: String,
-      vim_name: String,
-      vim_endpoint: String,
-      memory_total: int,
-      memory_used: int,
-      core_total: int,
-      core_used: int
-    }
-  ],
-  nep_list: [
-    {
-      nep_uuid: String,
-      type: String,
-      nep_name: String
-    }
-  ]
-} 
-'''
-def get_vims_info():
-  url = get_base_url() + "/requests"              #TODO: ask JOSE's API
-
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Getting all NetServicesInstances")
-    response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    if (response.status_code == 200):
-        jsonresponse = json.loads(response.text)
-    else:
-        jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
-    return jsonresponse  
-  else:
-    jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
-    LOG.info(jsonresponse)
     return jsonresponse
 
 
@@ -305,11 +310,14 @@ def getListNetServices():
     if (response.status_code == 200):
         services_array = json.loads(response.text)
         for service_item in services_array:
-          # each element of the list is a dictionary
-          nsd=parseNetworkService(service_item)
-          nsd_string = vars(nsd)
-          # adds the dictionary element into the list
-          db.nsInfo_list.append(nsd_string)
+          if service_item['nsd'].keys() & {'name', 'vendor', 'version'}:
+          #if 'name' not in service_item['nsd']:   # to avoid possible problems with other MANO NSD structures
+            # each element of the list is a dictionary
+            nsd=parseNetworkService(service_item)
+            nsd_string = vars(nsd)
+            # adds the dictionary element into the list
+            db.nsInfo_list.append(nsd_string)
+        
         service_response = db.nsInfo_list
     else:
         service_response = {'http_code': response.status_code,'message': response.json()}
