@@ -471,12 +471,14 @@ def create_nsi(nsi_json):
   nst_json = catalogue_response['nstd']
 
   # validate if there is any NSTD
+  LOG.info("NSI_MNGR: Checking if the NSTD exists...")
   if not catalogue_response:
     return_msg = {}
     return_msg['error'] = "There is NO NSTd with this uuid in the DDBB."
     return return_msg, 400
 
   # check if there is any other nsir with the same name, vendor, nstd_version
+  LOG.info("NSI_MNGR: Checking there is no duplicated NSI."
   nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
   if nsirepo_jsonresponse:
     for nsir_item in nsirepo_jsonresponse:
@@ -486,27 +488,32 @@ def create_nsi(nsi_json):
         return (error_msg, 500)
 
   # get the VIMs information registered to the SP
-  #vims_list = mapper.get_vims_info()
-  #if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
-    return_msg = {}
-    return_msg['error'] = "Not found any VIM information."
-    return return_msg, 500
-  #LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
+  # vims_list = mapper.get_vims_info()
+  # if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
+  #   return_msg = {}
+  #   return_msg['error'] = "Not found any VIM information."
+  #   return return_msg, 500
+  # LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
   
   #TODO: improve placement
-  main_datacenter = vims_list['vim_list'][0]['vim_uuid']
+  # main_datacenter = vims_list['vim_list'][0]['vim_uuid']
+  main_datacenter = str(uuid.uuid4())
   LOG.info("NSI_MNGR: VIMs list information: " +str(main_datacenter))
   
   # creates NSI with the received information
+  LOG.info("NSI_MNGR: Creating NSI basic structure.")
   new_nsir = add_basic_nsi_info(nst_json, nsi_json, main_datacenter)
   
   # adds the VLD information within the NSI record
+  LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
   new_nsir = add_vlds(new_nsir, nst_json['slice_vld'])
   
   # adds the NetServices (subnets) information within the NSI record
+  LOG.info("NSI_MNGR:  Adding subnets into the NSI structure.")
   new_nsir = add_subnets(new_nsir, nst_json, nsi_json)
 
   # saving the NSI into the repositories
+  LOG.info("NSI_MNGR:  Saving the NSIr into resporitories.")
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
