@@ -63,14 +63,14 @@ class thread_ns_instantiate(Thread):
     self.NSI = NSI
   
   '''
-  mapping:
-    network_functions:
-       - {'vnf_id': <vnf_id of VNF1, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
-       - {'vnf_id':<vnf_id of VNF2, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
-       - {'vnf_id': <vnf_id of VNF3, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
-    virtual_links:
-       - {'vl_id': <id of the management virtual link inside nsd> , 'external_net': vld_mgmt-id, 'vim_id': 11111-1111-111111-111111}
-       - {'vl_id': <id of the  virtual link inside nsd that is connected to the western cp>, 'external_net': vld_east-id, 'vim_id': 11111-1111-111111-111111}
+    mapping:
+      network_functions:
+        - {'vnf_id': <vnf_id of VNF1, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
+        - {'vnf_id':<vnf_id of VNF2, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
+        - {'vnf_id': <vnf_id of VNF3, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
+      virtual_links:
+        - {'vl_id': <id of the management virtual link inside nsd> , 'external_net': vld_mgmt-id, 'vim_id': 11111-1111-111111-111111}
+        - {'vl_id': <id of the  virtual link inside nsd that is connected to the western cp>, 'external_net': vld_east-id, 'vim_id': 11111-1111-111111-111111}
   '''
   def send_instantiation_requests(self):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
@@ -215,6 +215,8 @@ class thread_ns_instantiate(Thread):
       deployment_timeout -= 15
     
     LOG.info("Updating and notifying GTK")
+    
+    #TODO: if deployment_timeout expires, notify it with error as status
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
     self.update_nsi_notify_instantiate()
 
@@ -226,6 +228,7 @@ class update_slice_instantiation(Thread):
     Thread.__init__(self)
     self.nsiId = nsiId
     self.request_json = request_json
+  
   def run(self):
     mutex_slice2db_access.acquire()
     try:
@@ -427,6 +430,7 @@ class update_slice_termination(Thread):
     Thread.__init__(self)
     self.nsiId = nsiId
     self.request_json = request_json
+  
   def run(self):
     mutex_slice2db_access.acquire()
     try:
@@ -464,7 +468,11 @@ def create_nsi(nsi_json):
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
   nst_json = catalogue_response['nstd']
 
-  #TODO: validate if there is any NSTD
+  # validate if there is any NSTD
+  if not catalogue_response:
+    return_msg = {}
+    return_msg['error'] = "There is NO NSTd with this uuid in the DDBB."
+    return return_msg, 400
 
   # check if there is any other nsir with the same name, vendor, nstd_version
   nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
@@ -475,6 +483,7 @@ def create_nsi(nsi_json):
 
   # get the VIMs information registered to the SP
   vims_list = mapper.get_vims_info()
+  LOF.info("NSI_MNGR: VIMs list information: " +str(vims_list))
 
   # creates NSI with the received information
   new_nsir = add_basic_nsi_info(nst_json, nsi_json)
@@ -489,8 +498,8 @@ def create_nsi(nsi_json):
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  thread_ns_instantiation = thread_ns_instantiate(new_nsir)
-  thread_ns_instantiation.start()
+  #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+  #thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
