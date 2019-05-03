@@ -122,7 +122,7 @@ def get_all_slice_templates():
 def get_slice_template(nstId):
   returnedNST = nst_manager.get_nst(nstId)
 
-  return jsonify(returnedNST[0]), returnedNST[0]
+  return jsonify(returnedNST[0]), returnedNST[1]
 
 # DELETES a NetSlice Template
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
