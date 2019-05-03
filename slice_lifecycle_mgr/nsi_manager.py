@@ -78,6 +78,8 @@ class thread_ns_instantiate(Thread):
     for nsr_item in self.NSI['nsr-list']:
       mapping = {}
       mapping['network_functions'] = []
+      #nsd_itm = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+
       # get NSD and extract each VNF information
       # check the resources and select the right vim_id
       # join all the info to one single dict object: {'vnf_id': __, 'vim_id': __}
@@ -557,11 +559,16 @@ def add_vlds(new_nsir, nst_vld_list):
     #vld_record['physical-network']
     #vld_record['segmentation_id']
     vld_record['vld-status'] = 'INACTIVE'
-    vld_record['shared-nsrs-list'] = []   # this is filled when a shared service is instantiated on this VLD
-    vld_record['ns-conn-point-ref'] = []  # this is filled when a service is instantiated on this VLD   
     
-    #TODO: filled when the GTK sends back the uuid. To confirm with José it is not necessary (nets request is sync)
-    vld_record['requestId'] = str(uuid.uuid4())
+    cp_refs_list = []
+    for cp_ref_item in vld_item['nsd-connection-point-ref']:
+      cp_dict = {}
+      cp_dict[cp_ref_item['subnet-ref']] = cp_ref_item['nsd-cp-ref']
+      cp_refs_list.append(cp_dict)
+    vld_record['ns-conn-point-ref'] = cp_refs_list
+    
+    vld_record['shared-nsrs-list'] = []   # this is filled when a shared service is instantiated on this VLD
+    #vld_record['requestId'] = " "
 
     vldr_list.append(vld_record)
   
@@ -616,6 +623,11 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
   
   new_nsir['nsr-list'] = nsr_list
   return new_nsir
+
+# Start to instantiate a specific nsi with the current vim_list infoAdds the basic subnets information to the NSI record
+def start_instantiating_nsi(nsiId, request_json):
+
+  return
 
 # Updates a NSI with the latest information coming from the MANO/GK
 def update_instantiating_nsi(nsiId, request_json):
