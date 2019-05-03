@@ -189,6 +189,7 @@ Return:
 } 
 '''
 def get_vims_info():
+  LOG.info("MAPPER: Requesting VIMs information.")
   url = get_base_url() + '/slice/vims'
 
   #REAL or EMULATED usage of Sonata SP 
