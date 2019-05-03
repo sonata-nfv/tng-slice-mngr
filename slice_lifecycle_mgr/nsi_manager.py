@@ -489,7 +489,7 @@ def create_nsi(nsi_json):
     return_msg = {}
     return_msg['error'] = "Not found any VIM information."
     return return_msg, 400
-  LOF.info("NSI_MNGR: VIMs list information: " +str(vims_list))
+  LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
 
   # creates NSI with the received information
   new_nsir = add_basic_nsi_info(nst_json, nsi_json)
