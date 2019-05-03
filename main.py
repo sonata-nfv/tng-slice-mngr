@@ -85,7 +85,6 @@ def getAllNetServ():
   return jsonify(ServDict), 200
 
 
-
 ######################################### NETSLICE TEMPLATE Actions #########################################
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['OPTIONS'])
 def optionsAllNST():

@@ -109,7 +109,7 @@ def get_all_nst():
   if (nstcatalogue_jsonresponse):
     return (nstcatalogue_jsonresponse, 200)
   else:
-    return ('{"error":"There are no NSTD in the db."}', 500)
+    return ('{"msg":"There are no NSTD in the db."}', 200)
 
 # Returns the information of a selected NST in catalogues
 def get_nst(nstId):
@@ -119,4 +119,4 @@ def get_nst(nstId):
   if (nstcatalogue_jsonresponse):
     return (nstcatalogue_jsonresponse, 200)
   else:
-    return ('{"error":"There is no NSTD with this uuid in the db."}', 500)
+    return ('{"msg":"There is no NSTD with this uuid in the db."}', 200)
