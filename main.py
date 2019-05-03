@@ -156,6 +156,7 @@ def create_slice_instance():
     return jsonify(validationResponse[0]), validationResponse[1]
   """
   instantiatedNSI = nsi_manager.create_nsi(request.json)
+  logging.info("HTTP.TEXT: " + str(instantiatedNSI[0]) + " HTTP.VALUE: " + str(instantiatedNSI[1]))
   return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
 # INSTANTIATION UPDATE
