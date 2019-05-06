@@ -128,7 +128,7 @@ def get_slice_template(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
 def delete_slice_template(nstId):
   deleted_NSTid = nst_manager.remove_nst(nstId)
-  logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
+  logging.info("SLICE_MAIN: Delete NST with id: " + str(nstId))
   
   if deleted_NSTid == 403:
     returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
@@ -156,7 +156,7 @@ def create_slice_instance():
     return jsonify(validationResponse[0]), validationResponse[1]
   """
   instantiatedNSI = nsi_manager.create_nsi(request.json)
-  logging.info("HTTP.TEXT: " + str(instantiatedNSI[0]) + " HTTP.VALUE: " + str(instantiatedNSI[1]))
+  logging.info("SLICE_MAIN: HTTP.TEXT: " + str(instantiatedNSI[0]) + " HTTP.VALUE: " + str(instantiatedNSI[1]))
   return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
 # INSTANTIATION UPDATE

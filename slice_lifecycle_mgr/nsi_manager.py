@@ -63,7 +63,7 @@ class thread_ns_instantiate(Thread):
     self.NSI = NSI
   
   def send_networks_creation_request(self):
-    LOG.info("NSI_MNGR: Requesting slice networks creationg to the GTK.")
+    LOG.info("NSI_MNGR: Requesting slice networks creation to the GTK.")
     time.sleep(0.1)
 
     # creates the 1st json level structure {instance_id: ___, vim_list: []}
@@ -101,9 +101,8 @@ class thread_ns_instantiate(Thread):
 
     LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
     time.sleep(0.1)
-
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
-    nets_creation_response = mapper.create_vim_network(network_data)
+    #nets_creation_response = mapper.create_vim_network(network_data)
 
   def send_instantiation_requests(self):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
@@ -249,7 +248,7 @@ class thread_ns_instantiate(Thread):
     # Sends all the requests to instantiate the NSs within the slice
     self.send_instantiation_requests()
 
-    # Waits until all the NSs are instantiated/ready or error
+"""     # Waits until all the NSs are instantiated/ready or error
     #deployment_timeout = 2 * 3600   # Two hours
     deployment_timeout = 1800   # 30min   #TODO: change once the GTK connection-bug is solved.
     while deployment_timeout > 0:
@@ -273,7 +272,7 @@ class thread_ns_instantiate(Thread):
     
     #TODO: if deployment_timeout expires, notify it with error as status
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
-    self.update_nsi_notify_instantiate()
+    self.update_nsi_notify_instantiate() """
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI instantiation
