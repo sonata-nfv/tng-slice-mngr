@@ -299,8 +299,6 @@ def delete_vim_network(network_data):
 # GET /services/<uuid> tu pull a single Network Service information
 def get_nsd(nsd_uuid):
   LOG.info("MAPPER: Preparing the request to get the NetServices Information")
-  # cleans the current nsInfo_list to have the information updated
-  del db.nsInfo_list[:]
   url = get_base_url_ns_info() + "/services/" + str(nsd_uuid)
 
   response = requests.get(url)
@@ -314,6 +312,7 @@ def get_nsd(nsd_uuid):
 # GET /services to pull all Network Services information
 def get_nsd_list():
   LOG.info("MAPPER: Preparing the request to get the NetServices Information")
+  time.sleep(0.1)
   # cleans the current nsInfo_list to have the information updated
   del db.nsInfo_list[:]
   url = get_base_url_ns_info() + "/services"

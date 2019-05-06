@@ -104,6 +104,20 @@ class thread_ns_instantiate(Thread):
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
     #nets_creation_response = mapper.create_vim_network(network_data)
 
+  '''
+  {
+    "mapping": {
+      "network_functions":[
+        {"vnf_id": "nsd_vnfd_id", "vim_id": "datacenter_id"}
+      ],
+      "virtual_links":[
+        {
+            "vl_id": "nsd_vld_id", "external_net": "nsi_vld_id", "vim_id": "datacenter_id"
+        }
+      ]
+    }
+  }
+  '''
   def send_instantiation_requests(self):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
@@ -112,24 +126,10 @@ class thread_ns_instantiate(Thread):
     
     for nsr_item in self.NSI['nsr-list']:
       # Preparing the dict to stitch the NS to the Networks (VLDs)
-      '''
-      {
-        "mapping": {
-          "network_functions":[
-            {"vnf_id": "nsd_vnfd_id", "vim_id": "datacenter_id"}
-          ],
-          "virtual_links":[
-            {
-                "vl_id": "nsd_vld_id", "external_net": "nsi_vld_id", "vim_id": "datacenter_id"
-            }
-          ]
-        }
-      }
-      '''
       mapping = {}
       network_functions_list = []
       virtual_links_list = []
-      repo_item = mapper.get_nsd_list(nsr_item['subnet-nsdId-ref'])
+      repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
       LOG.info("NSI_MNGR_Instantiate: repo_item" +str(repo_item))
       time.sleep(0.1)
       nsd_item = repo_item['nsd']
