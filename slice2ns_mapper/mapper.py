@@ -241,7 +241,10 @@ def create_vim_network(network_data):
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
     LOG.info("MAPPER: Sending network management request")
+    time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    LOG.info("MAPPER: Networks creation response: " +str(response.text))
+    time.sleep(0.1)
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:

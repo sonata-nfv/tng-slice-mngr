@@ -63,68 +63,9 @@ class thread_ns_instantiate(Thread):
     self.NSI = NSI
     self.nst_object
   
-  '''
-    mapping:
-      network_functions:
-        - {'vnf_id': <vnf_id of VNF1, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
-        - {'vnf_id':<vnf_id of VNF2, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
-        - {'vnf_id': <vnf_id of VNF3, can be found in nsd>, 'vim_id': 11111-1111-111111-111111}
-      virtual_links:
-        - {'vl_id': <id of the management virtual link inside nsd> , 'external_net': vld_mgmt-id, 'vim_id': 11111-1111-111111-111111}
-        - {'vl_id': <id of the  virtual link inside nsd that is connected to the western cp>, 'external_net': vld_east-id, 'vim_id': 11111-1111-111111-111111}
-  '''
-  def send_instantiation_requests(self):
-    LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
-    time.sleep(0.1)
-    
-    for nsr_item in self.NSI['nsr-list']:
-      
-      # Preparing the dict to stitch the NS to the Networks (VLDs)
-      mapping = {}
-      network_functions_list = []
-      virtual_links_list = []
-
-      repo_item = mapper.get_nsd_list(nsr_item['subnet-nsdId-ref'])
-      nsd_item = repo_item['nsd']
-      for vnf_item in nsd_item['network_functions']:
-        net_funct = {}
-        net_funct['vnf_id'] = vnf_item['vnf_id']
-        net_funct['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
-        network_functions_list.append(net_funct)
-      
-      mapping['network_functions'] = network_functions_list
-
-      
-      """
-      nst_vld = self.nst_object['slice_vld']
-
-          virt_link = {}
-          virt_link['vld_id'] = 
-          virt_link['external_net'] = 
-          virt_link['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
-          virtual_links_list.append(virt_link)
-
-        mapping['virtual_links'] = virtual_links_list
-      """
-
-      # TODO: SHARED FUNCT -> if the nsr_item is shared and already has a nsrId = DON'T SEND REQUEST
-      # Sending Network Services Instantiation requests
-      data = {}
-      data['name'] = nsr_item['nsrName']
-      data['service_uuid'] = nsr_item['subnet-nsdId-ref']
-      data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/instantiation-change"
-      #data['ingresses'] = []
-      #data['egresses'] = []
-      #data['blacklist'] = []
-      if (nsr_item['sla-ref'] != "None"):
-        data['sla_id'] = nsr_item['sla-ref']
-      #data['mapping'] = mapping
-
-      # requests to instantiate NSI services to the SP
-      instantiation_response = mapper.net_serv_instantiate(data)
-  
   def send_networks_creation_request(self):
     LOG.info("NSI_MNGR: Requesting slice networks creationg to the GTK.")
+    time.sleep(0.1)
 
     # creates the 1st json level structure {instance_id: ___, vim_list: []}
     network_data = {}
@@ -160,9 +101,103 @@ class thread_ns_instantiate(Thread):
               continue
 
     LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
+    time.sleep(0.1)
 
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
-    # nets_creation_response = mapper.create_vim_network(network_data)
+    nets_creation_response = mapper.create_vim_network(network_data)
+
+  def send_instantiation_requests(self):
+    LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
+    time.sleep(0.1)
+    
+    for nsr_item in self.NSI['nsr-list']:
+      # Preparing the dict to stitch the NS to the Networks (VLDs)
+      '''
+      {
+        "mapping": {
+          "network_functions":[
+            {"vnf_id": "nsd_vnfd_id", "vim_id": "datacenter_id"}
+          ],
+          "virtual_links":[
+            {
+                "vl_id": "nsd_vld_id", "external_net": "nsi_vld_id", "vim_id": "datacenter_id"
+            }
+          ]
+        }
+      }
+      '''
+      mapping = {}
+      network_functions_list = []
+      virtual_links_list = []
+      repo_item = mapper.get_nsd_list(nsr_item['subnet-nsdId-ref'])
+      nsd_item = repo_item['nsd']
+
+      ## Creates the 'network_functions' object
+      for vnf_item in nsd_item['network_functions']:
+        net_funct = {}
+        net_funct['vnf_id'] = vnf_item['vnf_id']
+        net_funct['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
+        network_functions_list.append(net_funct)
+      
+      mapping['network_functions'] = network_functions_list
+      LOG.info("NSI_MNGR_Instantiate: mapping json to stitch NS_2_nets" +str(mapping))
+      time.sleep(0.1)
+      
+      ## Creates the 'virtual_links' object
+      # for each nsr, checks its vlds and looks for its infortmation in vldr-list
+      for vld_nsr_item in nsr_item['vld']:
+        vld_ref = vld_nsr_item['vld_ref']
+        for vldr_item in self.NSI['vldr-list']:
+          # vld connected to the nsd found, keeps the external network
+          if vldr_item['id'] ==  vld_ref:
+            external_net = vldr_item['vim-net-id']
+            LOG.info("NSI_MNGR_Instantiate: external_net" +str(external_net))
+            time.sleep(0.1)
+            # using the ns connection point references to fins the internal NS vld
+            for ns_cp_item in vldr_item['ns-conn-point-ref']:
+              subnet_key = nsr_item['subnet-ref']
+              # if the subnet in the vld correspond to the current nsr keep going...
+              if subnet_key in ns_cp_item.keys():
+                ns_cp_ref = ns_cp_item[subnet_key]
+                # gets the right nsd to find the internal NS vld to which the CP is connected
+                nsd_catalogue_object = mapper.get_nsd(nsr-item['subnet-nsdId-ref'])
+                nsd_virtual_links_list = nsd_catalogue_object['nsd']['virtual_links']
+                for nsd_vl_item in nsd_virtual_links_list:
+                  for ns_cp_ref_item in nsd_vl_item['connection_points_reference']:
+                    if ns_cp_ref_item == ns_cp_ref:
+                      vl_id = nsd_vl_item['id']
+                      LOG.info("NSI_MNGR_Instantiate: vl_id" +str(vl_id))
+                      time.sleep(0.1)
+                      break 
+                break
+            break 
+        virt_link = {}
+        virt_link['vl_id'] = vl_id
+        virt_link['external_net'] = external_net
+        virt_link['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
+        virtual_links_list.append(virt_link)
+
+      mapping['virtual_links'] = virtual_links_list
+      LOG.info("NSI_MNGR_Instantiate: mapping json to stitch NS_2_nets" +str(mapping))
+      time.sleep(0.1)
+
+      # TODO: SHARED FUNCT -> if the nsr_item is shared and already has a nsrId = DON'T SEND REQUEST
+      # Sending Network Services Instantiation requests
+      data = {}
+      data['name'] = nsr_item['nsrName']
+      data['service_uuid'] = nsr_item['subnet-nsdId-ref']
+      data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/instantiation-change"
+      #data['ingresses'] = []
+      #data['egresses'] = []
+      #data['blacklist'] = []
+      if (nsr_item['sla-ref'] != "None"):
+        data['sla_id'] = nsr_item['sla-ref']
+      data['mapping'] = mapping
+
+      LOG.info("NSI_MNGR_Instantiate: this is what GTK receives: " +str(data))
+      time.sleep(0.1)
+      # requests to instantiate NSI services to the SP
+      #instantiation_response = mapper.net_serv_instantiate(data)
 
   def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
