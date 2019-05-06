@@ -542,16 +542,18 @@ def create_nsi(nsi_json):
         return (error_msg, 500)
 
   # get the VIMs information registered to the SP
-  # vims_list = mapper.get_vims_info()
-  # if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
-  #   return_msg = {}
-  #   return_msg['error'] = "Not found any VIM information."
-  #   return return_msg, 500
-  # LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
+  vims_list = mapper.get_vims_info()
+  if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
+    return_msg = {}
+    return_msg['error'] = "Not found any VIM information."
+    return return_msg, 500
+  LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
+  time.sleep(0.1)
   
   #TODO: improve placement
-  # main_datacenter = vims_list['vim_list'][0]['vim_uuid']
-  main_datacenter = str(uuid.uuid4())
+  main_datacenter = vims_list['vim_list'][0]['vim_uuid']
+  if not main_datacenter:
+    main_datacenter = str(uuid.uuid4())
   LOG.info("NSI_MNGR: VIMs list information: " +str(main_datacenter))
   
   # creates NSI with the received information
