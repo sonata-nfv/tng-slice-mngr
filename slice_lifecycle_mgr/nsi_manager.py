@@ -543,10 +543,10 @@ def create_nsi(nsi_json):
 
   # get the VIMs information registered to the SP
   vims_list = mapper.get_vims_info()
-  if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
-    return_msg = {}
-    return_msg['error'] = "Not found any VIM information."
-    return return_msg, 500
+  # if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
+  #   return_msg = {}
+  #   return_msg['error'] = "Not found any VIM information."
+  #   return return_msg, 500
   LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
   time.sleep(0.1)
   
