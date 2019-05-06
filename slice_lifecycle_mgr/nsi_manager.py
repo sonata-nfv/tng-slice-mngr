@@ -58,10 +58,9 @@ LOG.setLevel(logging.INFO)
 ## Objctive: reads subnets list in Network Slice Instance (NSI) and sends requests2GTK to instantiate them 
 ## Params: NSI - nsi created with the parameters given by the user and the NST saved in catalogues.
 class thread_ns_instantiate(Thread):
-  def __init__(self, NSI, nst_object):
+  def __init__(self, NSI):
     Thread.__init__(self)
     self.NSI = NSI
-    self.nst_object
   
   def send_networks_creation_request(self):
     LOG.info("NSI_MNGR: Requesting slice networks creationg to the GTK.")
@@ -526,6 +525,7 @@ def create_nsi(nsi_json):
 
   # validate if there is any NSTD
   LOG.info("NSI_MNGR: Checking if the NSTD exists...")
+  time.sleep(0.1)
   if not catalogue_response:
     return_msg = {}
     return_msg['error'] = "There is NO NSTd with this uuid in the DDBB."
@@ -533,6 +533,7 @@ def create_nsi(nsi_json):
 
   # check if there is any other nsir with the same name, vendor, nstd_version
   LOG.info("NSI_MNGR: Checking there is no duplicated NSI.")
+  time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
   if nsirepo_jsonresponse:
     for nsir_item in nsirepo_jsonresponse:
@@ -554,27 +555,32 @@ def create_nsi(nsi_json):
   main_datacenter = vims_list['vim_list'][0]['vim_uuid']
   if not main_datacenter:
     main_datacenter = str(uuid.uuid4())
-  LOG.info("NSI_MNGR: VIMs list information: " +str(main_datacenter))
+  LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(main_datacenter))
+  time.sleep(0.1)
   
   # creates NSI with the received information
   LOG.info("NSI_MNGR: Creating NSI basic structure.")
+  time.sleep(0.1)
   new_nsir = add_basic_nsi_info(nst_json, nsi_json, main_datacenter)
   
   # adds the VLD information within the NSI record
   LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
+  time.sleep(0.1)
   new_nsir = add_vlds(new_nsir, nst_json['slice_vld'])
   
   # adds the NetServices (subnets) information within the NSI record
   LOG.info("NSI_MNGR:  Adding subnets into the NSI structure.")
+  time.sleep(0.1)
   new_nsir = add_subnets(new_nsir, nst_json, nsi_json)
 
   # saving the NSI into the repositories
   LOG.info("NSI_MNGR:  Saving the NSIr into resporitories.")
+  time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  #thread_ns_instantiation = thread_ns_instantiate(new_nsir, nst_json)
-  #thread_ns_instantiation.start()
+  thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+  thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
