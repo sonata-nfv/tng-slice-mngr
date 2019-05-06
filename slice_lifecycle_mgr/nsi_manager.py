@@ -107,6 +107,8 @@ class thread_ns_instantiate(Thread):
   def send_instantiation_requests(self):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
+    LOG.info("NSI_MNGR_Instantiate: self.NSI['nsr-list']" +str(self.NSI['nsr-list']))
+    time.sleep(0.1)
     
     for nsr_item in self.NSI['nsr-list']:
       # Preparing the dict to stitch the NS to the Networks (VLDs)
@@ -128,7 +130,11 @@ class thread_ns_instantiate(Thread):
       network_functions_list = []
       virtual_links_list = []
       repo_item = mapper.get_nsd_list(nsr_item['subnet-nsdId-ref'])
+      LOG.info("NSI_MNGR_Instantiate: repo_item" +str(repo_item))
+      time.sleep(0.1)
       nsd_item = repo_item['nsd']
+      LOG.info("NSI_MNGR_Instantiate: nsd_item" +str(nsd_item))
+      time.sleep(0.1)
 
       ## Creates the 'network_functions' object
       for vnf_item in nsd_item['network_functions']:
