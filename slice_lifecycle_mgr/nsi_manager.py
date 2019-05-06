@@ -58,9 +58,10 @@ LOG.setLevel(logging.INFO)
 ## Objctive: reads subnets list in Network Slice Instance (NSI) and sends requests2GTK to instantiate them 
 ## Params: NSI - nsi created with the parameters given by the user and the NST saved in catalogues.
 class thread_ns_instantiate(Thread):
-  def __init__(self, NSI):
+  def __init__(self, NSI, nst_object):
     Thread.__init__(self)
     self.NSI = NSI
+    self.nst_object
   
   '''
     mapping:
@@ -88,15 +89,23 @@ class thread_ns_instantiate(Thread):
       for vnf_item in nsd_item['network_functions']:
         net_funct = {}
         net_funct['vnf_id'] = vnf_item['vnf_id']
-        net_funct['vim_id'] = self.NSI['datacenter']  #TODO: FUTURE think about placement
+        net_funct['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
         network_functions_list.append(net_funct)
       
       mapping['network_functions'] = network_functions_list
 
-      # get the vld within the NSD
-      # get the corresponding slice-vld
-      # join all the info to one single dict object: {'vl_id': __, 'external_net': __, 'vim_id': __}
-      mapping['virtual_links'] = []
+      
+      """
+      nst_vld = self.nst_object['slice_vld']
+
+          virt_link = {}
+          virt_link['vld_id'] = 
+          virt_link['external_net'] = 
+          virt_link['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
+          virtual_links_list.append(virt_link)
+
+        mapping['virtual_links'] = virtual_links_list
+      """
 
       # TODO: SHARED FUNCT -> if the nsr_item is shared and already has a nsrId = DON'T SEND REQUEST
       # Sending Network Services Instantiation requests
@@ -527,7 +536,7 @@ def create_nsi(nsi_json):
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+  #thread_ns_instantiation = thread_ns_instantiate(new_nsir, nst_json)
   #thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
