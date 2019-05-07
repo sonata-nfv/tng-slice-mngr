@@ -209,7 +209,17 @@ def get_slice_instance(nsiId):
 
   return jsonify(returnedNSI[0]), returnedNSI[1]
 
-#TODO: make a DELETE function for NSIs
+# DELETEs from the ddbb the NetSlice Instance (NSI) record object
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['DELETE'])
+def delete_slice_template(nsiId):
+  deleted_NSIid = nsi_manager.remove_nsi(nsiId)
+  logging.info("SLICE_MAIN: Delete NSI with id: " + str(nsiId))
+  
+  if deleted_NSIid == 403:
+    returnMessage = "Not possible to delete, the NSI is either in use or still being processed."
+  else:
+    returnMessage = "NSI with ID:" + str(nsiId) + "deleted from repositories."
+  return jsonify(returnMessage)
 
 ########################################### MAIN SERVER FUNCTION ############################################
 if __name__ == '__main__':

@@ -99,7 +99,6 @@ def remove_nst(nstId):
   else:
     return 403
 
-
 ############################################ GET NST SECTION ############################################
 # Returns the information of all the NST in catalogues
 def get_all_nst():

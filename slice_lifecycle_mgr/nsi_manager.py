@@ -306,7 +306,6 @@ class thread_ns_instantiate(Thread):
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
     self.update_nsi_notify_instantiate()
 
-
 # UPDATES THE SLICE INSTANTIATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI instantiation
 ## Params: nsiId (uuid within the incoming request URL), request_json (incoming request payload)
@@ -834,6 +833,15 @@ def removeNSIinNST(nstId):
       nstParameter2update = "usageState=NOT_IN_USE"
       updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
   
+# Deletes a NST kept in catalogues
+def remove_nsi(nsiId):
+  logging.info("NSI_MNGR: Delete NSI with id: " + str(nsiId))
+  nsi_repo_response = nsi_repo.get_saved_nsi(nsiId)
+  if (nsi_repo_response["nsi-status"] in ["TERMINATED", "ERROR"):
+    nsi_repo_response = nsi_repo.delete_nsi(nsiId)
+    return nsi_repo_response
+  else:
+    return 403
 
 ############################################ NSI GET SECTION ############################################
 # Gets one single NSI item information

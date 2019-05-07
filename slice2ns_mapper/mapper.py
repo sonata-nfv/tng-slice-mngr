@@ -249,7 +249,9 @@ def create_vim_network(network_data):
       jsonresponse = json.loads(response.text)
     else:
       jsonresponse = {'http_code': response.status_code,'message': response.json()}
+    
     return jsonresponse
+  
   else:
     print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
     uuident = uuid.uuid4()
@@ -277,7 +279,7 @@ Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"}
 '''
 def delete_vim_network(network_data):
   url = get_base_url() + '/slices/networks'
-  data_json = json.dumps(service_data)
+  data_json = json.dumps(network_data)
   
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
