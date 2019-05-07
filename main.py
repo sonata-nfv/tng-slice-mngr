@@ -160,7 +160,7 @@ def create_slice_instance():
   return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
 # INSTANTIATION UPDATE
-# INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that must have the same URL.
+# INFORMATION: if changed, a line in nsi_manager.py within its function "createNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
 def update_slice_instantiation(nsiId):
   logging.info("SLICE_MAIN: received json tu update nsi: " + str(request.json))
@@ -186,7 +186,7 @@ def create_slice_terminate(nsiId):
     return jsonify(validationResponse[0]), validationResponse[1]
 
 # TERMINATE UPDATE
-# INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "terminateNSI" that must have the same URL.
+# INFORMATION: if changed, a line in nsi_manager.py within its function "terminateNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
 def update_slice_termination(nsiId):
   logging.info("SLICE_MAIN: received json to update a TERMINATING NSI: " + str(request.json))
@@ -195,21 +195,21 @@ def update_slice_termination(nsiId):
   #[0] error_message or valid_json, [1] status code
   return jsonify(sliceUpdated[0]), sliceUpdated[1]
 
-# GETS all the NetSlice instances (NSI) information
+# GETS ALL the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
 def get_slice_instances():
   allNSI = nsi_manager.get_all_nsi()
 
   return jsonify(allNSI[0]), allNSI[1]
 
-
-# GETS for a specific NetSlice instances (NSI) information
+# GETS a SPECIFIC NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['GET'])
 def get_slice_instance(nsiId):
   returnedNSI = nsi_manager.get_nsi(nsiId)
 
   return jsonify(returnedNSI[0]), returnedNSI[1]
 
+#TODO: make a DELETE function for NSIs
 
 ########################################### MAIN SERVER FUNCTION ############################################
 if __name__ == '__main__':
