@@ -225,6 +225,7 @@ def delete_slice_instance(nsiId):
 # CREATES/INSTANTIATES a network
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/create-network', methods=['POST'])
 def create_network():
+  logging.info("SLICE_MAIN: Creating networks: " + str(request.json))
   # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
   networks_data = request.json
   nets_creation_response = mapper.create_vim_network(networks_data)
