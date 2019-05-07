@@ -819,14 +819,15 @@ def removeNSIinNST(nstId):
   #TODO: validate if there are nsis to return it as error
 
   all_nsis_terminated = True
-  for nsis_item in nsis_list:
-    if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] == "INSTANTIATED" or nsis_item['nsi-status'] == "INSTANTIATING" or nsis_item['nsi-status'] == "READY"):
-        all_nsis_terminated = False
-        break;
-    else:
-      pass
+  if nsis_list:
+    for nsis_item in nsis_list:
+      if (nsis_item['nst-ref'] == nstd_id) and (nsis_item['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY"]):
+          all_nsis_terminated = False
+          break;
+      else:
+        pass
 
-  if (all_nsis_terminated):
+  if all_nsis_terminated:
     nst_descriptor = nst_catalogue.get_saved_nst(nstId)
     nst_json = nst_descriptor['nstd']
     if (nst_json['usageState'] == "IN_USE"):
