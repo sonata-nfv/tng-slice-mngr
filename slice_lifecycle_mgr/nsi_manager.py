@@ -152,9 +152,9 @@ class thread_ns_instantiate(Thread):
       LOG.info("NSI_MNGR_Instantiate: step_1: " +str(nsr_item['vld']))
       time.sleep(0.1)
       for vld_nsr_item in nsr_item['vld']:
-        LOG.info("NSI_MNGR_Instantiate: step_2: " +str(vld_nsr_item['vld_ref']))
+        LOG.info("NSI_MNGR_Instantiate: step_2: " +str(vld_nsr_item['vld-ref']))
         time.sleep(0.1)
-        vld_ref = vld_nsr_item['vld_ref']
+        vld_ref = vld_nsr_item['vld-ref']
         LOG.info("NSI_MNGR_Instantiate: step_3: " +str(self.NSI['vldr-list']))
         time.sleep(0.1)
         for vldr_item in self.NSI['vldr-list']:
