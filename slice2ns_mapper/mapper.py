@@ -236,7 +236,7 @@ Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"}
 '''
 def create_vim_network(network_data):
   url = get_base_url() + '/slices/networks'
-  data_json = json.dumps(service_data)
+  data_json = json.dumps(network_data)
   
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
