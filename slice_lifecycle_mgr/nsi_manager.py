@@ -182,9 +182,9 @@ class thread_ns_instantiate(Thread):
                 time.sleep(0.1)
                 ns_cp_ref = ns_cp_item[subnet_key]
                 # gets the right nsd to find the internal NS vld to which the CP is connected
-                LOG.info("NSI_MNGR_Instantiate: step_11: " +str(nsr-item['subnet-nsdId-ref']))
+                LOG.info("NSI_MNGR_Instantiate: step_11: " +str(nsr_item['subnet-nsdId-ref']))
                 time.sleep(0.1)
-                nsd_catalogue_object = mapper.get_nsd(nsr-item['subnet-nsdId-ref'])
+                nsd_catalogue_object = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
                 LOG.info("NSI_MNGR_Instantiate: step_12: " +str(nsd_catalogue_object['nsd']['virtual_links']))
                 time.sleep(0.1)
                 nsd_virtual_links_list = nsd_catalogue_object['nsd']['virtual_links']
