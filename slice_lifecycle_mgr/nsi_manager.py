@@ -837,7 +837,7 @@ def removeNSIinNST(nstId):
 def remove_nsi(nsiId):
   logging.info("NSI_MNGR: Delete NSI with id: " + str(nsiId))
   nsi_repo_response = nsi_repo.get_saved_nsi(nsiId)
-  if (nsi_repo_response["nsi-status"] in ["TERMINATED", "ERROR"):
+  if (nsi_repo_response["nsi-status"] in ["TERMINATED", "ERROR"]):
     nsi_repo_response = nsi_repo.delete_nsi(nsiId)
     return nsi_repo_response
   else:

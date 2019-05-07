@@ -211,7 +211,7 @@ def get_slice_instance(nsiId):
 
 # DELETEs from the ddbb the NetSlice Instance (NSI) record object
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['DELETE'])
-def delete_slice_template(nsiId):
+def delete_slice_instance(nsiId):
   deleted_NSIid = nsi_manager.remove_nsi(nsiId)
   logging.info("SLICE_MAIN: Delete NSI with id: " + str(nsiId))
   
