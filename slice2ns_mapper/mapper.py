@@ -246,15 +246,14 @@ def create_vim_network(network_data):
     LOG.info("MAPPER: Sending network creation request")
     time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    LOG.info("MAPPER: Networks creation response: " +str(response))
+    LOG.info("MAPPER: Networks creation response: " +str(response.text))
     time.sleep(0.1)
-    LOG.info("MAPPER: Networks creation response_JSON: " +str(response.json()))
-    time.sleep(0.1)
+    
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}
-      LOG.info("MAPPER: Networks creation response: " +str(jsonresponse))
+      jsonresponse = {'http_code': response.status_code,'message': response.text}
+      LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
       time.sleep(0.1)
     
     return jsonresponse
