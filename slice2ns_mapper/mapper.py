@@ -237,13 +237,18 @@ Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"}
 def create_vim_network(network_data):
   url = get_base_url() + '/slices/networks'
   data_json = json.dumps(network_data)
+
+  LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
+  time.sleep(0.1)
   
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
     LOG.info("MAPPER: Sending network creation request")
     time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    LOG.info("MAPPER: Networks creation response: " +str(response.text))
+    LOG.info("MAPPER: Networks creation response: " +str(response))
+    time.sleep(0.1)
+    LOG.info("MAPPER: Networks creation response_JSON: " +str(response.json()))
     time.sleep(0.1)
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
