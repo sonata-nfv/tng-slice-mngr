@@ -106,20 +106,6 @@ class thread_ns_instantiate(Thread):
 
     return nets_creation_response
 
-  '''
-  {
-    "mapping": {
-      "network_functions":[
-        {"vnf_id": "nsd_vnfd_id", "vim_id": "datacenter_id"}
-      ],
-      "virtual_links":[
-        {
-            "vl_id": "nsd_vld_id", "external_net": "nsi_vld_id", "vim_id": "datacenter_id"
-        }
-      ]
-    }
-  }
-  '''
   def send_instantiation_requests(self):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
@@ -243,14 +229,15 @@ class thread_ns_instantiate(Thread):
   def run(self):
     # TODO:Sends all the requests to create all the VLDs within the slice
     networks_response = self.send_networks_creation_request()
-    LOG.info("NSI_MNGR: network_response: " +str(networks_response)) 
+    LOG.info("NSI_MNGR: network_response: " +str(networks_response))
+    time.sleep(0.1)
         
     # acquires mutex to have unique access to the nsi (rpositories)
     mutex_slice2db_access.acquire()
     
     temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
     #TODO: improve the next 2 lines to not use this delete.
-    temp_nsi["id"] = jsonNSI["uuid"]
+    temp_nsi["id"] = temp_nsi["uuid"]
     del temp_nsi["uuid"]
 
     # updates nsi information
