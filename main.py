@@ -223,7 +223,7 @@ def delete_slice_instance(nsiId):
 
 
 # CREATES/INSTANTIATES a network
-@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/create-network', methods=['POST'])
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/network', methods=['POST'])
 def create_network():
   logging.info("SLICE_MAIN: Creating networks: " + str(request.json))
   # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
@@ -234,14 +234,14 @@ def create_network():
 
   return jsonify(nets_creation_response)
 
-@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/remove-network', methods=['DELETE'])
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/network', methods=['DELETE'])
 def remove_network():
   logging.info("SLICE_MAIN: Removing networks: " + str(request.json))
   # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
   networks_data = request.json
   nets_removal_response = mapper.delete_vim_network(networks_data)
 
-  logging.info("SLICE_MAIN: Network Creation response: " + str(nets_removal_response))
+  logging.info("SLICE_MAIN: Network Removal response: " + str(nets_removal_response))
 
   return jsonify(nets_removal_response)
 

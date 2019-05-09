@@ -302,11 +302,11 @@ def delete_vim_network(network_data):
       time.sleep(0.1)
 
     return jsonresponse
-    
+
   else:
     print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
     uuident = uuid.uuid4()
-    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}') #TODO: ask José the response
+    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
     return jsonresponse
 
 
