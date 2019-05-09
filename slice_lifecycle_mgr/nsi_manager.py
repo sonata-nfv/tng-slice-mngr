@@ -228,7 +228,6 @@ class thread_ns_instantiate(Thread):
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.NSI['id'])
 
-    
     finally:
       # release the mutex for other threads
       mutex_slice2db_access.release()
@@ -244,7 +243,8 @@ class thread_ns_instantiate(Thread):
   def run(self):
     # TODO:Sends all the requests to create all the VLDs within the slice
     networks_response = self.send_networks_creation_request()
-    
+    LOG.info("NSI_MNGR: network_response: " +str(networks_response)) 
+        
     # acquires mutex to have unique access to the nsi (rpositories)
     mutex_slice2db_access.acquire()
     
@@ -295,7 +295,7 @@ class thread_ns_instantiate(Thread):
         time.sleep(15)
         deployment_timeout -= 15
       
-    LOG.info("Updating and notifying GTK")    
+    LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")    
     #TODO: if deployment_timeout expires, notify it with error as status
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
     self.update_nsi_notify_instantiate()

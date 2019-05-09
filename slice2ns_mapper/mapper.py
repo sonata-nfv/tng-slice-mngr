@@ -250,7 +250,7 @@ def create_vim_network(network_data):
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:
-      jsonresponse = {'http_code': response.status_code,'message': response.text}
+      jsonresponse = {'request_status':'ERROR', 'http_code': response.status_code, 'message': response.text}
       LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
       time.sleep(0.1)
     
