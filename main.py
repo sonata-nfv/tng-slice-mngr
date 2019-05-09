@@ -234,7 +234,7 @@ def create_network():
 
   return jsonify(nets_creation_response)
 
-def remove network():
+def remove_network():
   logging.info("SLICE_MAIN: Removing networks: " + str(request.json))
   # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
   networks_data = request.json
