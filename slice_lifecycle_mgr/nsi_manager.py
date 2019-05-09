@@ -250,6 +250,8 @@ class thread_ns_instantiate(Thread):
     
     for vld_item in temp_nsi['vldr-list']:
       vld_item['vld-status'] = vld_status
+    for nss_item in temp_nsi['nsr-list']:
+      nss_item['working-status'] = "NOT_INSTANTIATED"
 
     # sends the updated NetSlice instance to the repositories
     repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
