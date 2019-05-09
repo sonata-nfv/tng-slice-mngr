@@ -203,7 +203,7 @@ class thread_ns_instantiate(Thread):
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
-      if jsonNSI['nsi-status'] = "INSTANTIATING":
+      if jsonNSI['nsi-status'] == "INSTANTIATING":
         # updates the slice information befor notifying the GTK
         jsonNSI['nsi-status'] = "INSTANTIATED"
 
