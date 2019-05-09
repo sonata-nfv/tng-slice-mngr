@@ -68,7 +68,6 @@ def safe_nsi(NSI_dict):
 def get_all_saved_nsi():
     url = get_base_url() + '/records/nsir/ns-instances'
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    LOG.info(response.text)
     jsonresponse = json.loads(response.text)
     
     if(response.status_code != 200):

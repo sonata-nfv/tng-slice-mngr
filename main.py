@@ -78,7 +78,7 @@ def getPings():
 # GETS all the available NetService Descriptors to the Sonata SP
 @app.route('/api/services', methods=['GET'])
 def getAllNetServ():
-  ServDict = mapper.getListNetServices()
+  ServDict = mapper.get_nsd_list()
   #LOG.info('Returning all network services')
   logging.info('Returning all network services')
 
@@ -122,13 +122,13 @@ def get_all_slice_templates():
 def get_slice_template(nstId):
   returnedNST = nst_manager.get_nst(nstId)
 
-  return jsonify(returnedNST[0]), returnedNST[0]
+  return jsonify(returnedNST[0]), returnedNST[1]
 
 # DELETES a NetSlice Template
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
 def delete_slice_template(nstId):
   deleted_NSTid = nst_manager.remove_nst(nstId)
-  logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
+  logging.info("SLICE_MAIN: Delete NST with id: " + str(nstId))
   
   if deleted_NSTid == 403:
     returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
@@ -156,10 +156,11 @@ def create_slice_instance():
     return jsonify(validationResponse[0]), validationResponse[1]
   """
   instantiatedNSI = nsi_manager.create_nsi(request.json)
+  logging.info("SLICE_MAIN: HTTP.TEXT: " + str(instantiatedNSI[0]) + " HTTP.VALUE: " + str(instantiatedNSI[1]))
   return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
 # INSTANTIATION UPDATE
-# INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "createNSI" that must have the same URL.
+# INFORMATION: if changed, a line in nsi_manager.py within its function "createNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
 def update_slice_instantiation(nsiId):
   logging.info("SLICE_MAIN: received json tu update nsi: " + str(request.json))
@@ -185,7 +186,7 @@ def create_slice_terminate(nsiId):
     return jsonify(validationResponse[0]), validationResponse[1]
 
 # TERMINATE UPDATE
-# INFORMATION: if this endpoint is changed, there's a line in nsi_manager.py within its function "terminateNSI" that must have the same URL.
+# INFORMATION: if changed, a line in nsi_manager.py within its function "terminateNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
 def update_slice_termination(nsiId):
   logging.info("SLICE_MAIN: received json to update a TERMINATING NSI: " + str(request.json))
@@ -194,20 +195,55 @@ def update_slice_termination(nsiId):
   #[0] error_message or valid_json, [1] status code
   return jsonify(sliceUpdated[0]), sliceUpdated[1]
 
-# GETS all the NetSlice instances (NSI) information
+# GETS ALL the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
 def get_slice_instances():
   allNSI = nsi_manager.get_all_nsi()
 
   return jsonify(allNSI[0]), allNSI[1]
 
-
-# GETS for a specific NetSlice instances (NSI) information
+# GETS a SPECIFIC NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['GET'])
 def get_slice_instance(nsiId):
   returnedNSI = nsi_manager.get_nsi(nsiId)
 
   return jsonify(returnedNSI[0]), returnedNSI[1]
+
+# DELETEs from the ddbb the NetSlice Instance (NSI) record object
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['DELETE'])
+def delete_slice_instance(nsiId):
+  deleted_NSIid = nsi_manager.remove_nsi(nsiId)
+  logging.info("SLICE_MAIN: Delete NSI with id: " + str(nsiId))
+  
+  if deleted_NSIid == 403:
+    returnMessage = "Not possible to delete, the NSI is either in use or still being processed."
+  else:
+    returnMessage = "NSI with ID:" + str(nsiId) + "deleted from repositories."
+  return jsonify(returnMessage)
+
+
+# CREATES/INSTANTIATES a network
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/network', methods=['POST'])
+def create_network():
+  logging.info("SLICE_MAIN: Creating networks: " + str(request.json))
+  # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
+  networks_data = request.json
+  nets_creation_response = mapper.create_vim_network(networks_data)
+
+  logging.info("SLICE_MAIN: Network Creation response: " + str(nets_creation_response))
+
+  return jsonify(nets_creation_response)
+
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/network', methods=['DELETE'])
+def remove_network():
+  logging.info("SLICE_MAIN: Removing networks: " + str(request.json))
+  # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
+  networks_data = request.json
+  nets_removal_response = mapper.delete_vim_network(networks_data)
+
+  logging.info("SLICE_MAIN: Network Removal response: " + str(nets_removal_response))
+
+  return jsonify(nets_removal_response)
 
 
 ########################################### MAIN SERVER FUNCTION ############################################

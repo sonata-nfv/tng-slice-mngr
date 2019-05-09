@@ -195,11 +195,8 @@ def get_vims_info():
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    LOG.info("MAPPER: vims_response_text: " +str(response.text))
-    
     if (response.status_code == 200):
         jsonresponse = json.loads(response.text)
-        LOG.info("MAPPER: vims_response_json: " +str(jsonresponse))
     else:
         jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
   
@@ -239,17 +236,26 @@ Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"}
 '''
 def create_vim_network(network_data):
   url = get_base_url() + '/slices/networks'
-  data_json = json.dumps(service_data)
+  data_json = json.dumps(network_data)
+
+  LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
+  time.sleep(0.1)
   
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
-    LOG.info("MAPPER: Sending network management request")
+    LOG.info("MAPPER: Sending network creation request")
+    time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}
+      jsonresponse = {'request_status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+      LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
+      time.sleep(0.1)
+    
     return jsonresponse
+  
   else:
     print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
     uuident = uuid.uuid4()
@@ -277,28 +283,51 @@ Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"}
 '''
 def delete_vim_network(network_data):
   url = get_base_url() + '/slices/networks'
-  data_json = json.dumps(service_data)
+  data_json = json.dumps(network_data)
+
+  LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
+  time.sleep(0.1)
   
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
     LOG.info("MAPPER: Sending network management request")
+    time.sleep(0.1)
     response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}
+      jsonresponse = {'http_code': response.status_code,'message': response.text}
+      LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
+      time.sleep(0.1)
+
     return jsonresponse
+
   else:
     print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
     uuident = uuid.uuid4()
-    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}') #TODO: ask José the response
+    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
     return jsonresponse
 
 
 ################################## REQUEST TO CHECK EXISTING SERVICES ####################################
-# GET /services to pull all Network Services information
-def getListNetServices():
+# GET /services/<uuid> tu pull a single Network Service information
+def get_nsd(nsd_uuid):
   LOG.info("MAPPER: Preparing the request to get the NetServices Information")
+  url = get_base_url_ns_info() + "/services/" + str(nsd_uuid)
+
+  response = requests.get(url)
+    
+  if (response.status_code == 200):
+      service_response = json.loads(response.text)
+  else:
+      service_response = {'http_code': response.status_code,'message': response.json()}
+  return service_response
+
+# GET /services to pull all Network Services information
+def get_nsd_list():
+  LOG.info("MAPPER: Preparing the request to get the NetServices Information")
+  time.sleep(0.1)
   # cleans the current nsInfo_list to have the information updated
   del db.nsInfo_list[:]
   url = get_base_url_ns_info() + "/services"
