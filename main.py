@@ -234,6 +234,7 @@ def create_network():
 
   return jsonify(nets_creation_response)
 
+@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/remove-network', methods=['DELETE'])
 def remove_network():
   logging.info("SLICE_MAIN: Removing networks: " + str(request.json))
   # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
