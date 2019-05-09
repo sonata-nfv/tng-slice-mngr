@@ -104,6 +104,8 @@ class thread_ns_instantiate(Thread):
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
     nets_creation_response = mapper.create_vim_network(network_data)
 
+    return nets_creation_response
+
   '''
   {
     "mapping": {
@@ -189,7 +191,7 @@ class thread_ns_instantiate(Thread):
       LOG.info("NSI_MNGR_Instantiate: this is what GTK receives: " +str(data))
       time.sleep(0.1)
       # requests to instantiate NSI services to the SP
-      #instantiation_response = mapper.net_serv_instantiate(data)
+      instantiation_response = mapper.net_serv_instantiate(data)
 
   def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
@@ -201,25 +203,31 @@ class thread_ns_instantiate(Thread):
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
-      # updates the slice information befor notifying the GTK
-      jsonNSI['nsi-status'] = "INSTANTIATED"
-      jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
+      if jsonNSI['nsi-status'] = "INSTANTIATING":
+        # updates the slice information befor notifying the GTK
+        jsonNSI['nsi-status'] = "INSTANTIATED"
 
-      # validates if any service has error status to apply it to the slice status
-      for service_item in jsonNSI['nsr-list']:
-        if (service_item['working-status'] == "ERROR"):
-          jsonNSI['nsi-status'] = "ERROR"
-          break;
+        # validates if any service has error status to apply it to the slice status
+        for service_item in jsonNSI['nsr-list']:
+          if (service_item['working-status'] == "ERROR"):
+            jsonNSI['nsi-status'] = "ERROR"
+            break;
 
+        # updates NetSlice template usageState
+        if(jsonNSI['nsi-status'] == "INSTANTIATED"):
+          nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
+          if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
+            nstParameter2update = "usageState=IN_USE"
+            updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
+      else:
+        # this only happens if networks are not created, NS get "NOT_INSTANTIATED" status
+        for service_item in jsonNSI['nsr-list']:
+          service_item['working-status'] == "NOT_INSTANTIATED"
+      
       # sends the updated NetSlice instance to the repositories
+      jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.NSI['id'])
 
-      # updates NetSlice template usageState
-      if(jsonNSI['nsi-status'] == "INSTANTIATED"):
-        nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
-        if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
-          nstParameter2update = "usageState=IN_USE"
-          updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
     
     finally:
       # release the mutex for other threads
@@ -235,35 +243,59 @@ class thread_ns_instantiate(Thread):
 
   def run(self):
     # TODO:Sends all the requests to create all the VLDs within the slice
-    self.send_networks_creation_request()
+    networks_response = self.send_networks_creation_request()
     
-    # TODO:Waits until all the VLDs are created/ready or error
+    # acquires mutex to have unique access to the nsi (rpositories)
+    mutex_slice2db_access.acquire()
+    
+    temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
+    #TODO: improve the next 2 lines to not use this delete.
+    temp_nsi["id"] = jsonNSI["uuid"]
+    del temp_nsi["uuid"]
 
-    # Sends all the requests to instantiate the NSs within the slice
-    self.send_instantiation_requests()
+    # updates nsi information
+    if networks_response['request_status'] == 'COMPLETED':
+        vld_status = "ACTIVE"
+    else:
+        vld_status = "ERROR"
+        temp_nsi['nsi-status'] = "ERROR"
+        temp_nsi['errorLog'] = networks_response['message']
+    
+    for vld_item in temp_nsi['vldr-list']:
+      vld_item['vld-status'] = vld_status
 
-    # Waits until all the NSs are instantiated/ready or error
-    #deployment_timeout = 2 * 3600   # Two hours
-    deployment_timeout = 1800   # 30min   #TODO: change once the GTK connection-bug is solved.
-    while deployment_timeout > 0:
-      LOG.info("Waiting all services are ready/instantiated or error...")
-      # Check ns instantiation status
-      nsi_instantiated = True
-      jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
-      for nsr_item in jsonNSI['nsr-list']: 
-        if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
-          nsi_instantiated = False
+    # sends the updated NetSlice instance to the repositories
+    repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
+    
+    # releases mutex for any other thread to acquire it
+    mutex_slice2db_access.release()
+
+    # if networks are not created, no need to request NS instantiations
+    if networks_response['request_status'] == 'COMPLETED':
+      # Sends all the requests to instantiate the NSs within the slice
+      self.send_instantiation_requests()
+
+      # Waits until all the NSs are instantiated/ready or error
+      #deployment_timeout = 2 * 3600   # Two hours
+      deployment_timeout = 1800   # 30min   #TODO: change once the GTK connection-bug is solved.
+      while deployment_timeout > 0:
+        LOG.info("Waiting all services are ready/instantiated or error...")
+        # Check ns instantiation status
+        nsi_instantiated = True
+        jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+        for nsr_item in jsonNSI['nsr-list']: 
+          if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
+            nsi_instantiated = False
+        
+        # if all services are instantiated or error, break the while loop to notify the GTK
+        if nsi_instantiated:
+          LOG.info("All service instantiations are ready!")
+          break
+    
+        time.sleep(15)
+        deployment_timeout -= 15
       
-      # if all services are instantiated or error, break the while loop to notify the GTK
-      if nsi_instantiated:
-        LOG.info("All service instantiations are ready!")
-        break
-  
-      time.sleep(15)
-      deployment_timeout -= 15
-    
-    LOG.info("Updating and notifying GTK")
-    
+    LOG.info("Updating and notifying GTK")    
     #TODO: if deployment_timeout expires, notify it with error as status
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
     self.update_nsi_notify_instantiate()
