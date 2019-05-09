@@ -234,6 +234,15 @@ def create_network():
 
   return jsonify(nets_creation_response)
 
+def remove network():
+  logging.info("SLICE_MAIN: Removing networks: " + str(request.json))
+  # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
+  networks_data = request.json
+  nets_removal_response = mapper.delete_vim_network(networks_data)
+
+  logging.info("SLICE_MAIN: Network Creation response: " + str(nets_removal_response))
+
+  return jsonify(nets_removal_response)
 
 
 ########################################### MAIN SERVER FUNCTION ############################################

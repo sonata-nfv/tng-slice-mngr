@@ -121,8 +121,6 @@ class thread_ns_instantiate(Thread):
   def send_instantiation_requests(self):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Services")
     time.sleep(0.1)
-    LOG.info("NSI_MNGR_Instantiate: self.NSI['nsr-list']" +str(self.NSI['nsr-list']))
-    time.sleep(0.1)
     
     for nsr_item in self.NSI['nsr-list']:
       # Preparing the dict to stitch the NS to the Networks (VLDs)
@@ -130,11 +128,7 @@ class thread_ns_instantiate(Thread):
       network_functions_list = []
       virtual_links_list = []
       repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
-      LOG.info("NSI_MNGR_Instantiate: repo_item" +str(repo_item))
-      time.sleep(0.1)
       nsd_item = repo_item['nsd']
-      LOG.info("NSI_MNGR_Instantiate: nsd_item" +str(nsd_item))
-      time.sleep(0.1)
 
       ## Creates the 'network_functions' object
       for vnf_item in nsd_item['network_functions']:
@@ -142,56 +136,27 @@ class thread_ns_instantiate(Thread):
         net_funct['vnf_id'] = vnf_item['vnf_id']
         net_funct['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
         network_functions_list.append(net_funct)
-      
       mapping['network_functions'] = network_functions_list
-      LOG.info("NSI_MNGR_Instantiate: mapping with network_functions: " +str(mapping))
-      time.sleep(0.1)
       
       ## Creates the 'virtual_links' object
       # for each nsr, checks its vlds and looks for its infortmation in vldr-list
-      LOG.info("NSI_MNGR_Instantiate: step_1: " +str(nsr_item['vld']))
-      time.sleep(0.1)
       for vld_nsr_item in nsr_item['vld']:
-        LOG.info("NSI_MNGR_Instantiate: step_2: " +str(vld_nsr_item['vld-ref']))
-        time.sleep(0.1)
         vld_ref = vld_nsr_item['vld-ref']
-        LOG.info("NSI_MNGR_Instantiate: step_3: " +str(self.NSI['vldr-list']))
-        time.sleep(0.1)
         for vldr_item in self.NSI['vldr-list']:
-          LOG.info("NSI_MNGR_Instantiate: step_4: " +str(vldr_item))
-          time.sleep(0.1)
           # vld connected to the nsd found, keeps the external network
-          LOG.info("NSI_MNGR_Instantiate: step_5: " +str(vldr_item['id']) + " are they equal?? " + str(vld_ref))
-          time.sleep(0.1)
           if vldr_item['id'] ==  vld_ref:
-            LOG.info("NSI_MNGR_Instantiate: sep_6 - external_net: " +str(vldr_item['vim-net-id']))
-            time.sleep(0.1)
             external_net = vldr_item['vim-net-id']
-            LOG.info("NSI_MNGR_Instantiate: step_7: " +str(vldr_item['ns-conn-point-ref']))
-            time.sleep(0.1)
             # using the ns connection point references to fins the internal NS vld
             for ns_cp_item in vldr_item['ns-conn-point-ref']:
-              LOG.info("NSI_MNGR_Instantiate: step_8: " +str(ns_cp_item))
-              time.sleep(0.1)
               subnet_key = nsr_item['subnet-ref']
-              LOG.info("NSI_MNGR_Instantiate: step_9: " +str(subnet_key))
-              time.sleep(0.1)
               # if the subnet in the vld correspond to the current nsr keep going...
               if subnet_key in ns_cp_item.keys():
-                LOG.info("NSI_MNGR_Instantiate: step_10: " +str(ns_cp_item[subnet_key]))
-                time.sleep(0.1)
                 ns_cp_ref = ns_cp_item[subnet_key]
                 # gets the right nsd to find the internal NS vld to which the CP is connected
-                LOG.info("NSI_MNGR_Instantiate: step_11: " +str(nsr_item['subnet-nsdId-ref']))
-                time.sleep(0.1)
                 nsd_catalogue_object = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
-                LOG.info("NSI_MNGR_Instantiate: step_12: " +str(nsd_catalogue_object['nsd']['virtual_links']))
-                time.sleep(0.1)
                 nsd_virtual_links_list = nsd_catalogue_object['nsd']['virtual_links']
                 for nsd_vl_item in nsd_virtual_links_list:
                   for ns_cp_ref_item in nsd_vl_item['connection_points_reference']:
-                    LOG.info("NSI_MNGR_Instantiate: step_13 - ns_cp_ref_item: " +str(ns_cp_ref_item) + " ns_cp_ref: " + str(ns_cp_ref))
-                    time.sleep(0.1)
                     if ns_cp_ref_item == ns_cp_ref:
                       vl_id = nsd_vl_item['id']
                       LOG.info("NSI_MNGR_Instantiate: vl_id" +str(vl_id))
@@ -206,10 +171,7 @@ class thread_ns_instantiate(Thread):
         LOG.info("NSI_MNGR_Instantiate: step_14 : " +str(virt_link))
         time.sleep(0.1)
         virtual_links_list.append(virt_link)
-
       mapping['virtual_links'] = virtual_links_list
-      LOG.info("NSI_MNGR_Instantiate: mapping with virtual_links: " +str(mapping))
-      time.sleep(0.1)
 
       # TODO: SHARED FUNCT -> if the nsr_item is shared and already has a nsrId = DON'T SEND REQUEST
       # Sending Network Services Instantiation requests
