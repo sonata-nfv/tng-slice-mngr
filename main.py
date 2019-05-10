@@ -159,7 +159,7 @@ def create_slice_instance():
   logging.info("SLICE_MAIN: HTTP.TEXT: " + str(instantiatedNSI[0]) + " HTTP.VALUE: " + str(instantiatedNSI[1]))
   return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
 
-# INSTANTIATION UPDATE
+# INSTANTIATION UPDATE (internal endpoint to complete the previous, not public in the API page)
 # INFORMATION: if changed, a line in nsi_manager.py within its function "createNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
 def update_slice_instantiation(nsiId):
@@ -185,7 +185,7 @@ def create_slice_terminate(nsiId):
   else:
     return jsonify(validationResponse[0]), validationResponse[1]
 
-# TERMINATE UPDATE
+# TERMINATE UPDATE (internal endpoint to complete the previous, not public in the API page)
 # INFORMATION: if changed, a line in nsi_manager.py within its function "terminateNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
 def update_slice_termination(nsiId):
@@ -222,6 +222,8 @@ def delete_slice_instance(nsiId):
   return jsonify(returnMessage)
 
 
+
+################## TEMPORAL FUNCTIONS ################
 # CREATES/INSTANTIATES a network
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/network', methods=['POST'])
 def create_network():
