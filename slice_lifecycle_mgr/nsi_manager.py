@@ -606,7 +606,7 @@ def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
   if (nsi_json['description']):
     nsir_dict['description'] = nsi_json['description']
   else:
-    nsir_dict['description'] = 'Mock_Description'
+    nsir_dict['description'] = 'This NSr is based on ' + str(nsi_json['name'])
   nsir_dict['vendor'] = nst_json['vendor']
   nsir_dict['nst-ref'] = nsi_json['nstId']
   nsir_dict['nst-name'] = nst_json['name']

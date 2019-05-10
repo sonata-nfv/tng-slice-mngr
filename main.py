@@ -100,15 +100,13 @@ def create_slice_template():
   logging.info("SLICE_MAIN: received json from portal: " + str(request.json))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
-  # validationResponse = json_validator.validate_create_template(request.json)
+  new_nst = json_validator.validate_create_template(request.json)
   
-  #[0] error_message or valid_json, [1] status code
-  #if (validationResponse[1] == 201):
-  new_NST = nst_manager.create_nst(request.json)
-  return jsonify(new_NST[0]), new_NST[1]
-
-  #else:
-    #return jsonify(validationResponse[0]), validationResponse[1]            
+  if (validationResponse[1] == 201):
+    new_nst = nst_manager.create_nst(request.json)
+  
+  logging.info("SLICE_MAIN: HTTP.TEXT: " + str(new_nst[0]) + " HTTP.VALUE: " + str(new_nst[1]))
+  return jsonify(new_nst[0]), new_nst[1]
 
 # GETS for all the NetSlice Templates (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
@@ -142,22 +140,15 @@ def delete_slice_template(nstId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def create_slice_instance():
   logging.info("SLICE_MAIN: received json with NST_uuid from portal to instantiate: " + str(request.json))
-  #TODO: validate that the incoming json ahs all the fields or return 500 error: missing field X
-  # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
-  #validationResponse = json_validator.validate_create_instantiation(request.json)
   
-  #[0] error_message or valid_json, [1] status code
-  """
+  # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
+  instantiating_nsi = json_validator.validate_create_instantiation(request.json)
+  
   if (validationResponse[1] == 200):
-    logging.debug(request.json)
-    instantiatedNSI = nsi_manager.createNSI(request.json)
-    return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
-  else:
-    return jsonify(validationResponse[0]), validationResponse[1]
-  """
-  instantiatedNSI = nsi_manager.create_nsi(request.json)
-  logging.info("SLICE_MAIN: HTTP.TEXT: " + str(instantiatedNSI[0]) + " HTTP.VALUE: " + str(instantiatedNSI[1]))
-  return jsonify(instantiatedNSI[0]), instantiatedNSI[1]
+    instantiating_nsi = nsi_manager.create_nsi(request.json)
+  
+  logging.info("SLICE_MAIN: HTTP.TEXT: " + str(instantiating_nsi[0]) + " HTTP.VALUE: " + str(instantiating_nsi[1]))
+  return jsonify(instantiating_nsi[0]), instantiating_nsi[1]
 
 # INSTANTIATION UPDATE (internal endpoint to complete the previous, not public in the API page)
 # INFORMATION: if changed, a line in nsi_manager.py within its function "createNSI" must have the same URL.
@@ -175,15 +166,13 @@ def create_slice_terminate(nsiId):
   logging.info("SLICE_MAIN: received json from portal: " + str(request.json))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 200 ok
-  validationResponse = json_validator.validate_terminate_instantiation(request.json)
+  terminating_nsi = json_validator.validate_terminate_instantiation(request.json)
   
-  #[0] error_message or valid_json, [1] status code
   if (validationResponse[1] == 200):
-    terminateNSI = nsi_manager.terminate_nsi(nsiId, request.json)
-    return jsonify(terminateNSI[0]), terminateNSI[1]
-
-  else:
-    return jsonify(validationResponse[0]), validationResponse[1]
+    terminating_nsi = nsi_manager.terminate_nsi(nsiId, request.json)  
+  
+  logging.info("SLICE_MAIN: HTTP.TEXT: " + str(terminating_nsi[0]) + " HTTP.VALUE: " + str(terminating_nsi[1]))
+  return jsonify(terminating_nsi[0]), terminating_nsi[1]
 
 # TERMINATE UPDATE (internal endpoint to complete the previous, not public in the API page)
 # INFORMATION: if changed, a line in nsi_manager.py within its function "terminateNSI" must have the same URL.
