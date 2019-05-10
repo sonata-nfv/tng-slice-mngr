@@ -6,12 +6,15 @@
 # tng-slice-mngr
 * Description: 5GTANGO Service Platform Slice Manager
 * Version: 1.0
-* Features:
+* Actions:
     * Network Slice Tempalte Management (create, check, update, delete).
-    * Network Slice Instantiation Management (create, check, update, terminate).
+    * Network Slice Instantiation Management (create/instantiate, check, update, terminate, delete).
 
 ## Network Slice Theory
 A Network Slice Instance (NSI) is defined in by Mschner K. et all Hedmar, P. in _Description of network slicing concept._ (NGMN  Alliance  document, January 2016) as a set of network functions and the resources for these network functions which are arranged and configured, forming a complete logical network, which meets certain characteristics in terms of available bandwidth, latency, or QoS, among others described in 5QI (5G QoS Indicator). Our component follows ETSI EVE 012 approach to combine 3GPP Network Slices and ETSI NFV network services. More information is provided at the wiki.
+* Features:
+    * Network Slice Service Composition: link all the Networks Services within a Netwrok Slice
+    * Network Slice Service Sharing: Share Network Services among Network Slices
 
 ## Network Slice Manager Information
 Here there is the documentation about the Network Slice Manager module belonging to SONATA (by 5GTango), both in terms of its internal design and usage.
@@ -27,9 +30,10 @@ This behaviour might involve automatic generation of a new NSD, which might be e
 
 ### Basic API information
 Each boject has its API definition, here we present the basic information but please reffer to the wiki pages for each object for further information on how to use the API.
+Further information in the [Global SONATA API Webpage](https://sonata-nfv.github.io/tng-doc/?urls.primaryName=5GTANGO%20SDK%20Packager%20API%20v1) or in the following subsections
 
 #### Network Slice Template APIs
-Available OpenAPI description: [slice-mngr_NST.json](https://github.com/rvilalta/tng-slice-mngr/blob/master/doc/slice-mngr_NST.json)
+Available OpenAPI description: [slice-mngr_NST.json](https://github.com/sonata-nfv/tng-slice-mngr/blob/master/doc/v1_2/slice-mngr_NST.json)
 
 | Action  | HTTP method  | Endpoint |
 |---|---|---|
@@ -39,14 +43,15 @@ Available OpenAPI description: [slice-mngr_NST.json](https://github.com/rvilalta
 | DELETE NST  | DELETE  | /api/nst/v1/descriptors/{nst_uuid}|
 
 #### Network Slice Instance APIs
-Available OpenAPI description: [slice-mngr_NSI.json](https://github.com/rvilalta/tng-slice-mngr/blob/master/doc/slice-mngr_NSI.jsonn)
+Available OpenAPI description: [slice-mngr_NSI.json](https://github.com/sonata-nfv/tng-slice-mngr/blob/master/doc/v1_2/slice-mngr_NSI.json)
 
 | Action  | HTTP method  | Endpoint |
 |---|---|---|
-| CREATE NSI  | POST  | /api/nsilcm/v1/nsi |
+| CREATE/INSTANTIATE NSI  | POST  | /api/nsilcm/v1/nsi |
 | GET ALL NSIs  | GET  | /api/nsilcm/v1/nsi  |
-| GET SPECIFIC NSI  | GET  | /api/nsilcm/v1/nsi/{nsi_uuid}|
-| TERMINATE NST  | DELETE  | /api/nsilcm/v1/nsi/{nsi_uuid}/terminate|
+| GET SPECIFIC NSI  | GET  | /api/nsilcm/v1/nsi/{nsi_uuid} |
+| TERMINATE NSI  | POST  | /api/nsilcm/v1/nsi/{nsi_uuid}/terminate |
+| DELETE NSI | DELETE | /api/nsilcm/v1/nsi/{nsi_uuid} |
 
 
 ## Development
@@ -69,7 +74,7 @@ To use this component it is necessary to install the following 5GTango component
 * tng-rep
 * tng-cat
 * tng-gtk-common
-* tng-gtk-sp (optional if you want to use "Emulation Mode", reffer to the wiki for further information).
+* tng-gtk-sp (optional "Emulation Mode" is used -> reffer to the wiki for further information).
 
 ### Installation
 Once the previous components are installed, please execute the DockerFile of this component and eveything will be setup inside the used Docker.
