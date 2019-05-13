@@ -33,7 +33,7 @@
 ## partner consortium (www.5gtango.eu).
 """
 
-import json, datetime
+import json, datetime, logging, time
 from uuid import UUID
 
 # Global variables
@@ -51,7 +51,6 @@ def is_valid_uuid(uuid_to_test, version=4):
         return False
     return str(uuid_obj) == uuid_to_test
 
-
 # CASE: Create NetSlice Template
 def validate_create_template (jsonData):
   for item in jsonData['sliceServices']:
@@ -64,17 +63,24 @@ def validate_create_template (jsonData):
 
 # CASE: Create NetSlice instantiation
 def validate_create_instantiation (jsonData):
+  logging.info('json contains... ' + str(jsonData['nstId']) + ' and ' + str(jsonData['name']))
+  time.sleep(0.1)
   if jsonData['nstId'] and jsonData['name']:
+    logging.info('json contains nstId and name...')
+    time.sleep(0.1)
     if (is_valid_uuid(jsonData['nstId']) == True):
       returnData["missing_field"] = "Everything is OK!!"
+
+      logging.info('Everything is OK!!')
+      time.sleep(0.1)
       return (returnData, 200)
     else:
       returnData["missing_field"] = "The Network Service Template ID format is wrong, please check it."
-      LOG.info('FormValidator NSI_Error: ' + str(returnData))
+      logging.info('FormValidator NSI_Error: ' + str(returnData))
       return (returnData, 400)
   else:
-      returnData["missing_field"] = "Check you request has a nstId or a name."
-      LOG.info('FormValidator NSI_Error: ' + str(returnData))
+      returnData["missing_field"] = "Check if you request has a nstId or a name."
+      logging.info('FormValidator NSI_Error: ' + str(returnData))
       return (returnData, 400)
 
 # CASE: Terminate NetSlice Instantiation
