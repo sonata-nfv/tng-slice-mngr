@@ -227,8 +227,37 @@ class thread_ns_instantiate(Thread):
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
 
   def run(self):
-    # TODO:Sends all the requests to create all the VLDs within the slice
+    # sends all the requests to create all the VLDs (networks) within the slice
     networks_response = self.send_networks_creation_request()
+    ''' Example of "network_response" status must be CREATED | ERROR with 'error' not empty
+    {
+      'instance_id': '5d873a36-00ab-45a1-bbfa-01c84f871c85',
+      'vim_list': [
+        {
+          'virtual_links': [
+            {
+              'access': 'true',
+              'id': '13may_1.mgmt.net.01d9d2e1-1a47-4020-b636-e78720383662'
+            },
+            {
+              'access': 'true',
+              'id': '13may_1.slice_input.net.78826402-f212-4242-bfd0-7a0e766e7d7b'
+            },
+            {
+              'access': 'true',
+              'id': '13may_1.slice_output.net.249591c9-c410-4635-8ffa-33eb340322e6'
+            }
+          ],
+        'uuid': '88888888-2222-3333-4444-888888888888'
+        }
+      ],
+      'id': '896cd6c7-e315-42d6-9930-0120655fab42',
+      'error': '',
+      'updated_at': '2019-05-13T09:56:08.450Z',
+      'created_at': '2019-05-13T09:56:08.450Z',
+      'status': 'NEW'
+    }
+    '''
     LOG.info("NSI_MNGR: network_response: " +str(networks_response))
     time.sleep(0.1)
         
@@ -241,12 +270,12 @@ class thread_ns_instantiate(Thread):
     del temp_nsi["uuid"]
 
     # updates nsi information
-    if networks_response['request_status'] == 'COMPLETED':
+    if networks_response['status'] == 'CREATED':
         vld_status = "ACTIVE"
     else:
         vld_status = "ERROR"
         temp_nsi['nsi-status'] = "ERROR"
-        temp_nsi['errorLog'] = networks_response['message']
+        temp_nsi['errorLog'] = networks_response['error']
 
         for nss_item in temp_nsi['nsr-list']:
           nss_item['working-status'] = "NOT_INSTANTIATED"
