@@ -63,16 +63,9 @@ def validate_create_template (jsonData):
 
 # CASE: Create NetSlice instantiation
 def validate_create_instantiation (jsonData):
-  logging.info('json contains... ' + str(jsonData['nstId']) + ' and ' + str(jsonData['name']))
-  time.sleep(0.1)
   if jsonData['nstId'] and jsonData['name']:
-    logging.info('json contains nstId and name...')
-    time.sleep(0.1)
     if (is_valid_uuid(jsonData['nstId']) == True):
       returnData["missing_field"] = "Everything is OK!!"
-
-      logging.info('Everything is OK!!')
-      time.sleep(0.1)
       return (returnData, 200)
     else:
       returnData["missing_field"] = "The Network Service Template ID format is wrong, please check it."

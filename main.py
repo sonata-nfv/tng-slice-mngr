@@ -144,7 +144,7 @@ def create_slice_instance():
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
   instantiating_nsi = json_validator.validate_create_instantiation(request.json)
   
-  if (validationResponse[1] == 200):
+  if (instantiating_nsi[1] == 200):
     instantiating_nsi = nsi_manager.create_nsi(request.json)
   
   logging.info("SLICE_MAIN: HTTP.TEXT: " + str(instantiating_nsi[0]) + " HTTP.VALUE: " + str(instantiating_nsi[1]))
@@ -168,7 +168,7 @@ def create_slice_terminate(nsiId):
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 200 ok
   terminating_nsi = json_validator.validate_terminate_instantiation(request.json)
   
-  if (validationResponse[1] == 200):
+  if (terminating_nsi[1] == 200):
     terminating_nsi = nsi_manager.terminate_nsi(nsiId, request.json)  
   
   logging.info("SLICE_MAIN: HTTP.TEXT: " + str(terminating_nsi[0]) + " HTTP.VALUE: " + str(terminating_nsi[1]))
