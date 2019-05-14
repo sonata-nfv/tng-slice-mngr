@@ -186,7 +186,7 @@ def update_slice_termination(nsiId):
 
 # GETS ALL the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
-def get_slice_instances():
+def get_all_slice_instances():
   allNSI = nsi_manager.get_all_nsi()
 
   return jsonify(allNSI[0]), allNSI[1]

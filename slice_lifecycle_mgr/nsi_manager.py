@@ -584,18 +584,15 @@ def create_nsi(nsi_json):
         return (error_msg, 500)
 
   # Network Slice Placement     #TODO: improve with a resources logic
-  placed_nsi = nsi_placement()
+  vim_nsi = nsi_placement()
+  LOG.info("NSI_MNGR: vim_nsi:. " +str(vim_nsi))
+  time.sleep(0.1)
    
   # creates NSI with the received information
   LOG.info("NSI_MNGR: Creating NSI basic structure.")
   time.sleep(0.1)
-  new_nsir = add_basic_nsi_info(nst_json, nsi_json, placed_nsi)
+  new_nsir = add_basic_nsi_info(nst_json, nsi_json, vim_nsi)
   
-  #TODO: shared feature code
-  # modify the NSI with the shared NS condition
-  # get the VLD uuid of those vld not necessary to create but re-use
-  # full the nsrId and status fields of the shared_ns with the already instantiated ns info
-
   # adds the VLD information within the NSI record
   LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
   time.sleep(0.1)
@@ -612,8 +609,8 @@ def create_nsi(nsi_json):
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
   # starts the thread to instantiate while sending back the response
-  thread_ns_instantiation = thread_ns_instantiate(new_nsir)
-  thread_ns_instantiation.start()
+  #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+  #thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
 
@@ -701,19 +698,27 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
   nsr_list = []                         # empty list to add all the created slice-subnets
   serv_seq = 1                          # to put in order the services within a slice in the portal
   
+  '''
   for subnet_item in nst_json["slice_ns_subnets"]:
     subnet_record = {}
     subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
     
-    # TODO:  SHARED FUNCT -> check if the service is shared, then look if there is any other nsi ...
-    # ... with that same service (uuid or name/vendor/version) instantiated and take its nsrId.
-    subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
+    if subnet_item['is-shared']:
+      nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+      for nsir_ref_item in nsirs_ref_list:
+        for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
+          if nsir_subnet_ref_item['subnet-nsdId-ref']
     
+    else:
+      subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
+    '''
+    subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
+
     subnet_record['subnet-ref'] = subnet_item['id']
     subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
     
     if 'services_sla' in  request_nsi_json:
-      for serv_sla_item in services_sla:
+      for serv_sla_item in request_nsi_json['services_sla:']
         if serv_sla_item['service_uuid'] == subnet_item['nsd-ref']:
           subnet_record['sla-name'] = serv_sla_item['sla_name']                           #TODO: add instantiation parameters
           subnet_record['sla-ref'] = serv_sla_item['sla_uuid']                            #TODO: add instantiation parameters
