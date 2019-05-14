@@ -718,7 +718,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
     subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
     
     if 'services_sla' in  request_nsi_json:
-      for serv_sla_item in request_nsi_json['services_sla:']
+      for serv_sla_item in request_nsi_json['services_sla']:
         if serv_sla_item['service_uuid'] == subnet_item['nsd-ref']:
           subnet_record['sla-name'] = serv_sla_item['sla_name']                           #TODO: add instantiation parameters
           subnet_record['sla-ref'] = serv_sla_item['sla_uuid']                            #TODO: add instantiation parameters
