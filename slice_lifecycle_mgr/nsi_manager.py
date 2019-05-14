@@ -559,6 +559,7 @@ class update_slice_termination(Thread):
 
 
 ################################ NSI CREATION & INSTANTIATION SECTION ##################################
+# 2 steps: create_nsi (with its internal functions) and update_instantiating_nsi
 # Network Slice Instance Object Creation
 def create_nsi(nsi_json):
   LOG.info("NSI_MNGR: Creates and Instantiates a new NSI.")
@@ -568,16 +569,12 @@ def create_nsi(nsi_json):
   nst_json = catalogue_response['nstd']
 
   # validate if there is any NSTD
-  LOG.info("NSI_MNGR: Checking if the NSTD exists...")
-  time.sleep(0.1)
   if not catalogue_response:
     return_msg = {}
     return_msg['error'] = "There is NO NSTd with this uuid in the DDBB."
     return return_msg, 400
 
   # check if there is any other nsir with the same name, vendor, nstd_version
-  LOG.info("NSI_MNGR: Checking there is no duplicated NSI.")
-  time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
   if nsirepo_jsonresponse:
     for nsir_item in nsirepo_jsonresponse:
@@ -586,26 +583,19 @@ def create_nsi(nsi_json):
         error_msg = '{"error":"There is already a slice with thie name/version/vendor. Change one of the values."}'
         return (error_msg, 500)
 
-  # get the VIMs information registered to the SP
-  vims_list = mapper.get_vims_info()
-  if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
-    return_msg = {}
-    return_msg['error'] = "Not found any VIM information."
-    return return_msg, 500
-  LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
-  time.sleep(0.1)
-
-  #TODO: improve placement
-  main_datacenter = vims_list['vim_list'][0]['vim_uuid']
-  #main_datacenter = str(uuid.uuid4())
-  LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(main_datacenter))
-  time.sleep(0.1)
-  
+  # Network Slice Placement     #TODO: improve with a resources logic
+  placed_nsi = nsi_placement()
+   
   # creates NSI with the received information
   LOG.info("NSI_MNGR: Creating NSI basic structure.")
   time.sleep(0.1)
-  new_nsir = add_basic_nsi_info(nst_json, nsi_json, main_datacenter)
+  new_nsir = add_basic_nsi_info(nst_json, nsi_json, placed_nsi)
   
+  #TODO: shared feature code
+  # modify the NSI with the shared NS condition
+  # get the VLD uuid of those vld not necessary to create but re-use
+  # full the nsrId and status fields of the shared_ns with the already instantiated ns info
+
   # adds the VLD information within the NSI record
   LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
   time.sleep(0.1)
@@ -617,7 +607,7 @@ def create_nsi(nsi_json):
   new_nsir = add_subnets(new_nsir, nst_json, nsi_json)
 
   # saving the NSI into the repositories
-  LOG.info("NSI_MNGR:  Saving the NSIr into resporitories.")
+  LOG.info("NSI_MNGR:  Saving the NSIr into repositories.")
   time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
@@ -626,6 +616,25 @@ def create_nsi(nsi_json):
   thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
+
+# does the placement of all the subnets within the NSI
+def nsi_placement():
+  # get the VIMs information registered to the SP
+  vims_list = mapper.get_vims_info()
+  if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
+    return_msg = {}
+    return_msg['error'] = "Not found any VIM information."
+    return return_msg, 500
+  LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
+  time.sleep(0.1)
+
+  #TODO: improve placement
+  nsi_placed = vims_list['vim_list'][0]['vim_uuid']
+  #nsi_placed = str(uuid.uuid4())
+  LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(nsi_placed))
+  time.sleep(0.1)
+  
+  return nsi_placed
 
 # Basic NSI structure
 def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
@@ -662,7 +671,7 @@ def add_vlds(new_nsir, nst_vld_list):
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
     vld_record['vimAccountId'] = new_nsir['datacenter']  #TODO: improve with placement
-    vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
+    vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())  #TODO: should it be: net.uuid ??
     if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True
     vld_record['type'] = vld_item['type']
@@ -736,11 +745,6 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
   new_nsir['nsr-list'] = nsr_list
   return new_nsir
 
-# Start to instantiate a specific nsi with the current vim_list infoAdds the basic subnets information to the NSI record
-def start_instantiating_nsi(nsiId, request_json):
-
-  return
-
 # Updates a NSI with the latest information coming from the MANO/GK
 def update_instantiating_nsi(nsiId, request_json):
   LOG.info("NSI_MNGR: Updates the NSI with the latest incoming information.")
@@ -763,6 +767,7 @@ def update_instantiating_nsi(nsiId, request_json):
 
     
 ########################################## NSI TERMINATE SECTION #######################################
+# 2 steps: terminate_nsi and update_terminating_nsi (with its internal functions)
 # Does all the process to terminate the NSI
 def terminate_nsi(nsiId, TerminOrder):
   LOG.info("NSI_MNGR: Terminates a NSI.")
