@@ -585,6 +585,8 @@ def create_nsi(nsi_json):
 
   # Network Slice Placement     #TODO: improve with a resources logic
   vim_nsi = nsi_placement()
+  if vim_nsi[1] == 500:
+    return vim_nsi
   LOG.info("NSI_MNGR: vim_nsi:. " +str(vim_nsi))
   time.sleep(0.1)
    
@@ -631,7 +633,7 @@ def nsi_placement():
   LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(nsi_placed))
   time.sleep(0.1)
   
-  return nsi_placed
+  return nsi_placed, 200
 
 # Basic NSI structure
 def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
