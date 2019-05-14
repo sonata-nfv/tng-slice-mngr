@@ -698,11 +698,11 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
   nsr_list = []                         # empty list to add all the created slice-subnets
   serv_seq = 1                          # to put in order the services within a slice in the portal
   
-  '''
   for subnet_item in nst_json["slice_ns_subnets"]:
     subnet_record = {}
     subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
-    
+
+    '''  
     if subnet_item['is-shared']:
       nsirs_ref_list = nsi_repo.get_all_saved_nsi()
       for nsir_ref_item in nsirs_ref_list:
