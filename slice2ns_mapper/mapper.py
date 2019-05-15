@@ -112,11 +112,11 @@ def sliceUpdated(slice_callback, json_slice_info):
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
+      return json.loads(response.text), 201
   else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}
+      error_json = {'http_code': response.status_code,'message': response.json()}
+      return error_json, response.status_code
   
-  return jsonresponse
 
 #TODO: check if the next two requests are necessary...
 # GET /requests to pull the information of all Network Services INSTANCES

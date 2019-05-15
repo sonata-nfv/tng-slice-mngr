@@ -225,6 +225,7 @@ class thread_ns_instantiate(Thread):
       json_slice_info['updateTime'] = jsonNSI['updateTime']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+      LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GKT notified with status: " +str(thread_response[1]))
 
   def run(self):
     # sends all the requests to create all the VLDs (networks) within the slice
@@ -243,7 +244,7 @@ class thread_ns_instantiate(Thread):
     del temp_nsi["uuid"]
 
     # updates nsi information
-    if networks_response['status'] == 'COMPLETED':
+    if networks_response['status'] in ['NEW', 'COMPLETED']:
         vld_status = "ACTIVE"
     else:
         vld_status = "ERROR"
@@ -263,7 +264,7 @@ class thread_ns_instantiate(Thread):
     mutex_slice2db_access.release()
 
     # if networks are not created, no need to request NS instantiations
-    if networks_response['status'] == 'COMPLETED':
+    if networks_response['status'] in ['NEW', 'COMPLETED']:
       # Sends all the requests to instantiate the NSs within the slice
       self.send_instantiation_requests()
 
