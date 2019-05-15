@@ -235,6 +235,8 @@ class thread_ns_instantiate(Thread):
     # acquires mutex to have unique access to the nsi (rpositories)
     mutex_slice2db_access.acquire()
     
+    LOG.info("NSI_MNGR: mutex acquire, getting NSI_id: " +str(self.NSI['id']))
+    time.sleep(0.1)
     temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
     #TODO: improve the next 2 lines to not use this delete.
     temp_nsi["id"] = temp_nsi["uuid"]
@@ -565,7 +567,7 @@ def create_nsi(nsi_json):
   # creates NSI with the received information
   LOG.info("NSI_MNGR: Creating NSI basic structure.")
   time.sleep(0.1)
-  new_nsir = add_basic_nsi_info(nst_json, nsi_json, vim_nsi)
+  new_nsir = add_basic_nsi_info(nst_json, nsi_json, vim_nsi[0])
   
   # adds the VLD information within the NSI record
   LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
@@ -582,6 +584,7 @@ def create_nsi(nsi_json):
   time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
+  #TODO: should there be a condition that starts only if the object is saved?
   # starts the thread to instantiate while sending back the response
   thread_ns_instantiation = thread_ns_instantiate(new_nsir)
   thread_ns_instantiation.start()
