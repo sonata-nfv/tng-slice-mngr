@@ -249,7 +249,7 @@ class thread_ns_instantiate(Thread):
     else:
         vld_status = "ERROR"
         temp_nsi['nsi-status'] = "ERROR"
-        temp_nsi['errorLog'] = networks_response['error']
+        temp_nsi['errorLog'] = networks_response['message']
 
         for nss_item in temp_nsi['nsr-list']:
           nss_item['working-status'] = "NOT_INSTANTIATED"
