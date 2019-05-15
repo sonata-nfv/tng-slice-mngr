@@ -241,7 +241,7 @@ class thread_ns_instantiate(Thread):
     del temp_nsi["uuid"]
 
     # updates nsi information
-    if networks_response['status'] == 'CREATED':
+    if networks_response['status'] == 'COMPLETED':
         vld_status = "ACTIVE"
     else:
         vld_status = "ERROR"
@@ -261,7 +261,7 @@ class thread_ns_instantiate(Thread):
     mutex_slice2db_access.release()
 
     # if networks are not created, no need to request NS instantiations
-    if networks_response['request_status'] == 'COMPLETED':
+    if networks_response['status'] == 'COMPLETED':
       # Sends all the requests to instantiate the NSs within the slice
       self.send_instantiation_requests()
 
@@ -716,8 +716,6 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
     subnet_record['isinstantiated'] = False
     
     # adding the vld id where each subnet is connected to
-    # NOTE: this part is always done even for shared NS, as the name of a net within 2 slices might be...
-    # ... called different but its VIM id is always the same
     subnet_vld_list = []
     for vld_item in nst_json["slice_vld"]:
       for nsd_cp_item in vld_item['nsd-connection-point-ref']:
