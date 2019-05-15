@@ -98,12 +98,7 @@ def optionsOneNST(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
 def create_slice_template():
   logging.info("SLICE_MAIN: received json from portal: " + str(request.json))
-  
-  # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
-  new_nst = json_validator.validate_create_template(request.json)
-  
-  if (validationResponse[1] == 201):
-    new_nst = nst_manager.create_nst(request.json)
+  new_nst = nst_manager.create_nst(request.json)
   
   logging.info("SLICE_MAIN: HTTP.TEXT: " + str(new_nst[0]) + " HTTP.VALUE: " + str(new_nst[1]))
   return jsonify(new_nst[0]), new_nst[1]
