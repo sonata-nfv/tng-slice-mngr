@@ -116,7 +116,11 @@ class thread_ns_instantiate(Thread):
       network_functions_list = []
       virtual_links_list = []
       repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+      LOG.info("NSI_MNGR_Instantiate: step_1 nsd_repo : " +str(repo_item))
+      time.sleep(0.1)
       nsd_item = repo_item['nsd']
+      LOG.info("NSI_MNGR_Instantiate: step_2 nsd_item : " +str(nsd_item))
+      time.sleep(0.1)
 
       ## Creates the 'network_functions' object
       for vnf_item in nsd_item['network_functions']:
