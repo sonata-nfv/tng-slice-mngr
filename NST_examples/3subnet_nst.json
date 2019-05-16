@@ -79,11 +79,11 @@
       "nsd-connection-point-ref": [
         {
           "subnet-ref": "Service_subnet_1",
-          "nsd-cp-ref": "input"
+          "nsd-cp-ref": "output"
         },
         {
           "subnet-ref": "Service_subnet_2",
-          "nsd-cp-ref": "output"
+          "nsd-cp-ref": "input"
         }
       ]
     },

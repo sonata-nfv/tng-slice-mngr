@@ -171,12 +171,14 @@ class thread_ns_instantiate(Thread):
       data['name'] = nsr_item['nsrName']
       data['service_uuid'] = nsr_item['subnet-nsdId-ref']
       data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/instantiation-change"
+      data['mapping'] = mapping
+      if (nsr_item['sla-ref'] != "None"):
+        data['sla_id'] = nsr_item['sla-ref']
+      else:
+        data['sla_id'] = ""
       #data['ingresses'] = []
       #data['egresses'] = []
       #data['blacklist'] = []
-      if (nsr_item['sla-ref'] != "None"):
-        data['sla_id'] = nsr_item['sla-ref']
-      data['mapping'] = mapping
 
       LOG.info("NSI_MNGR_Instantiate: this is what GTK receives: " +str(data))
       time.sleep(0.1)
@@ -193,13 +195,14 @@ class thread_ns_instantiate(Thread):
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
+
+      # updates the slice information before notifying the GTK
       if jsonNSI['nsi-status'] == "INSTANTIATING":
-        # updates the slice information befor notifying the GTK
         jsonNSI['nsi-status'] = "INSTANTIATED"
 
         # validates if any service has error status to apply it to the slice status
         for service_item in jsonNSI['nsr-list']:
-          if (service_item['working-status'] == "ERROR"):
+          if service_item['working-status'] in ["ERROR", "INSTANTIATING"]:
             jsonNSI['nsi-status'] = "ERROR"
             break;
 
@@ -274,9 +277,9 @@ class thread_ns_instantiate(Thread):
 
       # Waits until all the NSs are instantiated/ready or error
       #deployment_timeout = 2 * 3600   # Two hours
-      deployment_timeout = 1800   # 30min   #TODO: change once the GTK connection-bug is solved.
+      deployment_timeout = 900   # 15min   #TODO: mmodify for the reviews
       while deployment_timeout > 0:
-        LOG.info("Waiting all services are ready/instantiated or error...")
+        LOG.info(" Waiting all services to be ready/instantiated or error...")
         # Check ns instantiation status
         nsi_instantiated = True
         jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
@@ -340,7 +343,7 @@ class update_slice_instantiation(Thread):
             service_item['nsrId'] = self.request_json['instance_uuid']                                  # used to avoid a for-else loop with the next if
           
           break;
-
+      
       LOG.info("NSI_MNGR_Update: Sending NSIr updated to repositories")
       time.sleep(0.1)
       # sends updated nsi to the DDBB (tng-repositories)
@@ -577,7 +580,7 @@ def create_nsi(nsi_json):
   # adds the VLD information within the NSI record
   LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
   time.sleep(0.1)
-  new_nsir = add_vlds(new_nsir, nst_json['slice_vld'])
+  new_nsir = add_vlds(new_nsir, nst_json)
   
   # adds the NetServices (subnets) information within the NSI record
   LOG.info("NSI_MNGR:  Adding subnets into the NSI structure.")
@@ -646,11 +649,29 @@ def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
   return nsir_dict
 
 # Sends requests to create vim networks and adds their information into the NSIr
-def add_vlds(new_nsir, nst_vld_list): # passar tot NST enlloc del vld
+def add_vlds(new_nsir, nst_json):
   vldr_list = []
-  #comencem igual, creant tots els vlds (for)
-  #per cada vld
-  for vld_item in nst_vld_list:
+  
+  ''' SHARED LOGIC for VLDs
+  # Check if there is any NS_shared in the NST that already exists and take its shared VLD information
+  for subnet_item in nst_json["slice_ns_subnets"]:
+    found_shared_nsr = False
+    if subnet_item['is-shared']:
+      nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+      for nsir_ref_item in nsirs_ref_list:
+        for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
+          if nsir_subnet_ref_item['subnet-nsdId-ref'] = subnet_item['nsd-ref']:
+            shared_vld_ref_list = []
+            for nsir_subnet_vld_ref_item in nsir_subnet_ref_item['vld']:
+              if nsir_subnet_vld_ref_item['vld-ref'] not in shared_vld_ref_list:
+                shared_vld_ref_list.append(nsir_subnet_vld_ref_item['vld-ref'])
+            found_shared_nsr = True
+            break
+        if found_shared_nsr:
+          break
+  '''
+
+  for vld_item in nst_json['slice_vld']:
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
@@ -685,23 +706,21 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
   serv_seq = 1                          # to put in order the services within a slice in the portal
   
   for subnet_item in nst_json["slice_ns_subnets"]:
-    '''
-    #SHARED FEATURE: copy existing NSR into slice
-      found_shared_nsr = False
-      if subnet_item['is-shared']:
-        nsirs_ref_list = nsi_repo.get_all_saved_nsi()
-        for nsir_ref_item in nsirs_ref_list:
-          for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
-            if nsir_subnet_ref_item['subnet-nsdId-ref'] = subnet_item['nsd-ref']:
-              subnet_record = nsir_subnet_ref_item
-              found_shared_nsr = True
-              break
-          if found_shared_nsr:
+    ''' #SHARED FEATURE: copy existing NSR into slice
+    found_shared_nsr = False
+    if subnet_item['is-shared']:
+      nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+      for nsir_ref_item in nsirs_ref_list:
+        for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
+          if nsir_subnet_ref_item['subnet-nsdId-ref'] = subnet_item['nsd-ref']:
+            subnet_record = nsir_subnet_ref_item
+            found_shared_nsr = True
             break
-      else:
-        #TODO: add all the code under until "subnet_record['isinstantiated'] = False"
+        if found_shared_nsr:
+          break
+    else:
+      #TODO: add all the code under until "subnet_record['isinstantiated'] = False"
     '''
-    #TODO: remove next 3 lines when adding shared feature
     subnet_record = {}
     subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
     subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
