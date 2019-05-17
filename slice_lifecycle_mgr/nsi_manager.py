@@ -205,6 +205,7 @@ class thread_ns_instantiate(Thread):
         # validates if any service has error status to apply it to the slice status
         for service_item in jsonNSI['nsr-list']:
           if service_item['working-status'] in ["ERROR", "INSTANTIATING"]:
+            service_item['working-status'] = 'ERROR'
             jsonNSI['nsi-status'] = "ERROR"
             break;
 
@@ -842,6 +843,7 @@ def terminate_nsi(nsiId, TerminOrder):
     else:
       repo_responseStatus = {"error":"Wrong value: 0 for instant termination or date time later than "+NSI.instantiateTime+", to terminate in the future."}
       value = 400
+
     return (repo_responseStatus, value)
   
   else:

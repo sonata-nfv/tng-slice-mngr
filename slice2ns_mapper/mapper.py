@@ -78,16 +78,17 @@ def net_serv_instantiate(service_data):
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}
+      jsonresponse = response.json()
     
-    LOG.info("MAPPER: Service Instanitation request response: " + str(jsonresponse))
+    LOG.info("MAPPER: Service Instanitation request response: " + str(jsonresponse) + ", HTTP.status: " + str(response.status_code))
     time.sleep(0.1)
-    return jsonresponse
+    return jsonresponse, response.status_code
+    
   else:
     print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
     uuident = uuid.uuid4()
     jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
-    return jsonresponse
+    return jsonresponse, 201
 
 # POST /requests to TERMINATE Network Service instance
 def net_serv_terminate(service_data):
