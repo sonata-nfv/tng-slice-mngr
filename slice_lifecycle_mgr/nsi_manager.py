@@ -62,16 +62,17 @@ class thread_ns_instantiate(Thread):
     Thread.__init__(self)
     self.NSI = NSI
   
-  def send_networks_creation_request(self):
+  def send_networks_creation_request(self):       #TODO: check the whole process to not create athe already existing shared vld
     LOG.info("NSI_MNGR: Requesting slice networks creation to the GTK.")
     time.sleep(0.1)
 
     # creates the 1st json level structure {instance_id: ___, vim_list: []}
     network_data = {}
-    network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
+    network_data['instance_id'] = self.NSI['id']
     network_data['vim_list'] = []
 
-    # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and adds them into the 'vim_list'
+    # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and ...
+    # ...adds them into the 'vim_list'
     for vldr_item in self.NSI['vldr-list']:
       vim_item = {}
       vim_item['uuid'] = vldr_item['vimAccountId']
@@ -84,7 +85,8 @@ class thread_ns_instantiate(Thread):
         else:
           continue
     
-    # creates the elements of the 3rd json level struture {id: ___, access: bool} and adds them into the 'virtual_links'
+    # creates the elements of the 3rd json level struture {id: ___, access: bool} and...
+    # ... adds them into the 'virtual_links'
     for vldr_item in self.NSI['vldr-list']:
       for vim_item in network_data['vim_list']:
         if vldr_item['vimAccountId'] == vim_item['uuid']:
@@ -235,43 +237,51 @@ class thread_ns_instantiate(Thread):
       LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GKT notified with status: " +str(thread_response[1]))
 
   def run(self):
-    # sends all the requests to create all the VLDs (networks) within the slice
-    networks_response = self.send_networks_creation_request()
-    LOG.info("NSI_MNGR: network_response: " +str(networks_response))
-    time.sleep(0.1)
-        
-    # acquires mutex to have unique access to the nsi (rpositories)
-    mutex_slice2db_access.acquire()
+    # used to not instantiate NSs if, in case there are in the NST, networks are not well created
+    network_ready = True
     
-    LOG.info("NSI_MNGR: mutex acquire, getting NSI_id: " +str(self.NSI['id']))
-    time.sleep(0.1)
-    temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
-    #TODO: improve the next 2 lines to not use this delete.
-    temp_nsi["id"] = temp_nsi["uuid"]
-    del temp_nsi["uuid"]
+    # enters only if there are vld/networks to create and deploy
+    if self.NSI['vldr-list']:
+      # sends all the requests to create all the VLDs (networks) within the slice
+      networks_response = self.send_networks_creation_request()
+      LOG.info("NSI_MNGR: network_response: " +str(networks_response))
+      time.sleep(0.1)
+          
+      # acquires mutex to have unique access to the nsi (rpositories)
+      mutex_slice2db_access.acquire()
+      
+      LOG.info("NSI_MNGR: mutex acquire, getting NSI_id: " +str(self.NSI['id']))
+      time.sleep(0.1)
+      temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
+      #TODO: improve the next 2 lines to not use this delete.
+      temp_nsi["id"] = temp_nsi["uuid"]
+      del temp_nsi["uuid"]
 
-    # updates nsi information
-    if networks_response['status'] in ['NEW', 'COMPLETED']:
-        vld_status = "ACTIVE"
-    else:
-        vld_status = "ERROR"
-        temp_nsi['nsi-status'] = "ERROR"
-        temp_nsi['errorLog'] = networks_response['message']
+      # updates nsi information
+      if networks_response['status'] in ['NEW', 'COMPLETED']:
+          vld_status = "ACTIVE"
+      else:
+          vld_status = "ERROR"
+          temp_nsi['nsi-status'] = "ERROR"
+          temp_nsi['errorLog'] = networks_response['message']
 
-        for nss_item in temp_nsi['nsr-list']:
-          nss_item['working-status'] = "NOT_INSTANTIATED"
-    
-    for vld_item in temp_nsi['vldr-list']:
-      vld_item['vld-status'] = vld_status
+          for nss_item in temp_nsi['nsr-list']:
+            nss_item['working-status'] = "NOT_INSTANTIATED"
+      
+      for vld_item in temp_nsi['vldr-list']:
+        vld_item['vld-status'] = vld_status
 
-    # sends the updated NetSlice instance to the repositories
-    repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
-    
-    # releases mutex for any other thread to acquire it
-    mutex_slice2db_access.release()
+      # sends the updated NetSlice instance to the repositories
+      repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
+      
+      # releases mutex for any other thread to acquire it
+      mutex_slice2db_access.release()
 
-    # if networks are not created, no need to request NS instantiations
-    if networks_response['status'] in ['NEW', 'COMPLETED']:
+      # if networks are not created, no need to request NS instantiations
+      if networks_response['status'] not in ['NEW', 'COMPLETED']:
+        network_ready = False
+
+    if network_ready:
       # Sends all the requests to instantiate the NSs within the slice
       self.send_instantiation_requests()
 
@@ -580,7 +590,8 @@ def create_nsi(nsi_json):
   # adds the VLD information within the NSI record
   LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
   time.sleep(0.1)
-  new_nsir = add_vlds(new_nsir, nst_json)
+  if (nst_json["slice_vld"]):
+    new_nsir = add_vlds(new_nsir, nst_json)
   
   # adds the NetServices (subnets) information within the NSI record
   LOG.info("NSI_MNGR:  Adding subnets into the NSI structure.")
@@ -603,7 +614,7 @@ def create_nsi(nsi_json):
 # does the placement of all the subnets within the NSI
 def nsi_placement():
   # get the VIMs information registered to the SP
-  vims_list = mapper.get_vims_info()
+  vims_list = mapper.get_vims_info()                    #TODO: configure it to wait for 1min
   LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
   time.sleep(0.1)
 
@@ -652,26 +663,30 @@ def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
 def add_vlds(new_nsir, nst_json):
   vldr_list = []
   
-  ''' SHARED LOGIC for VLDs
-  # Check if there is any NS_shared in the NST that already exists and take its shared VLD information
+  '''
+  #SHARED LOGIC for VLDs
+  # Check if there is any instantiated shared NS equal to any of the NST and gets the networks IDs related
+  nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+  shared_vld_ref_list = []
   for subnet_item in nst_json["slice_ns_subnets"]:
     found_shared_nsr = False
     if subnet_item['is-shared']:
-      nsirs_ref_list = nsi_repo.get_all_saved_nsi()
       for nsir_ref_item in nsirs_ref_list:
         for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
           if nsir_subnet_ref_item['subnet-nsdId-ref'] = subnet_item['nsd-ref']:
-            shared_vld_ref_list = []
             for nsir_subnet_vld_ref_item in nsir_subnet_ref_item['vld']:
               if nsir_subnet_vld_ref_item['vld-ref'] not in shared_vld_ref_list:
+                # Gets all the VLD associated to any instantiated shared NS of the NST
                 shared_vld_ref_list.append(nsir_subnet_vld_ref_item['vld-ref'])
+            
             found_shared_nsr = True
             break
-        if found_shared_nsr:
-          break
+          #TODO: think how to follow the breaks
+      if found_shared_nsr:
+        break
   '''
 
-  for vld_item in nst_json['slice_vld']:
+  for vld_item in nst_json["slice_vld"]:
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
@@ -744,13 +759,14 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
     
     # adding the vld id where each subnet is connected to
     subnet_vld_list = []
-    for vld_item in nst_json["slice_vld"]:
-      for nsd_cp_item in vld_item['nsd-connection-point-ref']:
-        if subnet_item['id'] == nsd_cp_item['subnet-ref']:
-          subnet_vld_item = {}
-          subnet_vld_item['vld-ref'] = vld_item['id']
-          subnet_vld_list.append(subnet_vld_item)
-          break #TODO: is it be possible that a subnet has 2 connection points to the same VLD??
+    if (nst_json["slice_vld"]):
+      for vld_item in nst_json["slice_vld"]:
+        for nsd_cp_item in vld_item['nsd-connection-point-ref']:
+          if subnet_item['id'] == nsd_cp_item['subnet-ref']:
+            subnet_vld_item = {}
+            subnet_vld_item['vld-ref'] = vld_item['id']
+            subnet_vld_list.append(subnet_vld_item)
+            break #TODO: is it be possible that a subnet has 2 connection points to the same VLD??
 
     subnet_record['vld'] = subnet_vld_list
 
@@ -826,8 +842,8 @@ def terminate_nsi(nsiId, TerminOrder):
     else:
       repo_responseStatus = {"error":"Wrong value: 0 for instant termination or date time later than "+NSI.instantiateTime+", to terminate in the future."}
       value = 400
-
     return (repo_responseStatus, value)
+  
   else:
     return ('{"error":"There is no NSIR in the db."}', 500)
 
