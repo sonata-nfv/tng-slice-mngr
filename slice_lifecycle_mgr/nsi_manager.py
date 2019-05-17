@@ -118,11 +118,7 @@ class thread_ns_instantiate(Thread):
       network_functions_list = []
       virtual_links_list = []
       repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
-      LOG.info("NSI_MNGR_Instantiate: step_1 nsd_repo : " +str(repo_item))
-      time.sleep(0.1)
       nsd_item = repo_item['nsd']
-      LOG.info("NSI_MNGR_Instantiate: step_2 nsd_item : " +str(nsd_item))
-      time.sleep(0.1)
 
       ## Creates the 'network_functions' object
       for vnf_item in nsd_item['network_functions']:
@@ -153,8 +149,6 @@ class thread_ns_instantiate(Thread):
                   for ns_cp_ref_item in nsd_vl_item['connection_points_reference']:
                     if ns_cp_ref_item == ns_cp_ref:
                       vl_id = nsd_vl_item['id']
-                      LOG.info("NSI_MNGR_Instantiate: vl_id" +str(vl_id))
-                      time.sleep(0.1)
                       break 
                 break
             break 
@@ -162,8 +156,6 @@ class thread_ns_instantiate(Thread):
         virt_link['vl_id'] = vl_id
         virt_link['external_net'] = external_net
         virt_link['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
-        LOG.info("NSI_MNGR_Instantiate: step_14 : " +str(virt_link))
-        time.sleep(0.1)
         virtual_links_list.append(virt_link)
       mapping['virtual_links'] = virtual_links_list
 
@@ -186,6 +178,8 @@ class thread_ns_instantiate(Thread):
       time.sleep(0.1)
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
+      LOG.info("NSI_MNGR_Instantiate: instantiation_response: " +str(instantiation_response))
+      time.sleep(0.1)
 
   def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
@@ -207,7 +201,6 @@ class thread_ns_instantiate(Thread):
           if service_item['working-status'] in ["ERROR", "INSTANTIATING"]:
             service_item['working-status'] = 'ERROR'
             jsonNSI['nsi-status'] = "ERROR"
-            break;
 
         # updates NetSlice template usageState
         if(jsonNSI['nsi-status'] == "INSTANTIATED"):
@@ -250,9 +243,6 @@ class thread_ns_instantiate(Thread):
           
       # acquires mutex to have unique access to the nsi (rpositories)
       mutex_slice2db_access.acquire()
-      
-      LOG.info("NSI_MNGR: mutex acquire, getting NSI_id: " +str(self.NSI['id']))
-      time.sleep(0.1)
       temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
       #TODO: improve the next 2 lines to not use this delete.
       temp_nsi["id"] = temp_nsi["uuid"]
@@ -674,17 +664,13 @@ def add_vlds(new_nsir, nst_json):
     if subnet_item['is-shared']:
       for nsir_ref_item in nsirs_ref_list:
         for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
-          if nsir_subnet_ref_item['subnet-nsdId-ref'] = subnet_item['nsd-ref']:
+          if nsir_subnet_ref_item['subnet-nsdId-ref'] = subnet_item['nsd-ref'] and nsir_subnet_ref_item['is-shared']:
             for nsir_subnet_vld_ref_item in nsir_subnet_ref_item['vld']:
               if nsir_subnet_vld_ref_item['vld-ref'] not in shared_vld_ref_list:
                 # Gets all the VLD associated to any instantiated shared NS of the NST
                 shared_vld_ref_list.append(nsir_subnet_vld_ref_item['vld-ref'])
-            
-            found_shared_nsr = True
-            break
-          #TODO: think how to follow the breaks
-      if found_shared_nsr:
-        break
+  
+
   '''
 
   for vld_item in nst_json["slice_vld"]:
