@@ -33,7 +33,7 @@
 ## partner consortium (www.5gtango.eu).
 """
 
-import json, datetime
+import json, datetime, logging, time
 from uuid import UUID
 
 # Global variables
@@ -51,26 +51,20 @@ def is_valid_uuid(uuid_to_test, version=4):
         return False
     return str(uuid_obj) == uuid_to_test
 
-
-# CASE: Create NetSlice Template
-def validate_create_template (jsonData):
-  for item in jsonData['sliceServices']:
-    if (is_valid_uuid (item['nsdID']) == True or item['slaID'] == "None"):
-      returnData["missing_field"] = "Everything is OK!!"
-      return (returnData, 201)
-    else:
-      returnData["missing_field"] = "The Service Level Agreement (SLA) ID format is wrong, please check it."
-      return (returnData, 400)
-
 # CASE: Create NetSlice instantiation
 def validate_create_instantiation (jsonData):
-  if (is_valid_uuid(jsonData['nstId']) == True):
-    returnData["missing_field"] = "Everything is OK!!"
-    return (returnData, 200)
+  if jsonData['nstId'] and jsonData['name']:
+    if (is_valid_uuid(jsonData['nstId']) == True):
+      returnData["missing_field"] = "Everything is OK!!"
+      return (returnData, 200)
+    else:
+      returnData["missing_field"] = "The Network Service Template ID format is wrong, please check it."
+      logging.info('FormValidator NSI_Error: ' + str(returnData))
+      return (returnData, 400)
   else:
-    returnData["missing_field"] = "The Network Service Template ID format is wrong, please check it."
-    LOG.info('FormValidator NSI_Error: ' + str(returnData))
-    return (returnData, 400)
+      returnData["missing_field"] = "Check if you request has a nstId or a name."
+      logging.info('FormValidator NSI_Error: ' + str(returnData))
+      return (returnData, 400)
 
 # CASE: Terminate NetSlice Instantiation
 # Possible values for <time> --> instant_termination: 0 / future termination: 2019-07-16T14:01:31.447547

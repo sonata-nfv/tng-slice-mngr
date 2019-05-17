@@ -1,101 +1,134 @@
-/* NST example with 1 subnet (network services) */
-{
-    "name":"NST_Example_1",
-    "description":"Example NST wth 1 demo service.",
-    "version":"3.0",
-    "author":"CTTC",
-    "vendor":"5GTango",
-    "SNSSAI_identifier":
-    {
-        "slice-service-type":"eMBB"
-    },
-    "onboardingState":"ENABLED",
-    "operationalState":"ENABLED",
-    "usageState":"NOT_IN_USE",
-    "5qi_value":3,
-    "slice_ns_subnets":[
-        {
-            "id":"Service_subnet_1",
-            "nsd-ref":"949dade4-e29d-4db9-80b0-f6347234cd4c",
-            "nsd-name":"tango-nsd",
-            "sla-name":"None",
-            "sla-ref":"None",
-            "is-shared":false
-        }
-    ],
-    "slice_vld":[]
-}
-
-/* NST example with 3 subnets (network services) */
-{
-    "name": "NST_3_mediaNS",
-    "description": "This is the description of a NST.",
-    "version": "3.0",
-    "author": "CTTC",
-    "vendor": "5GTango",
-    "SNSSAI_identifier": {
-      "slice-service-type": "eMBB"
-    },
-    "onboardingState": "ENABLED",
-    "operationalState": "ENABLED",
-    "usageState": "NOT_IN_USE",
-    "5qi_value": 3,
-    "slice_ns_subnets": [
-      {
-        "id": "Service_subnet_1",
-        "nsd-name": "mediapilot-service",
-        "nsd-vendor": "eu.sonata-nfv",
-        "nsd-version": "0.4",
-        "sla-name": "None",
-        "sla-ref": "None",
-        "is-shared": false
-      },
-      {
-        "id": "Service_subnet_2",
-        "nsd-name": "mediapilot-service",
-        "nsd-vendor": "eu.sonata-nfv",
-        "nsd-version": "0.4",
-        "sla-name": "None",
-        "sla-ref": "None",
-        "is-shared": true
-      },
-      {
-        "id": "Service_subnet_3",
-        "nsd-name": "mediapilot-service",
-        "nsd-vendor": "eu.sonata-nfv",
-        "nsd-version": "0.4",
-        "sla-name": "None",
-        "sla-ref": "None",
-        "is-shared": false
-      }
-    ],
-    "slice_vld": [
-      {
-        "id": "mgmt",
-        "name": "mgmt",
-        "mgmt-network": true,
-        "type": "E-LAN",
-        "nsd-connection-point-ref": [
-          {
-            "subnet-ref": "Service_subnet_1",
-            "nsd-cp-ref": "nscpexternal"
-          },
-          {
-            "subnet-ref": "Service_subnet_2",
-            "nsd-cp-ref": "nscpexternal"
-          },
-          {
-            "subnet-ref": "Service_subnet_3",
-            "nsd-cp-ref": "nscpexternal"
-          }
-        ]
-      }
-    ]
-  }
-
 /* Mocked user request*/
 {
-    "nst_id":"d348f586-fd18-4789-92fe-dd583285178c","name":"NSI_Example","description":"this is a description","request_type":"CREATE_SLICE", "services_sla":[{"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"},{"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"},{"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"}]
+    "nst_id":"d348f586-fd18-4789-92fe-dd583285178c",
+    "name":"NSI_Example",
+    "description":"this is a description",
+    "request_type":"CREATE_SLICE",
+    "services_sla":[
+      {"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"},
+      {"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"},
+      {"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"}
+    ]
+}
+
+/* NST with three 2ns-2vnf NSDs*/
+{
+  "name": "NST_3subnets_5links",
+  "description": "This is the description of a NST.",
+  "version": "3.0",
+  "author": "CTTC",
+  "vendor": "5GTango",
+  "SNSSAI_identifier": {
+    "slice-service-type": "eMBB"
+  },
+  "onboardingState": "ENABLED",
+  "operationalState": "ENABLED",
+  "usageState": "NOT_IN_USE",
+  "5qi_value": 3,
+  "slice_ns_subnets": [
+    {
+      "id": "Service_subnet_1",
+      "nsd-name": "ns-2-vnf-2-vdu",
+      "nsd-vendor": "eu.5gtango",
+      "nsd-version": "0.1",
+      "sla-name": "None",
+      "sla-ref": "None",
+      "is-shared": false
+    },
+    {
+      "id": "Service_subnet_2",
+      "nsd-name": "ns-2-vnf-2-vdu",
+      "nsd-vendor": "eu.5gtango",
+      "nsd-version": "0.1",
+      "sla-name": "None",
+      "sla-ref": "None",
+      "is-shared": true
+    },
+    {
+      "id": "Service_subnet_3",
+      "nsd-name": "ns-2-vnf-2-vdu",
+      "nsd-vendor": "eu.5gtango",
+      "nsd-version": "0.1",
+      "sla-name": "None",
+      "sla-ref": "None",
+      "is-shared": false
+    }
+  ],
+  "slice_vld": [
+    {
+      "id": "mgmt",
+      "name": "mgmt",
+      "mgmt-network": true,
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_1",
+          "nsd-cp-ref": "mgmt"
+        },
+        {
+          "subnet-ref": "Service_subnet_2",
+          "nsd-cp-ref": "mgmt"
+        },
+        {
+          "subnet-ref": "Service_subnet_3",
+          "nsd-cp-ref": "mgmt"
+        }
+      ]
+    },
+    {
+      "id": "slice_input",
+      "name": "slice_input",
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_1",
+          "nsd-cp-ref": "input"
+        }
+      ]
+    },
+    {
+      "id": "subnet1_2_subnet2",
+      "name": "subnet1_2_subnet2",
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_1",
+          "nsd-cp-ref": "input"
+        },
+        {
+          "subnet-ref": "Service_subnet_2",
+          "nsd-cp-ref": "output"
+        }
+      ]
+    },
+    {
+      "id": "subnet2_2_subnet3",
+      "name": "subnet2_2_subnet3",
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_2",
+          "nsd-cp-ref": "output"
+        },
+        {
+          "subnet-ref": "Service_subnet_3",
+          "nsd-cp-ref": "input"
+        }
+      ]
+    },
+    {
+      "id": "slice_output",
+      "name": "slice_output",
+      "mgmt-network": true,
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_3",
+          "nsd-cp-ref": "output"
+        }
+      ]
+    }
+  ]
 }
 
 /* NSI Example*/
@@ -198,3 +231,249 @@
       }
     ]
   }
+
+/* 2ns-2vnf NSD */
+{
+  "created_at": "2019-05-15T09:17:08.099+00:00",
+  "md5": "1fb6d18ca4c65fe7c2c9276250d98f6e",
+  "nsd": {
+    "descriptor_schema": "https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml",
+    "vendor": "eu.5gtango",
+    "name": "ns-2-vnf-2-vdu",
+    "version": "0.1",
+    "author": "5GTANGO Developer",
+    "description": "Default description",
+    "network_functions": [
+      {
+        "vnf_id": "vnf0",
+        "vnf_vendor": "eu.5gtango",
+        "vnf_name": "default-vnf0",
+        "vnf_version": "0.9"
+      },
+      {
+        "vnf_id": "vnf1",
+        "vnf_vendor": "eu.5gtango",
+        "vnf_name": "default-vnf1",
+        "vnf_version": "0.99"
+      }
+    ],
+    "connection_points": [
+      {
+        "id": "mgmt",
+        "interface": "ipv4",
+        "type": "management"
+      },
+      {
+        "id": "input",
+        "interface": "ipv4",
+        "type": "external"
+      },
+      {
+        "id": "output",
+        "interface": "ipv4",
+        "type": "external"
+      }
+    ],
+    "virtual_links": [
+      {
+        "id": "mgmt",
+        "connectivity_type": "E-LAN",
+        "connection_points_reference": [
+          "vnf0:mgmt",
+          "vnf1:mgmt",
+          "mgmt"
+        ]
+      },
+      {
+        "id": "input-2-vnf0",
+        "connectivity_type": "E-Line",
+        "connection_points_reference": [
+          "input",
+          "vnf0:input"
+        ]
+      },
+      {
+        "id": "vnf1-2-output",
+        "connectivity_type": "E-Line",
+        "connection_points_reference": [
+          "vnf1:output",
+          "output"
+        ]
+      },
+      {
+        "id": "inner",
+        "connectivity_type": "E-Line",
+        "connection_points_reference": [
+          "vnf0:output",
+          "vnf1:input"
+        ]
+      }
+    ],
+    "deployment_flavours": [
+      {
+        "name": "gold",
+        "network_functions": [
+          {
+            "vnf_id": "vnf0",
+            "vnf_vendor": "eu.5gtango",
+            "vnf_name": "default-vnf0",
+            "vnf_version": "0.9",
+            "vnf_flavour": "golden"
+          },
+          {
+            "vnf_id": "vnf1",
+            "vnf_vendor": "eu.5gtango",
+            "vnf_name": "default-vnf1",
+            "vnf_version": "0.99"
+          }
+        ],
+        "virtual_links": [
+          {
+            "id": "mgmt",
+            "connectivity_type": "E-LAN",
+            "connection_points_reference": [
+              "vnf0:mgmt",
+              "vnf1:mgmt",
+              "mgmt"
+            ]
+          },
+          {
+            "id": "input-2-vnf0",
+            "connectivity_type": "E-Line",
+            "connection_points_reference": [
+              "input",
+              "vnf0:input"
+            ],
+            "qos_requirements": {
+              "minimum_bandwidth": {
+                "bandwidth": 100
+              }
+            }
+          },
+          {
+            "id": "vnf1-2-output",
+            "connectivity_type": "E-Line",
+            "connection_points_reference": [
+              "vnf1:output",
+              "output"
+            ]
+          },
+          {
+            "id": "inner",
+            "connectivity_type": "E-Line",
+            "connection_points_reference": [
+              "vnf0:output",
+              "vnf1:input"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "silver",
+        "network_functions": [
+          {
+            "vnf_id": "vnf0",
+            "vnf_vendor": "eu.5gtango",
+            "vnf_name": "default-vnf0",
+            "vnf_version": "0.9",
+            "vnf_flavour": "silver"
+          },
+          {
+            "vnf_id": "vnf1",
+            "vnf_vendor": "eu.5gtango",
+            "vnf_name": "default-vnf1",
+            "vnf_version": "0.99"
+          }
+        ],
+        "virtual_links": [
+          {
+            "id": "mgmt",
+            "connectivity_type": "E-LAN",
+            "connection_points_reference": [
+              "vnf0:mgmt",
+              "vnf1:mgmt",
+              "mgmt"
+            ]
+          },
+          {
+            "id": "input-2-vnf0",
+            "connectivity_type": "E-Line",
+            "connection_points_reference": [
+              "input",
+              "vnf0:input"
+            ],
+            "qos_requirements": {
+              "minimum_bandwidth": {
+                "bandwidth": 50
+              }
+            }
+          },
+          {
+            "id": "vnf1-2-output",
+            "connectivity_type": "E-Line",
+            "connection_points_reference": [
+              "vnf1:output",
+              "output"
+            ]
+          },
+          {
+            "id": "inner",
+            "connectivity_type": "E-Line",
+            "connection_points_reference": [
+              "vnf0:output",
+              "vnf1:input"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "pkg_ref": 1,
+  "platform": "5gtango",
+  "signature": null,
+  "status": "active",
+  "updated_at": "2019-05-15T09:17:08.099+00:00",
+  "username": "",
+  "uuid": "333e24c3-e52d-4a7b-89fc-f2988f0891a3"
+}
+
+/* Json to requests networks creation (& removal) */
+{
+  "vim_list":[
+    {"virtual_links":[
+      {"access":"true","id":"8may_1.mgmt.net.763a7400-6112-47fd-bfc6-58861a740513"},
+      {"access":"true","id":"8may_1.slice_input.net.c85d06c7-cbfb-4086-a9e8-e249c422c440"},
+      {"access":"true","id":"8may_1.slice_output.net.32fd9c1b-d388-4040-97e1-bbc248e633ee"}
+    ],
+    "uuid":"11111111-2222-3333-4444-555555555555"}
+  ],
+  "instance_id":"4a902464-9907-4ce7-874f-638018577700"
+}
+
+/* Mocked stitching NS-network json */
+{
+  "mapping":{
+    "network_functions": [
+      {"vnf_id": "nsd.network_functions.ANYINDEX.vnf_id", "vim_id": "11111-1111-111111-111111"},
+      //...
+    ],
+    "virtual_links":[
+      {"vl_id": "nsd.virtual_links.ANYINDEX.id" , "external_net": "nsi.vldr-list.vim-net-id", "vim_id": "11111-1111-111111-111111"},
+      //...
+    ]
+  }
+}
+
+{
+  "mapping":{
+    "network_functions": [
+      {"vnf_id": "vnf0", "vim_id": "11111-1111-111111-111111"},
+      {"vnf_id": "vnf1", "vim_id": "11111-1111-111111-111111"}
+    ],
+    "virtual_links":[
+      {"vl_id": "mgmt" , "external_net": "mgmt", "vim_id": "11111-1111-111111-111111"},
+      {"vl_id": "input-2-vnf0" , "external_net": "slice_input", "vim_id": "11111-1111-111111-111111"},
+      {"vl_id": "nsd.virtual_links.id" , "external_net": "nsi.vldr-list.vim-net-id", "vim_id": "11111-1111-111111-111111"}
+    ]
+  }
+}

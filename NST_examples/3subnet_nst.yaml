@@ -1,0 +1,59 @@
+---
+name: NST_3_dummy
+description: This is the description of a NST.
+version: '3.0'
+author: CTTC
+vendor: 5GTango
+SNSSAI_identifier:
+  slice-service-type: eMBB
+onboardingState: ENABLED
+operationalState: ENABLED
+usageState: NOT_IN_USE
+5qi_value: 3
+slice_ns_subnets:
+- id: Service_subnet_1
+  nsd-name: ns-2-vnf-2-vdu
+  nsd-vendor: eu.5gtango
+  nsd-version: '0.1'
+  sla-name: None
+  sla-ref: None
+  is-shared: false
+- id: Service_subnet_2
+  nsd-name: ns-2-vnf-2-vdu
+  nsd-vendor: eu.5gtango
+  nsd-version: '0.1'
+  sla-name: None
+  sla-ref: None
+  is-shared: true
+- id: Service_subnet_3
+  nsd-name: ns-2-vnf-2-vdu
+  nsd-vendor: eu.5gtango
+  nsd-version: '0.1'
+  sla-name: None
+  sla-ref: None
+  is-shared: false
+slice_vld:
+- id: mgmt
+  name: mgmt
+  mgmt-network: true
+  type: E-LAN
+  nsd-connection-point-ref:
+  - subnet-ref: Service_subnet_1
+    nsd-cp-ref: mgmt
+  - subnet-ref: Service_subnet_2
+    nsd-cp-ref: mgmt
+  - subnet-ref: Service_subnet_3
+    nsd-cp-ref: mgmt
+- id: slice_input
+  name: slice_input
+  type: E-LAN
+  nsd-connection-point-ref:
+  - subnet-ref: Service_subnet_1
+    nsd-cp-ref: input
+- id: slice_output
+  name: slice_output
+  mgmt-network: true
+  type: E-LAN
+  nsd-connection-point-ref:
+  - subnet-ref: Service_subnet_3
+    nsd-cp-ref: output

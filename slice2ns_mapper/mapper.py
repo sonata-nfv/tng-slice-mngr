@@ -73,17 +73,22 @@ def net_serv_instantiate(service_data):
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
     LOG.info("MAPPER: Sending Instanitation request")
+    time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}
-    return jsonresponse
+      jsonresponse = response.json()
+    
+    LOG.info("MAPPER: Service Instanitation request response: " + str(jsonresponse) + ", HTTP.status: " + str(response.status_code))
+    time.sleep(0.1)
+    return jsonresponse, response.status_code
+    
   else:
     print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
     uuident = uuid.uuid4()
     jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
-    return jsonresponse
+    return jsonresponse, 201
 
 # POST /requests to TERMINATE Network Service instance
 def net_serv_terminate(service_data):
@@ -112,11 +117,11 @@ def sliceUpdated(slice_callback, json_slice_info):
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
+      return json.loads(response.text), 201
   else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}
+      error_json = {'http_code': response.status_code,'message': response.json()}
+      return error_json, response.status_code
   
-  return jsonresponse
 
 #TODO: check if the next two requests are necessary...
 # GET /requests to pull the information of all Network Services INSTANCES
@@ -194,9 +199,15 @@ def get_vims_info():
 
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
+    LOG.info("MAPPER: requesting vims, URL--> " + str(url))
+    time.sleep(0.1)
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
+    LOG.info("MAPPER: response vims" + str(response))
+    time.sleep(0.1)
     if (response.status_code == 200):
         jsonresponse = json.loads(response.text)
+        LOG.info("MAPPER: response vims in json" + str(jsonresponse))
+        time.sleep(0.1)
     else:
         jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
   
@@ -232,7 +243,7 @@ Request payload:
     }
   ]
 }
-Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"} 
+Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def create_vim_network(network_data):
   url = get_base_url() + '/slices/networks'
@@ -250,7 +261,7 @@ def create_vim_network(network_data):
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:
-      jsonresponse = {'request_status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+      jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
       LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
       time.sleep(0.1)
     
@@ -279,7 +290,7 @@ Request payload:
     }
   ]
 }
-Return: {request_status: "COMPLETE/ERROR", message: empty/"msg"} 
+Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def delete_vim_network(network_data):
   url = get_base_url() + '/slices/networks'
@@ -290,15 +301,15 @@ def delete_vim_network(network_data):
   
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
-    LOG.info("MAPPER: Sending network management request")
+    LOG.info("MAPPER: Sending network removal request")
     time.sleep(0.1)
     response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
     
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
     else:
-      jsonresponse = {'http_code': response.status_code,'message': response.text}
-      LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
+      jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+      LOG.info("MAPPER: Networks removal jsonresponse: " +str(jsonresponse))
       time.sleep(0.1)
 
     return jsonresponse

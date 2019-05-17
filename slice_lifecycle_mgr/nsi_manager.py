@@ -62,16 +62,17 @@ class thread_ns_instantiate(Thread):
     Thread.__init__(self)
     self.NSI = NSI
   
-  def send_networks_creation_request(self):
+  def send_networks_creation_request(self):       #TODO: check the whole process to not create athe already existing shared vld
     LOG.info("NSI_MNGR: Requesting slice networks creation to the GTK.")
     time.sleep(0.1)
 
     # creates the 1st json level structure {instance_id: ___, vim_list: []}
     network_data = {}
-    network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
+    network_data['instance_id'] = self.NSI['id']
     network_data['vim_list'] = []
 
-    # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and adds them into the 'vim_list'
+    # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and ...
+    # ...adds them into the 'vim_list'
     for vldr_item in self.NSI['vldr-list']:
       vim_item = {}
       vim_item['uuid'] = vldr_item['vimAccountId']
@@ -84,7 +85,8 @@ class thread_ns_instantiate(Thread):
         else:
           continue
     
-    # creates the elements of the 3rd json level struture {id: ___, access: bool} and adds them into the 'virtual_links'
+    # creates the elements of the 3rd json level struture {id: ___, access: bool} and...
+    # ... adds them into the 'virtual_links'
     for vldr_item in self.NSI['vldr-list']:
       for vim_item in network_data['vim_list']:
         if vldr_item['vimAccountId'] == vim_item['uuid']:
@@ -147,8 +149,6 @@ class thread_ns_instantiate(Thread):
                   for ns_cp_ref_item in nsd_vl_item['connection_points_reference']:
                     if ns_cp_ref_item == ns_cp_ref:
                       vl_id = nsd_vl_item['id']
-                      LOG.info("NSI_MNGR_Instantiate: vl_id" +str(vl_id))
-                      time.sleep(0.1)
                       break 
                 break
             break 
@@ -156,8 +156,6 @@ class thread_ns_instantiate(Thread):
         virt_link['vl_id'] = vl_id
         virt_link['external_net'] = external_net
         virt_link['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
-        LOG.info("NSI_MNGR_Instantiate: step_14 : " +str(virt_link))
-        time.sleep(0.1)
         virtual_links_list.append(virt_link)
       mapping['virtual_links'] = virtual_links_list
 
@@ -167,17 +165,21 @@ class thread_ns_instantiate(Thread):
       data['name'] = nsr_item['nsrName']
       data['service_uuid'] = nsr_item['subnet-nsdId-ref']
       data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/instantiation-change"
+      data['mapping'] = mapping
+      if (nsr_item['sla-ref'] != "None"):
+        data['sla_id'] = nsr_item['sla-ref']
+      else:
+        data['sla_id'] = ""
       #data['ingresses'] = []
       #data['egresses'] = []
       #data['blacklist'] = []
-      if (nsr_item['sla-ref'] != "None"):
-        data['sla_id'] = nsr_item['sla-ref']
-      data['mapping'] = mapping
 
       LOG.info("NSI_MNGR_Instantiate: this is what GTK receives: " +str(data))
       time.sleep(0.1)
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
+      LOG.info("NSI_MNGR_Instantiate: instantiation_response: " +str(instantiation_response))
+      time.sleep(0.1)
 
   def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
@@ -189,15 +191,16 @@ class thread_ns_instantiate(Thread):
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
+
+      # updates the slice information before notifying the GTK
       if jsonNSI['nsi-status'] == "INSTANTIATING":
-        # updates the slice information befor notifying the GTK
         jsonNSI['nsi-status'] = "INSTANTIATED"
 
         # validates if any service has error status to apply it to the slice status
         for service_item in jsonNSI['nsr-list']:
-          if (service_item['working-status'] == "ERROR"):
+          if service_item['working-status'] in ["ERROR", "INSTANTIATING"]:
+            service_item['working-status'] = 'ERROR'
             jsonNSI['nsi-status'] = "ERROR"
-            break;
 
         # updates NetSlice template usageState
         if(jsonNSI['nsi-status'] == "INSTANTIATED"):
@@ -225,51 +228,59 @@ class thread_ns_instantiate(Thread):
       json_slice_info['updateTime'] = jsonNSI['updateTime']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+      LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GKT notified with status: " +str(thread_response[1]))
 
   def run(self):
-    # TODO:Sends all the requests to create all the VLDs within the slice
-    networks_response = self.send_networks_creation_request()
-    LOG.info("NSI_MNGR: network_response: " +str(networks_response))
-    time.sleep(0.1)
-        
-    # acquires mutex to have unique access to the nsi (rpositories)
-    mutex_slice2db_access.acquire()
+    # used to not instantiate NSs if, in case there are in the NST, networks are not well created
+    network_ready = True
     
-    temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
-    #TODO: improve the next 2 lines to not use this delete.
-    temp_nsi["id"] = temp_nsi["uuid"]
-    del temp_nsi["uuid"]
+    # enters only if there are vld/networks to create and deploy
+    if self.NSI['vldr-list']:
+      # sends all the requests to create all the VLDs (networks) within the slice
+      networks_response = self.send_networks_creation_request()
+      LOG.info("NSI_MNGR: network_response: " +str(networks_response))
+      time.sleep(0.1)
+          
+      # acquires mutex to have unique access to the nsi (rpositories)
+      mutex_slice2db_access.acquire()
+      temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
+      #TODO: improve the next 2 lines to not use this delete.
+      temp_nsi["id"] = temp_nsi["uuid"]
+      del temp_nsi["uuid"]
 
-    # updates nsi information
-    if networks_response['request_status'] == 'COMPLETED':
-        vld_status = "ACTIVE"
-    else:
-        vld_status = "ERROR"
-        temp_nsi['nsi-status'] = "ERROR"
-        temp_nsi['errorLog'] = networks_response['message']
+      # updates nsi information
+      if networks_response['status'] in ['NEW', 'COMPLETED']:
+          vld_status = "ACTIVE"
+      else:
+          vld_status = "ERROR"
+          temp_nsi['nsi-status'] = "ERROR"
+          temp_nsi['errorLog'] = networks_response['message']
 
-        for nss_item in temp_nsi['nsr-list']:
-          nss_item['working-status'] = "NOT_INSTANTIATED"
-    
-    for vld_item in temp_nsi['vldr-list']:
-      vld_item['vld-status'] = vld_status
+          for nss_item in temp_nsi['nsr-list']:
+            nss_item['working-status'] = "NOT_INSTANTIATED"
+      
+      for vld_item in temp_nsi['vldr-list']:
+        vld_item['vld-status'] = vld_status
 
-    # sends the updated NetSlice instance to the repositories
-    repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
-    
-    # releases mutex for any other thread to acquire it
-    mutex_slice2db_access.release()
+      # sends the updated NetSlice instance to the repositories
+      repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
+      
+      # releases mutex for any other thread to acquire it
+      mutex_slice2db_access.release()
 
-    # if networks are not created, no need to request NS instantiations
-    if networks_response['request_status'] == 'COMPLETED':
+      # if networks are not created, no need to request NS instantiations
+      if networks_response['status'] not in ['NEW', 'COMPLETED']:
+        network_ready = False
+
+    if network_ready:
       # Sends all the requests to instantiate the NSs within the slice
       self.send_instantiation_requests()
 
       # Waits until all the NSs are instantiated/ready or error
       #deployment_timeout = 2 * 3600   # Two hours
-      deployment_timeout = 1800   # 30min   #TODO: change once the GTK connection-bug is solved.
+      deployment_timeout = 900   # 15min   #TODO: mmodify for the reviews
       while deployment_timeout > 0:
-        LOG.info("Waiting all services are ready/instantiated or error...")
+        LOG.info(" Waiting all services to be ready/instantiated or error...")
         # Check ns instantiation status
         nsi_instantiated = True
         jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
@@ -333,7 +344,7 @@ class update_slice_instantiation(Thread):
             service_item['nsrId'] = self.request_json['instance_uuid']                                  # used to avoid a for-else loop with the next if
           
           break;
-
+      
       LOG.info("NSI_MNGR_Update: Sending NSIr updated to repositories")
       time.sleep(0.1)
       # sends updated nsi to the DDBB (tng-repositories)
@@ -530,6 +541,7 @@ class update_slice_termination(Thread):
 
 
 ################################ NSI CREATION & INSTANTIATION SECTION ##################################
+# 2 steps: create_nsi (with its internal functions) and update_instantiating_nsi
 # Network Slice Instance Object Creation
 def create_nsi(nsi_json):
   LOG.info("NSI_MNGR: Creates and Instantiates a new NSI.")
@@ -539,48 +551,38 @@ def create_nsi(nsi_json):
   nst_json = catalogue_response['nstd']
 
   # validate if there is any NSTD
-  LOG.info("NSI_MNGR: Checking if the NSTD exists...")
-  time.sleep(0.1)
   if not catalogue_response:
     return_msg = {}
     return_msg['error'] = "There is NO NSTd with this uuid in the DDBB."
     return return_msg, 400
 
   # check if there is any other nsir with the same name, vendor, nstd_version
-  LOG.info("NSI_MNGR: Checking there is no duplicated NSI.")
-  time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
   if nsirepo_jsonresponse:
     for nsir_item in nsirepo_jsonresponse:
       if (nsir_item["name"] == nsi_json['name'] and nsir_item["nst-version"] == nst_json['version'] and \
         nsir_item["vendor"] == nst_json['vendor']):
-        error_msg = '{"error":"There is already a slice with thie name/version/vendor. Change one of the values."}'
-        return (error_msg, 500)
+        return_msg = {}
+        return_msg['error'] = "There is already a slice with thie name/version/vendor. Change one of the values."
+        return (return_msg, 400)
 
-  # get the VIMs information registered to the SP
-  vims_list = mapper.get_vims_info()
-  if not vims_list['vim_list']:         # validates if there's no vim to return a msg.
-    return_msg = {}
-    return_msg['error'] = "Not found any VIM information."
-    return return_msg, 500
-  LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
+  # Network Slice Placement  
+  vim_nsi = nsi_placement()               #TODO: improve internal logic (resources?)
+  if vim_nsi[1] == 500:
+    return vim_nsi
+  LOG.info("NSI_MNGR: vim_nsi:. " +str(vim_nsi))
   time.sleep(0.1)
-
-  #TODO: improve placement
-  main_datacenter = vims_list['vim_list'][0]['vim_uuid']
-  #main_datacenter = str(uuid.uuid4())
-  LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(main_datacenter))
-  time.sleep(0.1)
-  
+   
   # creates NSI with the received information
   LOG.info("NSI_MNGR: Creating NSI basic structure.")
   time.sleep(0.1)
-  new_nsir = add_basic_nsi_info(nst_json, nsi_json, main_datacenter)
+  new_nsir = add_basic_nsi_info(nst_json, nsi_json, vim_nsi[0])
   
   # adds the VLD information within the NSI record
   LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
   time.sleep(0.1)
-  new_nsir = add_vlds(new_nsir, nst_json['slice_vld'])
+  if (nst_json["slice_vld"]):
+    new_nsir = add_vlds(new_nsir, nst_json)
   
   # adds the NetServices (subnets) information within the NSI record
   LOG.info("NSI_MNGR:  Adding subnets into the NSI structure.")
@@ -588,15 +590,38 @@ def create_nsi(nsi_json):
   new_nsir = add_subnets(new_nsir, nst_json, nsi_json)
 
   # saving the NSI into the repositories
-  LOG.info("NSI_MNGR:  Saving the NSIr into resporitories.")
+  LOG.info("NSI_MNGR:  Saving the NSIr into repositories.")
   time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
+  #TODO: should there be a condition that starts only if the object is saved?
   # starts the thread to instantiate while sending back the response
   thread_ns_instantiation = thread_ns_instantiate(new_nsir)
   thread_ns_instantiation.start()
 
   return nsirepo_jsonresponse, 201
+
+# TODO: improve placement logic
+# does the placement of all the subnets within the NSI
+def nsi_placement():
+  # get the VIMs information registered to the SP
+  vims_list = mapper.get_vims_info()                    #TODO: configure it to wait for 1min
+  LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
+  time.sleep(0.1)
+
+  # validates if the incoming vim_list is empty (return 500) or not (follow)
+  if not vims_list['vim_list']:
+    return_msg = {}
+    return_msg['error'] = "Not found any VIM information, register one to the SP."
+    return return_msg, 500
+  
+  #TODO: improve placement
+  nsi_placed = vims_list['vim_list'][0]['vim_uuid']
+  #nsi_placed = str(uuid.uuid4())
+  LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(nsi_placed))
+  time.sleep(0.1)
+  
+  return nsi_placed, 200
 
 # Basic NSI structure
 def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
@@ -606,7 +631,7 @@ def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
   if (nsi_json['description']):
     nsir_dict['description'] = nsi_json['description']
   else:
-    nsir_dict['description'] = 'Mock_Description'
+    nsir_dict['description'] = 'This NSr is based on ' + str(nsi_json['name'])
   nsir_dict['vendor'] = nst_json['vendor']
   nsir_dict['nst-ref'] = nsi_json['nstId']
   nsir_dict['nst-name'] = nst_json['name']
@@ -626,14 +651,34 @@ def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
   return nsir_dict
 
 # Sends requests to create vim networks and adds their information into the NSIr
-def add_vlds(new_nsir, nst_vld_list):
+def add_vlds(new_nsir, nst_json):
   vldr_list = []
-  for vld_item in nst_vld_list:
+  
+  '''
+  #SHARED LOGIC for VLDs
+  # Check if there is any instantiated shared NS equal to any of the NST and gets the networks IDs related
+  nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+  shared_vld_ref_list = []
+  for subnet_item in nst_json["slice_ns_subnets"]:
+    found_shared_nsr = False
+    if subnet_item['is-shared']:
+      for nsir_ref_item in nsirs_ref_list:
+        for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
+          if nsir_subnet_ref_item['subnet-nsdId-ref'] = subnet_item['nsd-ref'] and nsir_subnet_ref_item['is-shared']:
+            for nsir_subnet_vld_ref_item in nsir_subnet_ref_item['vld']:
+              if nsir_subnet_vld_ref_item['vld-ref'] not in shared_vld_ref_list:
+                # Gets all the VLD associated to any instantiated shared NS of the NST
+                shared_vld_ref_list.append(nsir_subnet_vld_ref_item['vld-ref'])
+  
+
+  '''
+
+  for vld_item in nst_json["slice_vld"]:
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
     vld_record['vimAccountId'] = new_nsir['datacenter']  #TODO: improve with placement
-    vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
+    vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())  #TODO: should it be: net.uuid ??
     if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True
     vld_record['type'] = vld_item['type']
@@ -651,7 +696,6 @@ def add_vlds(new_nsir, nst_vld_list):
     vld_record['ns-conn-point-ref'] = cp_refs_list
     
     vld_record['shared-nsrs-list'] = []   # this is filled when a shared service is instantiated on this VLD
-    #vld_record['requestId'] = " "
 
     vldr_list.append(vld_record)
   
@@ -664,18 +708,31 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
   serv_seq = 1                          # to put in order the services within a slice in the portal
   
   for subnet_item in nst_json["slice_ns_subnets"]:
+    ''' #SHARED FEATURE: copy existing NSR into slice
+    found_shared_nsr = False
+    if subnet_item['is-shared']:
+      nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+      for nsir_ref_item in nsirs_ref_list:
+        for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
+          if nsir_subnet_ref_item['subnet-nsdId-ref'] = subnet_item['nsd-ref']:
+            subnet_record = nsir_subnet_ref_item
+            found_shared_nsr = True
+            break
+        if found_shared_nsr:
+          break
+    else:
+      #TODO: add all the code under until "subnet_record['isinstantiated'] = False"
+    '''
     subnet_record = {}
     subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
-    
-    # TODO:  SHARED FUNCT -> check if the service is shared, then look if there is any other nsi ...
-    # ... with that same service (uuid or name/vendor/version) instantiated and take its nsrId.
     subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
-    
+    subnet_record['vimAccountId'] = new_nsir['datacenter']
+    subnet_record['working-status'] = 'INSTANTIATING'    
     subnet_record['subnet-ref'] = subnet_item['id']
     subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
     
     if 'services_sla' in  request_nsi_json:
-      for serv_sla_item in services_sla:
+      for serv_sla_item in request_nsi_json['services_sla']:
         if serv_sla_item['service_uuid'] == subnet_item['nsd-ref']:
           subnet_record['sla-name'] = serv_sla_item['sla_name']                           #TODO: add instantiation parameters
           subnet_record['sla-ref'] = serv_sla_item['sla_uuid']                            #TODO: add instantiation parameters
@@ -683,21 +740,20 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       subnet_record['sla-name'] = "None"
       subnet_record['sla-ref'] = "None"
     
-    subnet_record['working-status'] = 'INSTANTIATING'
     subnet_record['requestId'] = ''
-    subnet_record['vimAccountId'] = new_nsir['datacenter']                        #TODO: add instantiation parameters
     subnet_record['isshared'] = subnet_item['is-shared']
     subnet_record['isinstantiated'] = False
     
     # adding the vld id where each subnet is connected to
     subnet_vld_list = []
-    for vld_item in nst_json["slice_vld"]:
-      for nsd_cp_item in vld_item['nsd-connection-point-ref']:
-        if subnet_item['id'] == nsd_cp_item['subnet-ref']:
-          subnet_vld_item = {}
-          subnet_vld_item['vld-ref'] = vld_item['id']
-          subnet_vld_list.append(subnet_vld_item)
-          break #TODO: is it be possible that a subnet has 2 connection points to the same VLD??
+    if (nst_json["slice_vld"]):
+      for vld_item in nst_json["slice_vld"]:
+        for nsd_cp_item in vld_item['nsd-connection-point-ref']:
+          if subnet_item['id'] == nsd_cp_item['subnet-ref']:
+            subnet_vld_item = {}
+            subnet_vld_item['vld-ref'] = vld_item['id']
+            subnet_vld_list.append(subnet_vld_item)
+            break #TODO: is it be possible that a subnet has 2 connection points to the same VLD??
 
     subnet_record['vld'] = subnet_vld_list
 
@@ -706,11 +762,6 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
   
   new_nsir['nsr-list'] = nsr_list
   return new_nsir
-
-# Start to instantiate a specific nsi with the current vim_list infoAdds the basic subnets information to the NSI record
-def start_instantiating_nsi(nsiId, request_json):
-
-  return
 
 # Updates a NSI with the latest information coming from the MANO/GK
 def update_instantiating_nsi(nsiId, request_json):
@@ -734,6 +785,7 @@ def update_instantiating_nsi(nsiId, request_json):
 
     
 ########################################## NSI TERMINATE SECTION #######################################
+# 2 steps: terminate_nsi and update_terminating_nsi (with its internal functions)
 # Does all the process to terminate the NSI
 def terminate_nsi(nsiId, TerminOrder):
   LOG.info("NSI_MNGR: Terminates a NSI.")
@@ -779,6 +831,7 @@ def terminate_nsi(nsiId, TerminOrder):
       value = 400
 
     return (repo_responseStatus, value)
+  
   else:
     return ('{"error":"There is no NSIR in the db."}', 500)
 
