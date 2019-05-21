@@ -73,7 +73,7 @@ class thread_ns_instantiate(Thread):
     # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and ...
     # ...adds them into the 'vim_list'
     for vldr_item in self.NSI['vldr-list']:
-      if vldr_item['vld-status'] = "INACTIVE":              # to avoid create already existing networks
+      if vldr_item['vld-status'] == "INACTIVE":              # to avoid create already existing networks
         vim_item = {}
         vim_item['uuid'] = vldr_item['vimAccountId']
         vim_item['virtual_links'] = []
