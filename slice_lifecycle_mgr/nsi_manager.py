@@ -104,6 +104,7 @@ class thread_ns_instantiate(Thread):
 
     LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
     time.sleep(0.1)
+    
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
     nets_creation_response = mapper.create_vim_network(network_data)
 
