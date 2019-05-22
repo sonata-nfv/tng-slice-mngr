@@ -550,7 +550,10 @@ def create_nsi(nsi_json):
   time.sleep(0.1)
   nstId = nsi_json['nstId']
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
-  nst_json = catalogue_response['nstd']
+  if catalogue_response.get('nstd'):
+    nst_json = catalogue_response['nstd']
+  else:
+    return catalogue_response, catalogue_response['http_code']
 
   # validate if there is any NSTD
   if not catalogue_response:
