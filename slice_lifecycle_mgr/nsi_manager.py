@@ -751,7 +751,7 @@ def add_vlds(new_nsir, nst_json):
               LOG.info("NSI_MNGR_addVLD:  Comparing service_cp_ref_item: " + str(service_cp_ref_item) + " & cp_ref_item[nsd-cp-ref]: " + str(cp_ref_item['nsd-cp-ref']))
               time.sleep(0.1)
               if service_cp_ref_item == cp_ref_item['nsd-cp-ref']:
-                if service_vl['access']:
+                if service_vl.get('access'):
                   vld_record['access_net'] = service_vl['access']
                 else:
                   # To keep concordance with the old NSD, if it's not defined True
