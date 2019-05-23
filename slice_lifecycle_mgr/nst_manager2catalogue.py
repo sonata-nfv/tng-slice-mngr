@@ -104,7 +104,8 @@ def get_saved_nst(nstId):
     jsonresponse = json.loads(response.text)
     
     if (response.status_code != 200):
-        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        jsonresponse = json.loads(response.text)
+        jsonresponse['http_code'] = response.status_code
         LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(jsonresponse))
     
     return jsonresponse

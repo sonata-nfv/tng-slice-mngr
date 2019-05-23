@@ -330,9 +330,11 @@ def get_nsd(nsd_uuid):
   response = requests.get(url)
     
   if (response.status_code == 200):
-      service_response = json.loads(response.text)
+    service_response = json.loads(response.text)
   else:
-      service_response = {'http_code': response.status_code,'message': response.json()}
+    service_response = json.loads(response.text)
+    service_response['http_code'] = response.status_code
+    LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(service_response))
   return service_response
 
 # GET /services to pull all Network Services information

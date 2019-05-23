@@ -17,16 +17,16 @@ pipeline {
         sh 'sudo rm -rf unit_tests/spec || true'
       }
     }
+    /*
     stage('Unit Test Execution'){
       parallel {
-        /*
         stage('Performing NST Unit Tests') {
           steps {
             dir(path: 'unit_tests'){
               sh './nstapi.sh'
             }
           }
-        }*/
+        }
         stage('Performing NSI Unit Tests') {
           steps {
             dir(path: 'unit_tests'){
@@ -36,6 +36,7 @@ pipeline {
         }
       }
     }
+    */
     stage('Checkstyle') {
       parallel {
         stage('Slice Manager') {
