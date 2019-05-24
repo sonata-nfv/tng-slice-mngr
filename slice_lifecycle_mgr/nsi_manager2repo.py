@@ -57,6 +57,8 @@ def safe_nsi(NSI_dict):
     data = json.dumps(NSI_dict)
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
+    LOG.info("NSI_MNGR:  jsonresponse: " +str(jsonresponse))
+    time.sleep(0.1)
     
     if(response.status_code != 200):
         jsonresponse = {'http_code': response.status_code,'message': response.json()}
