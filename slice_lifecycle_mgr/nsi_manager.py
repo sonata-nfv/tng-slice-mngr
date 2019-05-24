@@ -245,6 +245,8 @@ class thread_ns_instantiate(Thread):
           
       # acquires mutex to have unique access to the nsi (rpositories)
       mutex_slice2db_access.acquire()
+      LOG.info("NSI_MNGR_Thread: self.NSI: " +str(self.NSI))
+      time.sleep(0.1)
       temp_nsi = nsi_repo.get_saved_nsi(self.NSI['uuid'])
       #TODO: improve the next 2 lines to not use this delete.
       #temp_nsi["id"] = temp_nsi["uuid"]
@@ -254,6 +256,7 @@ class thread_ns_instantiate(Thread):
       if networks_response['status'] in ['NEW', 'COMPLETED']:
           vld_status = "ACTIVE"
       else:
+          network_ready = False
           vld_status = "ERROR"
           temp_nsi['nsi-status'] = "ERROR"
           temp_nsi['errorLog'] = networks_response['message']
@@ -270,10 +273,7 @@ class thread_ns_instantiate(Thread):
       # releases mutex for any other thread to acquire it
       mutex_slice2db_access.release()
 
-      # if networks are not created, no need to request NS instantiations
-      if networks_response['status'] not in ['NEW', 'COMPLETED']:
-        network_ready = False
-
+    # if networks are not created, no need to request NS instantiations
     if network_ready:
       # Sends all the requests to instantiate the NSs within the slice
       self.send_instantiation_requests()

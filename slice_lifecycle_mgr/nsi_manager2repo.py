@@ -81,6 +81,7 @@ def get_saved_nsi(nsiId):
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
+    LOG.info('NSI_MNGR2REPO: nsir get from repo: ' + str(jsonresponse))
     
     if(response.status_code != 200):
         jsonresponse = {'http_code': response.status_code,'message': response.json()}
