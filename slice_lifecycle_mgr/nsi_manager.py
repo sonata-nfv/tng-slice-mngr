@@ -597,14 +597,16 @@ def create_nsi(nsi_json):
   # saving the NSI into the repositories
   LOG.info("NSI_MNGR:  Saving the NSIr into repositories.")
   time.sleep(0.1)
-  nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
+  nsirepo_response = nsi_repo.safe_nsi(new_nsir)
+  if (nsirepo_response[1] != 200):
+    return nsirepo_response[0], nsirepo_response[1]
 
   #TODO: should there be a condition that starts only if the object is saved?
   # starts the thread to instantiate while sending back the response
-  thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+  thread_ns_instantiation = thread_ns_instantiate(nsirepo_response[0])
   thread_ns_instantiation.start()
 
-  return nsirepo_jsonresponse, 201
+  return nsirepo_response, 201
 
 # TODO: improve placement logic
 # does the placement of all the subnets within the NSI
@@ -631,7 +633,7 @@ def nsi_placement():
 # Basic NSI structure
 def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
   nsir_dict = {}
-  nsir_dict['uuid'] = str(uuid.uuid4())
+  #nsir_dict['uuid'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
   if (nsi_json['description']):
     nsir_dict['description'] = nsi_json['description']
