@@ -633,7 +633,7 @@ def nsi_placement():
 # Basic NSI structure
 def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
   nsir_dict = {}
-  #nsir_dict['uuid'] = str(uuid.uuid4())
+  nsir_dict['uuid'] = " "
   nsir_dict['name'] = nsi_json['name']
   if (nsi_json['description']):
     nsir_dict['description'] = nsi_json['description']
