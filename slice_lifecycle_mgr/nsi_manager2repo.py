@@ -59,10 +59,10 @@ def safe_nsi(NSI_dict):
     jsonresponse = json.loads(response.text)
     
     if(response.status_code != 200):
-        jsonresponse = {'http_code': response.status_code,'message': response.json()}
-        LOG.info('NSI_MNGR2REPO: nsir to repo failed: ' + str(jsonresponse))
+        jsonresponse = {}
+        jsonresponse ['message'] = response.json()
     
-    return jsonresponse
+    return jsonresponse, response.status_code
 
 # GET all NSI items from the repositories
 def get_all_saved_nsi():
