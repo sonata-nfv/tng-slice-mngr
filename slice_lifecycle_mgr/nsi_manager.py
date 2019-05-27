@@ -592,15 +592,15 @@ def create_nsi(nsi_json):
   LOG.info("NSI_MNGR:  Saving the NSIr into repositories.")
   time.sleep(0.1)
   nsirepo_response = nsi_repo.safe_nsi(new_nsir)
-  if (nsirepo_response[1] != 200):
+  
+  if (nsirepo_response[1] == 200):
+    # starts the thread to instantiate while sending back the response
+    thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+    thread_ns_instantiation.start()
+    return nsirepo_response, 201
+  else:
+    # NSIr was not sefed, returning error from database
     return nsirepo_response[0], nsirepo_response[1]
-
-  #TODO: should there be a condition that starts only if the object is saved?
-  # starts the thread to instantiate while sending back the response
-  thread_ns_instantiation = thread_ns_instantiate(nsirepo_response[0])
-  thread_ns_instantiation.start()
-
-  return nsirepo_response, 201
 
 # TODO: improve placement logic
 # does the placement of all the subnets within the NSI
