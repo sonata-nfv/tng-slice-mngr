@@ -595,17 +595,23 @@ def create_nsi(nsi_json):
     new_nsir = add_vlds(new_nsir, nst_json)
   
   # saving the NSI into the repositories
+  LOG.info("NSI_MNGR:  NSIr: " + str(new_nsir))
+  time.sleep(0.1)
   LOG.info("NSI_MNGR:  Saving the NSIr into repositories.")
   time.sleep(0.1)
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
 
-  #TODO: should there be a condition that starts only if the object is saved?
-  # starts the thread to instantiate while sending back the response
-  thread_ns_instantiation = thread_ns_instantiate(new_nsir)
-  thread_ns_instantiation.start()
-
-  return nsirepo_jsonresponse, 201
-
+  if nsirepo_jsonresponse[1] == 200:
+    # starts the thread to instantiate while sending back the response
+    thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+    thread_ns_instantiation.start()
+  else:
+    error_msg = nsirepo_jsonresponse[0]
+    new_nsir['errorLog'] = error_msg['message']
+    nsirepo_jsonresponse = new_nsir
+  
+  return nsirepo_jsonresponse
+  
 # TODO: improve placement logic
 # does the placement of all the subnets within the NSI
 def nsi_placement():
@@ -748,8 +754,6 @@ def add_vlds(new_nsir, nst_json):
           nsd_item = repo_item['nsd']
           for service_vl in nsd_item['virtual_links']:
             for service_cp_ref_item in service_vl['connection_points_reference']:
-              LOG.info("NSI_MNGR_addVLD:  Comparing service_cp_ref_item: " + str(service_cp_ref_item) + " & cp_ref_item[nsd-cp-ref]: " + str(cp_ref_item['nsd-cp-ref']))
-              time.sleep(0.1)
               if service_cp_ref_item == cp_ref_item['nsd-cp-ref']:
                 if service_vl.get('access'):
                   vld_record['access_net'] = service_vl['access']
