@@ -189,7 +189,6 @@ class thread_ns_instantiate(Thread):
       LOG.info("NSI_MNGR_Notify: Slice instantitaion Notification to GTK.")
       time.sleep(0.1)
       jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
-      #TODO: improve the next 2 lines to not use this delete.
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
@@ -246,21 +245,19 @@ class thread_ns_instantiate(Thread):
       # acquires mutex to have unique access to the nsi (rpositories)
       mutex_slice2db_access.acquire()
       temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
-      #TODO: improve the next 2 lines to not use this delete.
       temp_nsi["id"] = temp_nsi["uuid"]
       del temp_nsi["uuid"]
 
-      # updates nsi information
-      if networks_response['status'] in ['NEW', 'COMPLETED']:
+      # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
+      if networks_response['status'] in ['COMPLETED']:
           vld_status = "ACTIVE"
       else:
           vld_status = "ERROR"
           temp_nsi['nsi-status'] = "ERROR"
           temp_nsi['errorLog'] = networks_response['message']
-
           for nss_item in temp_nsi['nsr-list']:
             nss_item['working-status'] = "NOT_INSTANTIATED"
-      
+
       for vld_item in temp_nsi['vldr-list']:
         vld_item['vld-status'] = vld_status
 
@@ -299,7 +296,6 @@ class thread_ns_instantiate(Thread):
         deployment_timeout -= 15
       
     LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")    
-    #TODO: if deployment_timeout expires, notify it with error as status
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
     self.update_nsi_notify_instantiate()
 
@@ -369,13 +365,18 @@ class thread_ns_terminate(Thread):
     LOG.info("NSI_MNGR_Terminate: Terminating Services")
     time.sleep(0.1)
     for nsr_item in self.NSI['nsr-list']:
-      if (nsr_item['working-status'] != "ERROR"):
+      if (nsr_item['working-status'] == "TERMINATING"):
         data = {}
         data["instance_uuid"] = str(nsr_item["nsrId"])
         data["request_type"] = "TERMINATE_SERVICE"
         data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/terminate-change"
 
+        LOG.info("NSI_MNGR_Terminate: GTK recevie termination data: " +str(data))
+        time.sleep(0.1)
+        # requests to terminate NSI services
         termination_response = mapper.net_serv_terminate(data)
+        LOG.info("NSI_MNGR_Terminate: termination_response: " +str(termination_response))
+        time.sleep(0.1)
 
   def send_networks_removal_request(self):
     LOG.info("NSI_MNGR: Requesting slice networks removal to the GTK.")
@@ -415,7 +416,7 @@ class thread_ns_terminate(Thread):
     LOG.info("NSI_MNGR_Instantiate: json to remove networks: " + str(network_data))
 
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
-    #nets_creation_response = mapper.delete_vim_network(network_data)
+    nets_creation_response = mapper.delete_vim_network(network_data)
 
   def update_nsi_notify_terminate(self):
     mutex_slice2db_access.acquire()
@@ -476,7 +477,7 @@ class thread_ns_terminate(Thread):
 
     # Waits until all the NSs are terminated/ready or error
     # deployment_timeout = 2 * 3600   # Two hours
-    deployment_timeout = 1800         # 30 minutes  # TODO: remove once it works without errors
+    deployment_timeout = 900         # 15 minutes  #TODO: mmodify for the reviews
     while deployment_timeout > 0:
       LOG.info("Waiting all services are terminated or error...")
       # Check ns instantiation status
@@ -491,19 +492,36 @@ class thread_ns_terminate(Thread):
         LOG.info("All service termination are ready!")
         break
   
-      time.sleep(10)
-      deployment_timeout -= 10
+      time.sleep(15)
+      deployment_timeout -= 15
     
-    if deployment_timeout <= 0:
-      raise LCMException("Timeout waiting nsi to be terminated. nsi_id={}".format(self.NSI['id']))
-    
-    # TODO:Sends all the requests to create all the VLDs within the slice
-    self.send_networks_removal_request()
+    # requests to remove the created networks for the current slice
+    net_removal_response = self.send_networks_removal_request()
 
-    # TODO:Waits until all the VLDs are created/ready or error
+    try:
+      # acquires mutex to have unique access to the nsi (rpositories)
+      mutex_slice2db_access.acquire()
+      temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
+      temp_nsi["id"] = temp_nsi["uuid"]
+      del temp_nsi["uuid"]
 
-    # Notifies the GTK that the Network Slice termination process is done (either complete or error)
-    self.update_nsi_notify_terminate()
+      # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
+      if net_removal_response['status'] in ['COMPLETED']:
+          vld_status = "INACTIVE"
+      else:
+          vld_status = "ERROR"
+          temp_nsi['nsi-status'] = "ERROR"
+          temp_nsi['errorLog'] = net_removal_response['message']
+      
+      # sends the updated NetSlice instance to the repositories
+      repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
+
+    finally:
+      # releases mutex for any other thread to acquire it
+      mutex_slice2db_access.release()
+
+      # Notifies the GTK that the Network Slice termination process is done (either complete or error)
+      self.update_nsi_notify_terminate()
 
 # UPDATES THE SLICE TERMINATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI termination
@@ -692,7 +710,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
     
     if 'services_sla' in  request_nsi_json:
       for serv_sla_item in request_nsi_json['services_sla']:
-        if serv_sla_item['service_uuid'] == subnet_item['nsd-ref']:
+        if serv_sla_item['subnet_id'] == subnet_item['id']:
           subnet_record['sla-name'] = serv_sla_item['sla_name']                           #TODO: add instantiation parameters
           subnet_record['sla-ref'] = serv_sla_item['sla_uuid']                            #TODO: add instantiation parameters
     else:
@@ -799,13 +817,7 @@ def update_instantiating_nsi(nsiId, request_json):
   if (jsonNSI):
     # starts the thread to update instantiation info within the services
     thread_update_slice_instantiation = update_slice_instantiation(nsiId, request_json)
-    time.sleep(0.1)
     thread_update_slice_instantiation.start()
-
-    # starts the thread to notify the GTK if the slice is ready
-    #thread_notify_slice_instantiatied = notify_slice_instantiated(nsiId)
-    #time.sleep(0.1)
-    #thread_notify_slice_instantiatied.start()
 
     return (jsonNSI, 200)
   else:
@@ -818,50 +830,54 @@ def update_instantiating_nsi(nsiId, request_json):
 def terminate_nsi(nsiId, TerminOrder):
   LOG.info("NSI_MNGR: Terminates a NSI.")
   time.sleep(0.1)
+  mutex_slice2db_access.acquire()
+  try:
+    terminate_nsi = nsi_repo.get_saved_nsi(nsiId)
+    if (terminate_nsi):
+      if terminate_nsi['nsi-status'] == ["INSTANTIATED", "ERROR"]:
+        terminate_nsi["id"] = terminate_nsi["uuid"]
+        del terminate_nsi["uuid"]
 
-  jsonNSI = nsi_repo.get_saved_nsi(nsiId)
-  if (jsonNSI):
-    #TODO: improve the next 2 lines to not use this delete.
-    jsonNSI["id"] = jsonNSI["uuid"]
-    del jsonNSI["uuid"]
+        # prepares time values to check if termination is done in the future
+        if (TerminOrder['terminateTime'] == "0" or TerminOrder['terminateTime'] == 0):
+          termin_time = 0
+        else:
+          termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
+          instan_time = dateutil.parser.parse(terminate_nsi['instantiateTime'])
 
-    # prepares time values to check if termination is done in the future
-    if (TerminOrder['terminateTime'] == "0" or TerminOrder['terminateTime'] == 0):
-      termin_time = 0
+        # depending on the termin_time executes one action or another
+        if termin_time == 0:
+          terminate_nsi['terminateTime'] = str(datetime.datetime.now().isoformat())
+          terminate_nsi['sliceCallback'] = TerminOrder['callback']
+          terminate_nsi['nsi-status'] = "TERMINATING"
+
+          for terminate_nsr_item in terminate_nsi['nsr-list']:
+            if (terminate_nsr_item['working-status'] != "ERROR"):
+              terminate_nsr_item['working-status'] = "TERMINATING"
+
+          updated_nsi = nsi_repo.update_nsi(terminate_nsi, nsiId)
+
+          # starts the thread to terminate while sending back the response
+          thread_ns_termination = thread_ns_terminate(terminate_nsi)
+          thread_ns_termination.start()
+          
+        elif (instan_time < termin_time):                       # TODO: manage future termination orders
+          terminate_nsi['terminateTime'] = str(termin_time)
+          repo_responseStatus = nsi_repo.update_nsi(terminate_nsi, nsiId)
+        
+        else:
+          inst_time = terminate_nsi['instantiateTime']
+          terminate_nsi['errorLog'] = "Wrong value: 0 = instant termination, greater than " + inst_time + " future termination."
+
+      else:
+        terminate_nsi['errorLog'] = "This NSi is either terminated or being terminated."
+    
     else:
-      termin_time = dateutil.parser.parse(TerminOrder['terminateTime'])
-      instan_time = dateutil.parser.parse(jsonNSI['instantiateTime'])
-
-    # depending on the termin_time executes one action or another
-    if termin_time == 0 and jsonNSI['nsi-status'] == "INSTANTIATED":
-      jsonNSI['terminateTime'] = str(datetime.datetime.now().isoformat())
-      jsonNSI['sliceCallback'] = TerminOrder['callback']
-      jsonNSI['nsi-status'] = "TERMINATING"
-
-      for terminate_nsr_item in jsonNSI['nsr-list']:
-        if (terminate_nsr_item['working-status'] != "ERROR"):
-          terminate_nsr_item['working-status'] = "TERMINATING"
-
-      repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
-
-      # starts the thread to terminate while sending back the response
-      thread_ns_termination = thread_ns_terminate(jsonNSI)
-      time.sleep(0.1)
-      thread_ns_termination.start()
-      
-      value = 200
-    elif (instan_time < termin_time):                       # TODO: manage future termination orders
-      jsonNSI['terminateTime'] = str(termin_time)
-      repo_responseStatus = nsi_repo.update_nsi(jsonNSI, nsiId)
-      value = 200
-    else:
-      repo_responseStatus = {"error":"Wrong value: 0 for instant termination or date time later than "+NSI.instantiateTime+", to terminate in the future."}
-      value = 400
-
-    return (repo_responseStatus, value)
+      terminate_nsi['errorLog'] = "There is no NSIR in the db."
   
-  else:
-    return ('{"error":"There is no NSIR in the db."}', 500)
+  finally:
+    mutex_slice2db_access.release()
+    return terminate_nsi
 
 # Updates a NSI being terminated with the latest informationg coming from the MANO/GK.
 def update_terminating_nsi(nsiId, request_json):
