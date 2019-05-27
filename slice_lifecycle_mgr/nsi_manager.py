@@ -752,8 +752,6 @@ def add_vlds(new_nsir, nst_json):
           nsd_item = repo_item['nsd']
           for service_vl in nsd_item['virtual_links']:
             for service_cp_ref_item in service_vl['connection_points_reference']:
-              LOG.info("NSI_MNGR_addVLD:  Comparing service_cp_ref_item: " + str(service_cp_ref_item) + " & cp_ref_item[nsd-cp-ref]: " + str(cp_ref_item['nsd-cp-ref']))
-              time.sleep(0.1)
               if service_cp_ref_item == cp_ref_item['nsd-cp-ref']:
                 if service_vl.get('access'):
                   vld_record['access_net'] = service_vl['access']
