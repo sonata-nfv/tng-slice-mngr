@@ -605,11 +605,13 @@ def create_nsi(nsi_json):
     # starts the thread to instantiate while sending back the response
     thread_ns_instantiation = thread_ns_instantiate(new_nsir)
     thread_ns_instantiation.start()
-    return nsirepo_jsonresponse, 201
   else:
-    return nsirepo_jsonresponse[0], nsirepo_jsonresponse[1]
+    error_msg = nsirepo_jsonresponse[0]
+    new_nsir['errorLog'] = error_msg['message']
+    nsirepo_jsonresponse = new_nsir
   
-
+  return nsirepo_jsonresponse
+  
 # TODO: improve placement logic
 # does the placement of all the subnets within the NSI
 def nsi_placement():
