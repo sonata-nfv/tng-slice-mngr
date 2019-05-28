@@ -653,8 +653,13 @@ def nsi_placement():
     return_msg['error'] = "Not found any VIM information, register one to the SP."
     return return_msg, 500
   
-  for vim_item in vim_list['vim_list']:
+  #nsi_placed = vims_list['vim_list'][0]['vim_uuid']
+  for vim_item in vims_list['vim_list']:
+    LOG.info("NSI_MNGR: looking for a vim: " +str(vim_item))
+    time.sleep(0.1)
     if vim_item['type'] == "vm":
+      LOG.info("NSI_MNGR: VIM FOUND -> " +str(vim_item['type']) + " with uuid ->  " +str(vim_item['vim_uuid']))
+      time.sleep(0.1)
       nsi_placed = vim_item['vim_uuid']
       break
 
