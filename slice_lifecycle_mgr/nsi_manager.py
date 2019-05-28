@@ -654,9 +654,9 @@ def nsi_placement():
     return return_msg, 500
   
   for vim_item in vim_list['vim_list']:
-    if vim_item['type'] = "vm":
+    if vim_item['type'] == "vm":
       nsi_placed = vim_item['vim_uuid']
-      break;
+      break
 
   LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(nsi_placed))
   time.sleep(0.1)
