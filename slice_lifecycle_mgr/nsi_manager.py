@@ -850,7 +850,7 @@ def terminate_nsi(nsiId, TerminOrder):
   try:
     terminate_nsi = nsi_repo.get_saved_nsi(nsiId)
     if (terminate_nsi):
-      if terminate_nsi['nsi-status'] == ["INSTANTIATED", "ERROR"]:
+      if terminate_nsi['nsi-status'] in ["INSTANTIATED", "ERROR"]:
         terminate_nsi["id"] = terminate_nsi["uuid"]
         del terminate_nsi["uuid"]
 
