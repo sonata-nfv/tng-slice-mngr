@@ -876,24 +876,31 @@ def terminate_nsi(nsiId, TerminOrder):
           # starts the thread to terminate while sending back the response
           thread_ns_termination = thread_ns_terminate(terminate_nsi)
           thread_ns_termination.start()
+
+          terminate_value = 200
           
         elif (instan_time < termin_time):                       # TODO: manage future termination orders
           terminate_nsi['terminateTime'] = str(termin_time)
           repo_responseStatus = nsi_repo.update_nsi(terminate_nsi, nsiId)
+
+          terminate_value = 200
         
         else:
           inst_time = terminate_nsi['instantiateTime']
           terminate_nsi['errorLog'] = "Wrong value: 0 = instant termination, greater than " + inst_time + " future termination."
+          terminate_value = 404
 
       else:
         terminate_nsi['errorLog'] = "This NSi is either terminated or being terminated."
+        terminate_value = 404
     
     else:
       terminate_nsi['errorLog'] = "There is no NSIR in the db."
+      terminate_value = 404
   
   finally:
     mutex_slice2db_access.release()
-    return terminate_nsi
+    return terminate_nsi, terminate_value
 
 # Updates a NSI being terminated with the latest informationg coming from the MANO/GK.
 def update_terminating_nsi(nsiId, request_json):
