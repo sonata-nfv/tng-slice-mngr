@@ -229,7 +229,7 @@ class thread_ns_instantiate(Thread):
       json_slice_info['updateTime'] = jsonNSI['updateTime']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
-      LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GKT notified with status: " +str(thread_response[1]))
+      LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GTK notified with status: " +str(thread_response[1]))
 
   def run(self):
     # used to not instantiate NSs if, in case there are in the NST, networks are not well created
@@ -279,7 +279,7 @@ class thread_ns_instantiate(Thread):
       #deployment_timeout = 2 * 3600   # Two hours
       deployment_timeout = 900   # 15min   #TODO: mmodify for the reviews
       while deployment_timeout > 0:
-        LOG.info(" Waiting all services to be ready/instantiated or error...")
+        LOG.info("Processing services instantiations...")
         # Check ns instantiation status
         nsi_instantiated = True
         jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
@@ -289,7 +289,7 @@ class thread_ns_instantiate(Thread):
         
         # if all services are instantiated or error, break the while loop to notify the GTK
         if nsi_instantiated:
-          LOG.info("All service instantiations are ready!")
+          LOG.info("All service instantiations requests processed!")
           break
     
         time.sleep(15)
@@ -473,6 +473,7 @@ class thread_ns_terminate(Thread):
       json_slice_info['updateTime'] = jsonNSI['updateTime']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+      LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GTK notified with status: " +str(thread_response[1]))
 
   def run(self):
     # Sends all the requests to instantiate the NSs within the slice
@@ -482,7 +483,7 @@ class thread_ns_terminate(Thread):
     # deployment_timeout = 2 * 3600   # Two hours
     deployment_timeout = 900         # 15 minutes  #TODO: mmodify for the reviews
     while deployment_timeout > 0:
-      LOG.info("Waiting all services are terminated or error...")
+      LOG.info("Processing services terminations...")
       time.sleep(0.1)
       # Check ns instantiation status
       nsi_terminated = True
@@ -493,7 +494,7 @@ class thread_ns_terminate(Thread):
       
       # if all services are instantiated or error, break the while loop to notify the GTK
       if nsi_terminated:
-        LOG.info("All service termination are ready!")
+        LOG.info("All service terminations requests processed!")
         time.sleep(0.1)
         break
   
@@ -642,7 +643,7 @@ def create_nsi(nsi_json):
 # does the placement of all the subnets within the NSI
 def nsi_placement():
   # get the VIMs information registered to the SP
-  vims_list = mapper.get_vims_info()                    #TODO: configure it to wait for 1min
+  vims_list = mapper.get_vims_info()
   LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
   time.sleep(0.1)
 
@@ -652,9 +653,11 @@ def nsi_placement():
     return_msg['error'] = "Not found any VIM information, register one to the SP."
     return return_msg, 500
   
-  #TODO: improve placement
-  nsi_placed = vims_list['vim_list'][0]['vim_uuid']
-  #nsi_placed = str(uuid.uuid4())
+  for vim_item in vim_list['vim_list']:
+    if vim_item['type'] = "vm":
+      nsi_placed = vim_item['vim_uuid']
+      break;
+
   LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(nsi_placed))
   time.sleep(0.1)
   
