@@ -54,7 +54,7 @@ def create_nst(jsondata):
   # Validates that no existing NSTD has the same NAME-VENDOR-VERSION (avoid duplicate NSTDs)
   nst_list = nst_catalogue.get_all_saved_nst()
   if nst_list:
-    for nstd_item in nstcatalogue_jsonresponse:
+    for nstd_item in nst_list:
       if (nstd_item['nstd']['name'] == jsondata['name'] and nstd_item['nstd']['vendor'] == jsondata['vendor'] and nstd_item['nstd']['version'] == jsondata['version']):
         return_msg = {}
         return_msg['error'] = "NSTD with this description parameters (NAME, VENDOR or VERSION) already exists."
