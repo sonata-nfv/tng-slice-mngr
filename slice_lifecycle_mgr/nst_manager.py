@@ -78,7 +78,7 @@ def create_nst(jsondata):
   
   #Sends the new NST to the catalogues (DB)
   nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
-  return nstcatalogue_jsonresponse[0]
+  return nstcatalogue_jsonresponse
 
 # Updates the information of a selected NST in catalogues
 def updateNST(nstId, NST_string):
