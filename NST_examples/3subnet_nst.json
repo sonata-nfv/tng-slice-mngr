@@ -10,7 +10,6 @@
   "onboardingState": "ENABLED",
   "operationalState": "ENABLED",
   "usageState": "NOT_IN_USE",
-  "5qi_value": 3,
   "slice_ns_subnets": [
     {
       "id": "Service_subnet_1",

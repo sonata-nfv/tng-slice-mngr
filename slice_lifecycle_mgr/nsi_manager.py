@@ -172,9 +172,13 @@ class thread_ns_instantiate(Thread):
         data['sla_id'] = nsr_item['sla-ref']
       else:
         data['sla_id'] = ""
-      #data['ingresses'] = []
-      #data['egresses'] = []
-      #data['blacklist'] = []
+      
+      if nsr_item['ingresses']:
+        data['ingresses'] = nsr_item['ingresses']
+      if nsr_item['egresses']:
+        data['egresses'] = nsr_item['egresses']
+      
+      # data['blacklist'] = []
 
       LOG.info("NSI_MNGR_Instantiate: this is what GTK receives: " +str(data))
       time.sleep(0.1)
@@ -331,7 +335,6 @@ class update_slice_instantiation(Thread):
           
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "INSTANTIATED"
-            service_item['isinstantiated'] = True
           else:
             service_item['working-status'] = self.request_json['status']
           
@@ -557,7 +560,6 @@ class update_slice_termination(Thread):
           service_item['requestId'] = self.request_json['id']
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "TERMINATED"
-            service_item['isinstantiated'] = False
           else:
             service_item['working-status'] = self.request_json['status']
           break;
@@ -713,9 +715,11 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
             break
         if found_shared_nsr:
           break
+      #TODO: what about the ingress and egress of a nwe slice having the shared NSR???
     else:
-      #TODO: add all the code under until "subnet_record['isinstantiated'] = False"
+      #TODO: add all the code under until "subnet_record['isshared'] = False"
     '''
+    # Copying the basic subnet info from the NST to the NSI
     subnet_record = {}
     subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
     subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
@@ -723,19 +727,42 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
     subnet_record['working-status'] = 'INSTANTIATING'    
     subnet_record['subnet-ref'] = subnet_item['id']
     subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
+    subnet_record['requestId'] = ''
+    subnet_record['isshared'] = subnet_item['is-shared']
     
-    if 'services_sla' in  request_nsi_json:
-      for serv_sla_item in request_nsi_json['services_sla']:
-        if serv_sla_item['subnet_id'] == subnet_item['id']:
-          subnet_record['sla-name'] = serv_sla_item['sla_name']                           #TODO: add instantiation parameters
-          subnet_record['sla-ref'] = serv_sla_item['sla_uuid']                            #TODO: add instantiation parameters
+    # Checks if the subnet item has SLA, ingresses or egresses information
+    if all(key in subnet_item for key in ('sla-name', 'sla-ref')):
+      subnet_record['sla-name'] = subnet_item['sla-name']
+      subnet_record['sla-ref'] = subnet_item['sla-ref']
     else:
       subnet_record['sla-name'] = "None"
       subnet_record['sla-ref'] = "None"
+
+    if 'ingresses' in subnet_item:
+      subnet_record['ingresses'] = subnet_item['ingresses']
+    else:
+      subnet_record['ingresses'] = []
     
-    subnet_record['requestId'] = ''
-    subnet_record['isshared'] = subnet_item['is-shared']
-    subnet_record['isinstantiated'] = False
+    if 'egresses' in subnet_item:
+      subnet_record['egresses'] = subnet_item['egresses']
+    else:
+      subnet_record['egresses'] = []
+
+    # Adding the instantiation parameters into the NSI subnet
+    if 'instantiation_params' in request_nsi_json:
+      instant_params = request_nsi_json['instantiation_params']
+      for ip_item in instant_params:
+        if ip_item['subnet_id'] == subnet_item['id']:
+          # checking about SLA
+          if all(key in instant_params for key in ('sla_id', 'sla_name')):
+            subnet_record['sla-name'] = ip_item['sla_name']
+            subnet_record['sla-ref'] = ip_item['sla_id']
+          # checking about ingresses
+          if 'ingresses' in instant_params:
+            subnet_record['ingresses'] = ip_item['ingresses']
+          # checking about egresses
+          if 'egresses' in instant_params:
+            subnet_record['egresses'] = ip_item['egresses']
     
     # adding the vld id where each subnet is connected to
     subnet_vld_list = []
@@ -747,7 +774,6 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
             subnet_vld_item['vld-ref'] = vld_item['id']
             subnet_vld_list.append(subnet_vld_item)
             break
-
     subnet_record['vld'] = subnet_vld_list
 
     nsr_list.append(subnet_record)
