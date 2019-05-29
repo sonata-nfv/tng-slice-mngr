@@ -691,7 +691,6 @@ def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
   nsir_dict['scaleTime'] = ''
   nsir_dict['updateTime'] = ''
   nsir_dict['sliceCallback'] = nsi_json['callback']  #URL used to call back the GK when the slice instance is READY/ERROR
-  nsir_dict['5qiValue'] = nst_json['5qi_value']
   nsir_dict['nsr-list'] = []
   nsir_dict['vldr-list'] = []
 

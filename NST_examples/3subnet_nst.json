@@ -1,5 +1,5 @@
 {
-  "name": "NST_3subnets_5links",
+  "name": "NST_3subnets_5links_v2",
   "description": "This is the description of a NST.",
   "version": "3.0",
   "author": "CTTC",
@@ -16,8 +16,8 @@
       "nsd-name": "ns-2-vnf-2-vdu",
       "nsd-vendor": "eu.5gtango",
       "nsd-version": "0.1",
-      "sla-name": "None",
-      "sla-ref": "None",
+      "sla-name": "asdfgaDSGADF",
+      "sla-ref": "1a7a6062-fa9e-4b7b-a9c5-90e361f9d4f1",
       "is-shared": false
     },
     {
@@ -27,16 +27,26 @@
       "nsd-version": "0.1",
       "sla-name": "None",
       "sla-ref": "None",
-      "is-shared": true
+      "is-shared": true,
+      "ingresses": [],
+      "egresses": []
     },
     {
       "id": "Service_subnet_3",
       "nsd-name": "ns-2-vnf-2-vdu",
       "nsd-vendor": "eu.5gtango",
       "nsd-version": "0.1",
-      "sla-name": "None",
-      "sla-ref": "None",
-      "is-shared": false
+      "is-shared": false,
+      "egresses": [
+        {
+          "location": "daf77638-7d9a-44ec-b54b-97a03876a479",
+          "nap": "10.10.10.3/32"
+        },
+        {
+          "location": "b9311207-c87f-4d68-8698-5870aa441e2f",
+          "nap": "10.10.10.4/32"
+        }
+      ]
     }
   ],
   "slice_vld": [
