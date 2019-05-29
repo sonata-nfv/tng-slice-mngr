@@ -52,8 +52,8 @@ def create_nst(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
 
   # Validates that no existing NSTD has the same NAME-VENDOR-VERSION (avoid duplicate NSTDs)
-  nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst()
-  if nstcatalogue_jsonresponse:
+  nst_list = nst_catalogue.get_all_saved_nst()
+  if nst_list:
     for nstd_item in nstcatalogue_jsonresponse:
       if (nstd_item['nstd']['name'] == jsondata['name'] and nstd_item['nstd']['vendor'] == jsondata['vendor'] and nstd_item['nstd']['version'] == jsondata['version']):
         return_msg = {}
@@ -77,8 +77,8 @@ def create_nst(jsondata):
       return return_msg, 400
   
   #Sends the new NST to the catalogues (DB)
-  nstcatalogue_jsonresponse = nst_catalogue.safe_nst(jsondata)
-  return nstcatalogue_jsonresponse
+  nst_response = nst_catalogue.safe_nst(jsondata)
+  return nst_response
 
 # Updates the information of a selected NST in catalogues
 def updateNST(nstId, NST_string):
