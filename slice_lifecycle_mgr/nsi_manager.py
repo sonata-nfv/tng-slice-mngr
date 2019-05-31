@@ -715,7 +715,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
     if subnet_item['is-shared']:
       for nsir_ref_item in nsirs_ref_list:
         for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
-          if nsir_subnet_ref_item['subnet-nsdId-ref'] = subnet_item['nsd-ref'] and nsir_subnet_ref_item['is-shared']:
+          if nsir_subnet_ref_item['subnet-nsdId-ref'] == subnet_item['nsd-ref'] and nsir_subnet_ref_item['is-shared']:
             subnet_record = nsir_subnet_ref_item
             found_shared_nsr = True
             break
@@ -835,7 +835,7 @@ def add_vlds(new_nsir, nst_json):
   nsirs_ref_list = nsi_repo.get_all_saved_nsi()
   for nsr_item in new_nsir['nsr-list']:
     if nsr_item['is-shared']:
-      nsirs_ref = next(item for item in nsirs_ref_list if (item.get("subnet-nsdId-ref") == nsr_item['subnet-nsdId-ref'] and item.get("is-shared")), None)
+      nsirs_ref = next([item for item in nsirs_ref_list if (item.get("subnet-nsdId-ref") == nsr_item['subnet-nsdId-ref'] and item.get("is-shared"))], None)
       if nsirs_ref:
         for vld_nsr_item in nsr_item['vld']:
           for vldr_ref in nsirs_ref['vldr-list']:
