@@ -31,39 +31,5 @@
     }
   ],
   "slice_vld": [
-    {
-      "id": "mgmt",
-      "name": "mgmt",
-      "mgmt-network": true,
-      "type": "E-LAN",
-      "nsd-connection-point-ref": [
-        {
-          "nsd-cp-ref": "mgmt",
-          "subnet-ref": "Service_subnet_1"
-        }
-      ]
-    },
-    {
-      "id": "slice_input",
-      "name": "slice_input",
-      "type": "E-LAN",
-      "nsd-connection-point-ref": [
-        {
-          "nsd-cp-ref": "input",
-          "subnet-ref": "Service_subnet_1"
-        }
-      ]
-    },
-    {
-      "id": "slice_output",
-      "name": "slice_output",
-      "type": "E-LAN",
-      "nsd-connection-point-ref": [
-        {
-          "nsd-cp-ref": "output",
-          "subnet-ref": "Service_subnet_1"
-        }
-      ]
-    }
   ]
 }
