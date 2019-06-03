@@ -171,8 +171,6 @@ class thread_ns_instantiate(Thread):
           virtual_links_list.append(virt_link)
         mapping['virtual_links'] = virtual_links_list
         data['mapping'] = mapping
-      else:
-        data['mapping'] = {}
 
       if (nsr_item['sla-ref'] != "None"):
         data['sla_id'] = nsr_item['sla-ref']
@@ -630,9 +628,9 @@ def create_nsi(nsi_json):
   new_nsir = add_subnets(new_nsir, nst_json, nsi_json)
 
   # adds the VLD information within the NSI record
-  LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
-  time.sleep(0.1)
   if nst_json.get("slice_vld"):
+    LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
+    time.sleep(0.1)
     new_nsir = add_vlds(new_nsir, nst_json)
   
   # saving the NSI into the repositories
