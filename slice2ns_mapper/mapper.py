@@ -64,7 +64,6 @@ def use_sonata():
   return os.environ.get("USE_SONATA")
 
 ##################################### SERVICES MANAGEMENT REQUESTS #######################################
-#TODO: join this request with the next to have just one either to instantiate & terminate
 # POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(service_data):
   url = get_base_url() + '/requests'
@@ -122,8 +121,6 @@ def sliceUpdated(slice_callback, json_slice_info):
       error_json = {'http_code': response.status_code,'message': response.json()}
       return error_json, response.status_code
   
-
-#TODO: check if the next two requests are necessary...
 # GET /requests to pull the information of all Network Services INSTANCES
 def get_all_all_nsr():
   url = get_base_url() + "/requests"
@@ -164,34 +161,34 @@ def get_requested_nsr(request_uuid):
 
 
 ##################################### VIM NETWORKS MANAGEMENT REQUESTS #######################################
-# request to get all registered VIMs information
 '''
-Params: null
-Request payload: null
-Return:
-{
-  vim_list: [
-    {
-      vim_uuid: String,
-      type: String,
-      vim_city: String,
-      vim_domain: String,
-      vim_name: String,
-      vim_endpoint: String,
-      memory_total: int,
-      memory_used: int,
-      core_total: int,
-      core_used: int
-    }
-  ],
-  nep_list: [
-    {
-      nep_uuid: String,
-      type: String,
-      nep_name: String
-    }
-  ]
-} 
+Objective: Request to get all registered VIMs information
+  Params: null
+  Request payload: null
+  Return:
+  {
+    vim_list: [
+      {
+        vim_uuid: String,
+        type: String,
+        vim_city: String,
+        vim_domain: String,
+        vim_name: String,
+        vim_endpoint: String,
+        memory_total: int,
+        memory_used: int,
+        core_total: int,
+        core_used: int
+      }
+    ],
+    nep_list: [
+      {
+        nep_uuid: String,
+        type: String,
+        nep_name: String
+      }
+    ]
+  } 
 '''
 def get_vims_info():
   LOG.info("MAPPER: Requesting VIMs information.")
@@ -218,32 +215,32 @@ def get_vims_info():
     LOG.info(jsonresponse)
     return jsonresponse
 
-# request to create the networks for a slice deployment
 '''
-Params: network_data - contains payload with the network characteristics
-Request payload:
-{
-  instance_id: String,
-  vim_list: [
-    {
-      uuid: String,
-      virtual_links: [
-        {
-          id: String,
-          access: String,
-          dhcp: String,
-          cidr: String,
-          qos: String,
-          qos_requirements: {
-            bandwidth_limit: { bandwidth: int, bandwidth_unit: String },
-            minimum_bandwidth: { bandwidth: int, bandwidth_unit: String }
+Objective: Request to create the networks for a slice deployment 
+  Params: network_data - contains payload with the network characteristics
+  Request payload:
+  {
+    instance_id: String,
+    vim_list: [
+      {
+        uuid: String,
+        virtual_links: [
+          {
+            id: String,
+            access: String,
+            dhcp: String,
+            cidr: String,
+            qos: String,
+            qos_requirements: {
+              bandwidth_limit: { bandwidth: int, bandwidth_unit: String },
+              minimum_bandwidth: { bandwidth: int, bandwidth_unit: String }
+            }
           }
-        }
-      ]
-    }
-  ]
-}
-Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
+        ]
+      }
+    ]
+  }
+  Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def create_vim_network(network_data):
   url = get_base_url() + '/slices/networks'
@@ -273,24 +270,24 @@ def create_vim_network(network_data):
     jsonresponse = json.loads('{"id":"'+str(uuident)+'"}') #TODO: ask José the response
     return jsonresponse
 
-# request to delete the networks for a slice deployment
 '''
-Params: network_id
-Request payload: 
-{
-  instance_id: String,
-  vim_list: [
-    {
-      uuid: String,
-      virtual_links: [
-        {
-          id: String
-        }
-      ]
-    }
-  ]
-}
-Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
+Objective: Request to delete the networks for a slice deployment
+  Params: network_id
+  Request payload:
+  {
+    instance_id: String,
+    vim_list: [
+      {
+        uuid: String,
+        virtual_links: [
+          {
+            id: String
+          }
+        ]
+      }
+    ]
+  }
+  Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def delete_vim_network(network_data):
   url = get_base_url() + '/slices/networks'

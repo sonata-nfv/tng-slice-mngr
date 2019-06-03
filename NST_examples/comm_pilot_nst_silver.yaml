@@ -1,0 +1,45 @@
+name: "SILVER_CommunicationsPilot_NST"
+description: "NST for the communication pilot with GOLD QoS."
+vendor: "5gtango"
+version: "2.0"
+author: "5GTango"
+usageState: "NOT_IN_USE"
+SNSSAI_identifier:
+  slice-service-type: "eMBB"
+slice_ns_subnets:
+  - id: "Service_subnet_1"
+    nsd-ref: "f51543f1-b9e4-405c-9a20-d121d7c42a20"
+    nsd-name: "Videoconference"
+    nsd-vendor: "eu.5gtango"
+    nsd-version: "0.1"
+    sla-name: "SILVER_COMM_SLA"
+    sla-ref: "40d3ca12-213d-49a6-a759-a7fcbb444a8e"
+    is-shared: false
+    ingresses:
+      - location: "0cce0d49-a3c3-46cc-877b-1589d907c748"
+        nap: "10.10.10.1/32"
+      - location: "0cce0d49-a3c3-46cc-877b-1589d907c748"
+        nap: "10.10.10.2/32"
+    egresses:
+      - location: "02b2d4fd-b168-4428-82f0-5bf04d02d8b0"
+        nap: "10.10.10.3/32"
+slice_vld:
+  - id: "mgmt"
+    name: "mgmt"
+    mgmt-network: true
+    tyep: "E-LAN"
+    nsd-connection-point-ref:
+      - nsd-cp-ref: "mgmt"
+        subnet-ref: "Service_subnet_1"
+  - id: "slice_input"
+    name: "slice_input"
+    tyep: "E-LAN"
+    nsd-connection-point-ref:
+      - nsd-cp-ref: "input"
+        subnet-ref: "Service_subnet_1"
+  - id: "slice_output"
+    name: "slice_output"
+    tyep: "E-LAN"
+    nsd-connection-point-ref:
+      - nsd-cp-ref: "output"
+        subnet-ref: "Service_subnet_1"

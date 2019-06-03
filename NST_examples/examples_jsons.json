@@ -1,36 +1,160 @@
 /* Mocked user request*/
 {
-    "nst_id":"d348f586-fd18-4789-92fe-dd583285178c",
-    "name":"NSI_Example",
-    "description":"this is a description",
-    "request_type":"CREATE_SLICE",
-    "services_sla":[
-      {"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"},
-      {"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"},
-      {"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"}
-    ]
+  "nst_id":"d348f586-fd18-4789-92fe-dd583285178c",
+  "name":"NSI_Example",
+  "description":"this is a description",
+  "request_type":"CREATE_SLICE",
+  "services_sla":[
+    {"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"},
+    {"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"},
+    {"service_uuid":"741e8c64-44e0-430f-bdce-41584911b217","sla_name":"None","sla_uuid":"None"}
+  ]
 }
 
-/* NST with three 2ns-2vnf NSDs*/
+/* NST with three 2ns-2vnf NSDs */
 {
-  "created_at": "2019-05-21T12:45:41.243+00:00",
-  "md5": "aacf14a9df0bc993c4881b4af3090f45",
+  "name": "NST_3subnets_5links_v2",
+  "description": "This is the description of a NST.",
+  "version": "3.0",
+  "author": "CTTC",
+  "vendor": "5GTango",
+  "SNSSAI_identifier": {
+    "slice-service-type": "eMBB"
+  },
+  "usageState": "NOT_IN_USE",
+  "slice_ns_subnets": [
+    {
+      "id": "Service_subnet_1",
+      "nsd-name": "ns-2-vnf-2-vdu",
+      "nsd-vendor": "eu.5gtango",
+      "nsd-version": "0.1",
+      "sla-name": "asdfgaDSGADF",
+      "sla-ref": "1a7a6062-fa9e-4b7b-a9c5-90e361f9d4f1",
+      "is-shared": false
+    },
+    {
+      "id": "Service_subnet_2",
+      "nsd-name": "ns-2-vnf-2-vdu",
+      "nsd-vendor": "eu.5gtango",
+      "nsd-version": "0.1",
+      "sla-name": "None",
+      "sla-ref": "None",
+      "is-shared": true,
+      "ingresses": [],
+      "egresses": []
+    },
+    {
+      "id": "Service_subnet_3",
+      "nsd-name": "ns-2-vnf-2-vdu",
+      "nsd-vendor": "eu.5gtango",
+      "nsd-version": "0.1",
+      "is-shared": false,
+      "egresses": [
+        {
+          "location": "daf77638-7d9a-44ec-b54b-97a03876a479",
+          "nap": "10.10.10.3/32"
+        },
+        {
+          "location": "b9311207-c87f-4d68-8698-5870aa441e2f",
+          "nap": "10.10.10.4/32"
+        }
+      ]
+    }
+  ],
+  "slice_vld": [
+    {
+      "id": "mgmt",
+      "name": "mgmt",
+      "mgmt-network": true,
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_1",
+          "nsd-cp-ref": "mgmt"
+        },
+        {
+          "subnet-ref": "Service_subnet_2",
+          "nsd-cp-ref": "mgmt"
+        },
+        {
+          "subnet-ref": "Service_subnet_3",
+          "nsd-cp-ref": "mgmt"
+        }
+      ]
+    },
+    {
+      "id": "slice_input",
+      "name": "slice_input",
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_1",
+          "nsd-cp-ref": "input"
+        }
+      ]
+    },
+    {
+      "id": "subnet1_2_subnet2",
+      "name": "subnet1_2_subnet2",
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_1",
+          "nsd-cp-ref": "output"
+        },
+        {
+          "subnet-ref": "Service_subnet_2",
+          "nsd-cp-ref": "input"
+        }
+      ]
+    },
+    {
+      "id": "subnet2_2_subnet3",
+      "name": "subnet2_2_subnet3",
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_2",
+          "nsd-cp-ref": "output"
+        },
+        {
+          "subnet-ref": "Service_subnet_3",
+          "nsd-cp-ref": "input"
+        }
+      ]
+    },
+    {
+      "id": "slice_output",
+      "name": "slice_output",
+      "mgmt-network": true,
+      "type": "E-LAN",
+      "nsd-connection-point-ref": [
+        {
+          "subnet-ref": "Service_subnet_3",
+          "nsd-cp-ref": "output"
+        }
+      ]
+    }
+  ]
+}
+
+/* Uploaded NST with three 2ns-2vnf NSDs */
+{
+  "created_at": "2019-05-22T07:54:06.070+00:00",
+  "md5": "5ed7449a899926a861ff45414eda240a",
   "nstd": {
-    "5qi_value": 3,
     "SNSSAI_identifier": {
       "slice-service-type": "eMBB"
     },
     "author": "CTTC",
     "description": "This is the description of a NST.",
     "name": "NST_3subnets_5links",
-    "onboardingState": "ENABLED",      // TODO: REMOVE
-    "operationalState": "ENABLED",     // TODO: REMOVE
     "slice_ns_subnets": [
       {
         "id": "Service_subnet_1",
         "is-shared": false,
         "nsd-name": "ns-2-vnf-2-vdu",
-        "nsd-ref": "97734872-13e4-400a-aef0-172bbde96264",
+        "nsd-ref": "f394a691-54d5-4f1a-93e0-24080dddf54f",
         "nsd-vendor": "eu.5gtango",
         "nsd-version": "0.1",
         "sla-name": "None",
@@ -40,7 +164,7 @@
         "id": "Service_subnet_2",
         "is-shared": true,
         "nsd-name": "ns-2-vnf-2-vdu",
-        "nsd-ref": "97734872-13e4-400a-aef0-172bbde96264",
+        "nsd-ref": "f394a691-54d5-4f1a-93e0-24080dddf54f",
         "nsd-vendor": "eu.5gtango",
         "nsd-version": "0.1",
         "sla-name": "None",
@@ -50,7 +174,7 @@
         "id": "Service_subnet_3",
         "is-shared": false,
         "nsd-name": "ns-2-vnf-2-vdu",
-        "nsd-ref": "97734872-13e4-400a-aef0-172bbde96264",
+        "nsd-ref": "f394a691-54d5-4f1a-93e0-24080dddf54f",
         "nsd-vendor": "eu.5gtango",
         "nsd-version": "0.1",
         "sla-name": "None",
@@ -94,11 +218,11 @@
         "name": "subnet1_2_subnet2",
         "nsd-connection-point-ref": [
           {
-            "nsd-cp-ref": "input",
+            "nsd-cp-ref": "output",
             "subnet-ref": "Service_subnet_1"
           },
           {
-            "nsd-cp-ref": "output",
+            "nsd-cp-ref": "input",
             "subnet-ref": "Service_subnet_2"
           }
         ],
@@ -121,6 +245,7 @@
       },
       {
         "id": "slice_output",
+        "mgmt-network": true,
         "name": "slice_output",
         "nsd-connection-point-ref": [
           {
@@ -137,34 +262,32 @@
   },
   "signature": null,
   "status": "active",
-  "updated_at": "2019-05-21T12:45:41.243+00:00",
+  "updated_at": "2019-05-22T07:54:06.070+00:00",
   "username": null,
-  "uuid": "04259395-5167-46b2-ba06-c460d027be06"
+  "uuid": "44cf00f5-7ceb-449e-9f81-b9325ac58722"
 }
-
 
 /* NSI Example*/
 {
-  "5qiValue": 3,
-  "created_at": "2019-05-21T12:46:58.757+00:00",
-  "datacenter": "11111111-2222-3333-4444-555555555555",
-  "description": "description",
+  "created_at": "2019-05-22T08:42:35.915+00:00",
+  "datacenter": "88888888-2222-3333-4444-888888888888",
+  "description": "foobar",
   "errorLog": "",
-  "instantiateTime": "2019-05-21T12:46:58.440427",
-  "name": "21may_1",
+  "instantiateTime": "2019-05-22T08:42:27.278548",
+  "name": "foobar",
   "nsi-status": "ERROR",
   "nsr-list": [
     {
       "isinstantiated": false,
       "isshared": false,
       "nsrId": "00000000-0000-0000-0000-000000000000",
-      "nsrName": "21may_1-Service_subnet_1-1",
-      "requestId": "dacdd534-7ec7-496f-98f8-e17cc7fc9637",
+      "nsrName": "foobar-Service_subnet_1-1",
+      "requestId": "18af667d-9aee-48c4-902b-e6ad5104261f",
       "sla-name": "None",
       "sla-ref": "None",
-      "subnet-nsdId-ref": "97734872-13e4-400a-aef0-172bbde96264",
+      "subnet-nsdId-ref": "f394a691-54d5-4f1a-93e0-24080dddf54f",
       "subnet-ref": "Service_subnet_1",
-      "vimAccountId": "11111111-2222-3333-4444-555555555555",
+      "vimAccountId": "88888888-2222-3333-4444-888888888888",
       "vld": [
         {
           "vld-ref": "mgmt"
@@ -182,13 +305,13 @@
       "isinstantiated": false,
       "isshared": true,
       "nsrId": "00000000-0000-0000-0000-000000000000",
-      "nsrName": "21may_1-Service_subnet_2-2",
-      "requestId": "eefd9c2c-0078-4734-8d17-dfed437b8588",
+      "nsrName": "foobar-Service_subnet_2-2",
+      "requestId": "a452ddfe-cc1f-45e3-a396-7ded23c74b13",
       "sla-name": "None",
       "sla-ref": "None",
-      "subnet-nsdId-ref": "97734872-13e4-400a-aef0-172bbde96264",
+      "subnet-nsdId-ref": "f394a691-54d5-4f1a-93e0-24080dddf54f",
       "subnet-ref": "Service_subnet_2",
-      "vimAccountId": "11111111-2222-3333-4444-555555555555",
+      "vimAccountId": "88888888-2222-3333-4444-888888888888",
       "vld": [
         {
           "vld-ref": "mgmt"
@@ -206,13 +329,13 @@
       "isinstantiated": false,
       "isshared": false,
       "nsrId": "00000000-0000-0000-0000-000000000000",
-      "nsrName": "21may_1-Service_subnet_3-3",
-      "requestId": "a1ad8ec3-9ad3-4841-b1c9-7509695c7ddc",
+      "nsrName": "foobar-Service_subnet_3-3",
+      "requestId": "5a088890-d3b9-4cf0-ae0c-f71885515370",
       "sla-name": "None",
       "sla-ref": "None",
-      "subnet-nsdId-ref": "97734872-13e4-400a-aef0-172bbde96264",
+      "subnet-nsdId-ref": "f394a691-54d5-4f1a-93e0-24080dddf54f",
       "subnet-ref": "Service_subnet_3",
-      "vimAccountId": "11111111-2222-3333-4444-555555555555",
+      "vimAccountId": "88888888-2222-3333-4444-888888888888",
       "vld": [
         {
           "vld-ref": "mgmt"
@@ -228,17 +351,18 @@
     }
   ],
   "nst-name": "NST_3subnets_5links",
-  "nst-ref": "04259395-5167-46b2-ba06-c460d027be06",
+  "nst-ref": "44cf00f5-7ceb-449e-9f81-b9325ac58722",
   "nst-version": "3.0",
   "scaleTime": "",
-  "sliceCallback": "http://tng-gtk-sp:5000/requests/14fc2963-dc38-4902-85ac-0984b1f5e385/on-change",
+  "sliceCallback": "http://tng-gtk-sp:5000/requests/087010b8-2b16-46d8-84d3-53962eef983c/on-change",
   "terminateTime": "",
-  "updateTime": "2019-05-21T13:02:04.840001",
-  "updated_at": "2019-05-21T12:46:58.757+00:00",
-  "uuid": "9bd7b5cf-7cdd-4e79-91dd-0afbc41993ba",
+  "updateTime": "2019-05-22T08:42:54.085551",
+  "updated_at": "2019-05-22T08:42:35.915+00:00",
+  "uuid": "e8c85a57-f7ca-4fef-8b38-5a6864a6bd4e",
   "vendor": "5GTango",
   "vldr-list": [
     {
+      "access_net": true,
       "id": "mgmt",
       "mgmt-network": true,
       "name": "mgmt",
@@ -255,11 +379,12 @@
       ],
       "shared-nsrs-list": [],
       "type": "E-LAN",
-      "vim-net-id": "21may_1.mgmt.net.195ae247-e6e6-4f18-96fb-7b58f43d3787",
-      "vimAccountId": "11111111-2222-3333-4444-555555555555",
+      "vim-net-id": "foobar.mgmt.net.5a46168b-9565-4e4c-80a4-d4faafbe2f39",
+      "vimAccountId": "88888888-2222-3333-4444-888888888888",
       "vld-status": "ACTIVE"
     },
     {
+      "access_net": true,
       "id": "slice_input",
       "name": "slice_input",
       "ns-conn-point-ref": [
@@ -269,28 +394,30 @@
       ],
       "shared-nsrs-list": [],
       "type": "E-LAN",
-      "vim-net-id": "21may_1.slice_input.net.4c72bdb5-dc57-4e07-aef0-abf0f5de7fef",
-      "vimAccountId": "11111111-2222-3333-4444-555555555555",
+      "vim-net-id": "foobar.slice_input.net.2d4b549a-3a34-4e31-8180-8fd68999f31c",
+      "vimAccountId": "88888888-2222-3333-4444-888888888888",
       "vld-status": "ACTIVE"
     },
     {
+      "access_net": true,
       "id": "subnet1_2_subnet2",
       "name": "subnet1_2_subnet2",
       "ns-conn-point-ref": [
         {
-          "Service_subnet_1": "input"
+          "Service_subnet_1": "output"
         },
         {
-          "Service_subnet_2": "output"
+          "Service_subnet_2": "input"
         }
       ],
       "shared-nsrs-list": [],
       "type": "E-LAN",
-      "vim-net-id": "21may_1.subnet1_2_subnet2.net.fde72d50-c9ed-4938-b22e-7b7f43931887",
-      "vimAccountId": "11111111-2222-3333-4444-555555555555",
+      "vim-net-id": "foobar.subnet1_2_subnet2.net.6750bd5d-be85-461f-a87d-fa4a7fb376af",
+      "vimAccountId": "88888888-2222-3333-4444-888888888888",
       "vld-status": "ACTIVE"
     },
     {
+      "access_net": true,
       "id": "subnet2_2_subnet3",
       "name": "subnet2_2_subnet3",
       "ns-conn-point-ref": [
@@ -303,12 +430,14 @@
       ],
       "shared-nsrs-list": [],
       "type": "E-LAN",
-      "vim-net-id": "21may_1.subnet2_2_subnet3.net.947c4b97-d29b-4257-92cc-517d50b2ee67",
-      "vimAccountId": "11111111-2222-3333-4444-555555555555",
+      "vim-net-id": "foobar.subnet2_2_subnet3.net.385a37af-81cb-4642-b7a1-9a13e086bc1f",
+      "vimAccountId": "88888888-2222-3333-4444-888888888888",
       "vld-status": "ACTIVE"
     },
     {
+      "access_net": true,
       "id": "slice_output",
+      "mgmt-network": true,
       "name": "slice_output",
       "ns-conn-point-ref": [
         {
@@ -317,13 +446,12 @@
       ],
       "shared-nsrs-list": [],
       "type": "E-LAN",
-      "vim-net-id": "21may_1.slice_output.net.d6bed68e-2cca-48cf-a260-f1d5fb99146d",
-      "vimAccountId": "11111111-2222-3333-4444-555555555555",
+      "vim-net-id": "foobar.slice_output.net.fd62747d-6a17-4631-bcc0-559286a0e7cc",
+      "vimAccountId": "88888888-2222-3333-4444-888888888888",
       "vld-status": "ACTIVE"
     }
   ]
 }
-
 
 /* 2ns-2vnf NSD */
 {
