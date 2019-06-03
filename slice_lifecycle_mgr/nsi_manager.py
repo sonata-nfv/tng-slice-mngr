@@ -171,8 +171,6 @@ class thread_ns_instantiate(Thread):
           virtual_links_list.append(virt_link)
         mapping['virtual_links'] = virtual_links_list
         data['mapping'] = mapping
-      else:
-        data['mapping'] = ""
 
       if (nsr_item['sla-ref'] != "None"):
         data['sla_id'] = nsr_item['sla-ref']
