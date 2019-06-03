@@ -833,7 +833,7 @@ def add_vlds(new_nsir, nst_json):
   # modify the vldr only for those where an instantiated shared ns is conencted
   nsirs_ref_list = nsi_repo.get_all_saved_nsi()
   for nsr_item in new_nsir['nsr-list']:
-    if nsr_item['is-shared']:
+    if nsr_item['isshared']:
       nsirs_ref = next([item for item in nsirs_ref_list if (item.get("subnet-nsdId-ref") == nsr_item['subnet-nsdId-ref'] and item.get("isshared"))], None)
       if nsirs_ref:
         for vld_nsr_item in nsr_item['vld']:
