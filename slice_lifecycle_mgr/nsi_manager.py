@@ -115,13 +115,6 @@ class thread_ns_instantiate(Thread):
     time.sleep(0.1)
     
     for nsr_item in self.NSI['nsr-list']:
-      # Preparing the dict to stitch the NS to the Networks (VLDs)
-      mapping = {}
-      network_functions_list = []
-      virtual_links_list = []
-      repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
-      nsd_item = repo_item['nsd']
-
       # TODO: SHARED FUNCT -> if the nsr_item is shared and already has a nsrId = DON'T SEND REQUEST
       #if nsr_item['isshared'] and nsr_item['_being_instantiated'] == True:
       # Sending Network Services Instantiation requests
@@ -130,8 +123,15 @@ class thread_ns_instantiate(Thread):
       data['service_uuid'] = nsr_item['subnet-nsdId-ref']
       data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/instantiation-change"
 
-      # if there are VLD to create
+      # Creates the extra parameters for the requests: slice-vld, ingresses, egresses, SLA
       if self.NSI.get('vldr-list'):
+        # Preparing the dict to stitch the NS to the Networks (VLDs)
+        mapping = {}
+        network_functions_list = []
+        virtual_links_list = []
+        repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+        nsd_item = repo_item['nsd']
+        
         ## 'network_functions' object creation
         for vnf_item in nsd_item['network_functions']:
           net_funct = {}
@@ -176,10 +176,12 @@ class thread_ns_instantiate(Thread):
         data['sla_id'] = nsr_item['sla-ref']
       else:
         data['sla_id'] = ""
+      
       if nsr_item['ingresses']:
         data['ingresses'] = nsr_item['ingresses']
       else:
         data['ingresses'] = []
+      
       if nsr_item['egresses']:
         data['egresses'] = nsr_item['egresses']
       else:
@@ -190,8 +192,6 @@ class thread_ns_instantiate(Thread):
       time.sleep(0.1)
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
-      LOG.info("NSI_MNGR_Instantiate: instantiation_response: " +str(instantiation_response))
-      time.sleep(0.1)
 
   def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
@@ -714,7 +714,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
     if subnet_item['is-shared']:
       for nsir_ref_item in nsirs_ref_list:
         for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
-          if nsir_subnet_ref_item['subnet-nsdId-ref'] == subnet_item['nsd-ref'] and nsir_subnet_ref_item['is-shared']:
+          if nsir_subnet_ref_item['subnet-nsdId-ref'] == subnet_item['nsd-ref'] and nsir_subnet_ref_item['isshared']:
             subnet_record = nsir_subnet_ref_item
             found_shared_nsr = True
             break
@@ -794,7 +794,7 @@ def add_vlds(new_nsir, nst_json):
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
     vld_record['vimAccountId'] = new_nsir['datacenter']  #TODO: improve with placement
-    vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())  #TODO: should it be: net.uuid ??
+    vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
     if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True
     vld_record['type'] = vld_item['type']
