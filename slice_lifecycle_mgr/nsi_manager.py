@@ -261,14 +261,21 @@ class thread_ns_instantiate(Thread):
       del temp_nsi["uuid"]
 
       # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
-      if networks_response['status'] in ['COMPLETED']:
-          vld_status = "ACTIVE"
+      if networks_response['status'] == 'COMPLETED':
+        LOG.info("NSI_MNGR: NETWORKS CREATED")
+        time.sleep(0.1)
+        vld_status = "ACTIVE"
       else:
-          vld_status = "ERROR"
-          temp_nsi['nsi-status'] = "ERROR"
-          temp_nsi['errorLog'] = networks_response['error']
-          for nss_item in temp_nsi['nsr-list']:
-            nss_item['working-status'] = "NOT_INSTANTIATED"
+        LOG.info("NSI_MNGR: networks NOT created")
+        time.sleep(0.1)
+        vld_status = "ERROR"
+        temp_nsi['nsi-status'] = "ERROR"
+        temp_nsi['errorLog'] = networks_response['error']
+        for nss_item in temp_nsi['nsr-list']:
+          nss_item['working-status'] = "NOT_INSTANTIATED"
+        
+        # if networks are not created, no need to request NS instantiations
+        network_ready = False
 
       for vld_item in temp_nsi['vldr-list']:
         vld_item['vld-status'] = vld_status
@@ -278,10 +285,6 @@ class thread_ns_instantiate(Thread):
       
       # releases mutex for any other thread to acquire it
       mutex_slice2db_access.release()
-
-      # if networks are not created, no need to request NS instantiations
-      if networks_response['status'] not in ['NEW', 'COMPLETED']:
-        network_ready = False
 
     if network_ready:
       # Sends all the requests to instantiate the NSs within the slice
