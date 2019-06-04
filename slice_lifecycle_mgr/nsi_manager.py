@@ -457,7 +457,7 @@ class thread_ns_terminate(Thread):
         if (service_item['working-status'] == "ERROR"):
           jsonNSI['nsi-status'] = "ERROR"
           jsonNSI['errorLog'] = "Network Slice termination not done due to a service termination error."
-          break;
+          break
 
       # sends the updated nsi to the repositories
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.NSI['id'])
@@ -466,13 +466,9 @@ class thread_ns_terminate(Thread):
       nsis_list = nsi_repo.get_all_saved_nsi()
       all_nsis_terminated = True
       for nsis_item in nsis_list:
-        if (nsis_item['nst-ref'] == self.NSI['nst-ref'] and\
-            nsis_item['uuid'] == self.NSI['id'] and\
-            nsis_item['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY"]):
+        if (nsis_item['nst-ref'] == self.NSI['nst-ref'] and nsis_item['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY"]):
             all_nsis_terminated = False
-            break;
-        else:
-          pass
+            break
       
       if (all_nsis_terminated):
         nst_descriptor = nst_catalogue.get_saved_nst(self.NSI['nst-ref'])
