@@ -549,9 +549,9 @@ class thread_ns_terminate(Thread):
         # releases mutex for any other thread to acquire it
         mutex_slice2db_access.release()
 
-      # Notifies the GTK that the Network Slice termination process is done (either complete or error)
-      LOG.info("NSI_MNGR_Notify: Updating and notifying terminate to GTK") 
-      self.update_nsi_notify_terminate()
+    # Notifies the GTK that the Network Slice termination process is done (either complete or error)
+    LOG.info("NSI_MNGR_Notify: Updating and notifying terminate to GTK") 
+    self.update_nsi_notify_terminate()
 
 # UPDATES THE SLICE TERMINATION INFORMATION
 ## Objctive: updates a the specific NS information belonging to a NSI termination
