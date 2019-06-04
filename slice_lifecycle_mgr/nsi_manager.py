@@ -192,6 +192,8 @@ class thread_ns_instantiate(Thread):
       time.sleep(0.1)
       # requests to instantiate NSI services to the SP
       instantiation_response = mapper.net_serv_instantiate(data)
+      LOG.info("NSI_MNGR_Instantiate: GTK instantiation_response: " +str(instantiation_response))
+      time.sleep(0.1)
 
   def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
