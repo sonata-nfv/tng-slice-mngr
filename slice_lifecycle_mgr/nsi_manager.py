@@ -466,18 +466,20 @@ class thread_ns_terminate(Thread):
       nsis_list = nsi_repo.get_all_saved_nsi()
       all_nsis_terminated = True
       for nsis_item in nsis_list:
-        if (nsis_item['nst-ref'] == nstd_id and nsis_item['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY"]):
+        if (nsis_item['nst-ref'] == self.NSI['nst-ref'] and\
+            nsis_item['uuid'] == self.NSI['id'] and\
+            nsis_item['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY"]):
             all_nsis_terminated = False
             break;
         else:
           pass
       
       if (all_nsis_terminated):
-        nst_descriptor = nst_catalogue.get_saved_nst(nstId)
+        nst_descriptor = nst_catalogue.get_saved_nst(self.NSI['nst-ref'])
         nst_json = nst_descriptor['nstd']
         if (nst_json['usageState'] == "IN_USE"):
           nstParameter2update = "usageState=NOT_IN_USE"
-          updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, nstId)
+          updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, self.NSI['nst-ref'])
 
     finally:
       # release the mutex for other threads
