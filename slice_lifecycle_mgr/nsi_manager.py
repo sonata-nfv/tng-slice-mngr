@@ -519,33 +519,35 @@ class thread_ns_terminate(Thread):
       time.sleep(15)
       deployment_timeout -= 15
     
-    # requests to remove the created networks for the current slice
-    net_removal_response = self.send_networks_removal_request()
+    # enters only if there are vld/networks to create and deploy
+    if self.NSI.get('vldr-list'):
+      # requests to remove the created networks for the current slice
+      net_removal_response = self.send_networks_removal_request()
 
-    try:
-      # acquires mutex to have unique access to the nsi (rpositories)
-      mutex_slice2db_access.acquire()
-      temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
-      temp_nsi["id"] = temp_nsi["uuid"]
-      del temp_nsi["uuid"]
+      try:
+        # acquires mutex to have unique access to the nsi (rpositories)
+        mutex_slice2db_access.acquire()
+        temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
+        temp_nsi["id"] = temp_nsi["uuid"]
+        del temp_nsi["uuid"]
 
-      # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
-      if net_removal_response['status'] in ['COMPLETED']:
-          vld_status = "INACTIVE"
-      else:
-          vld_status = "ERROR"
-          temp_nsi['nsi-status'] = "ERROR"
-          temp_nsi['errorLog'] = net_removal_response['message']
-      
-      for vld_item in temp_nsi['vldr-list']:
-        vld_item['vld-status'] = vld_status
-      
-      # sends the updated NetSlice instance to the repositories
-      repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
+        # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
+        if net_removal_response['status'] in ['COMPLETED']:
+            vld_status = "INACTIVE"
+        else:
+            vld_status = "ERROR"
+            temp_nsi['nsi-status'] = "ERROR"
+            temp_nsi['errorLog'] = net_removal_response['message']
+        
+        for vld_item in temp_nsi['vldr-list']:
+          vld_item['vld-status'] = vld_status
+        
+        # sends the updated NetSlice instance to the repositories
+        repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
 
-    finally:
-      # releases mutex for any other thread to acquire it
-      mutex_slice2db_access.release()
+      finally:
+        # releases mutex for any other thread to acquire it
+        mutex_slice2db_access.release()
 
       # Notifies the GTK that the Network Slice termination process is done (either complete or error)
       LOG.info("NSI_MNGR_Notify: Updating and notifying terminate to GTK") 
