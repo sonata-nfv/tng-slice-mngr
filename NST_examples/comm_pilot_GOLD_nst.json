@@ -1,0 +1,35 @@
+{
+  "name": "GOLD_CommunicationsPilot_NST",
+  "description": "NST for the communication pilot with GOLD SLA.",
+  "vendor": "5gtango",
+  "version": "2.0",
+  "author": "5GTango",
+  "usageState": "NOT_IN_USE",
+  "SNSSAI_identifier": {
+    "slice-service-type": "eMBB"
+  },
+  "slice_ns_subnets": [
+    {
+      "id": "comm-pilot-subnet",
+      "nsd-name": "communication-pilot",
+      "nsd-vendor": "quobis",
+      "nsd-version": "0.4",
+      "sla-name": "GOLD",
+      "sla-ref": "ea0332b4-129a-42a3-b4ae-9a36bf65c273",
+      "is-shared": false,
+      "ingresses": [
+        {
+          "location": "dd872f1a-33fa-4a79-9196-a1089826d512",
+          "nap": "10.10.10.1/32"
+        },
+        {
+          "location": "fca1ac99-d397-49c1-a629-400e3207d27a",
+          "nap": "10.10.10.2/32"
+        }
+      ],
+      "egresses": []
+    }
+  ],
+  "slice_vld": [
+  ]
+}

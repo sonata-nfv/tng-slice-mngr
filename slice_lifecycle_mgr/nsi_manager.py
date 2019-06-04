@@ -824,8 +824,6 @@ def add_vlds(new_nsir, nst_json):
                   # To keep concordance with the old NSD, if it's not defined True
                   vld_record['access_net'] = True
     vld_record['ns-conn-point-ref'] = cp_refs_list
-    
-    #TODO: work with it to be used when a slice is terminated.
     vld_record['shared-nsrs-list'] = []
     vldr_list.append(vld_record)
 
@@ -834,19 +832,18 @@ def add_vlds(new_nsir, nst_json):
   nsirs_ref_list = nsi_repo.get_all_saved_nsi()
   for nsr_item in new_nsir['nsr-list']:
     if nsr_item['isshared']:
-      nsirs_ref = next([item for item in nsirs_ref_list if (item.get("subnet-nsdId-ref") == nsr_item['subnet-nsdId-ref'] and item.get("isshared"))], None)
-      if nsirs_ref:
-        for vld_nsr_item in nsr_item['vld']:
-          for vldr_ref in nsirs_ref['vldr-list']:
-            if vld_nsr_item['vld-ref'] == vldr_ref['id']:
-              for current_vldr_item in vldr_list:
-                if current_vldr_item['id'] == vldr_ref['id']:
-                  current_vldr_item['vim-net-id'] = vldr_ref['vim-net-id']
-                  current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
-                  current_vldr_item['vld-status'] = 'ACTIVE'
-                  current_vldr_item['type'] = vldr_ref['type']
-                  current_vldr_item['shared-nsrs-list'] = vldr_ref['shared-nsrs-list']
-
+      for nsir_ref_item in nsirs_ref_list:
+        if (nsr_item['subnet-nsdId-ref'] == nsir_ref_item.get("subnet-nsdId-ref") and nsir_ref_item.get("isshared")):
+          for vld_nsr_item in nsr_item['vld']:
+            for vldr_ref in nsirs_ref['vldr-list']:
+              if vld_nsr_item['vld-ref'] == vldr_ref['id']:
+                for current_vldr_item in vldr_list:
+                  if current_vldr_item['id'] == vldr_ref['id']:
+                    current_vldr_item['vim-net-id'] = vldr_ref['vim-net-id']
+                    current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
+                    current_vldr_item['vld-status'] = 'ACTIVE'
+                    current_vldr_item['type'] = vldr_ref['type']
+                    current_vldr_item['shared-nsrs-list'] = vldr_ref['shared-nsrs-list']
   new_nsir['vldr-list'] = vldr_list
   return new_nsir
 
