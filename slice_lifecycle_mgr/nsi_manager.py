@@ -853,12 +853,20 @@ def add_vlds(new_nsir, nst_json):
       if nsr_item['isshared']:
         LOG.info("NSI_MNGR: SHARED VLDs")
         time.sleep(0.1)
+        # looks for the nsir with the current shared nsr
         for nsir_ref_item in nsirs_ref_list:
-          if (nsr_item['subnet-nsdId-ref'] == nsir_ref_item.get("subnet-nsdId-ref") and nsir_ref_item.get("isshared")):
+          LOG.info("NSI_MNGR: SHARED VLD -> nsr_item['subnet-nsdId-ref']: " + str(nsr_item['subnet-nsdId-ref']) + "nsir_ref_item.get("subnet-nsdId-ref"): " + str(nsir_ref_item.get("subnet-nsdId-ref")))
+          LOG.info("NSI_MNGR: SHARED VLD -> nsir_ref_item.get("isshared"): " + str(nsir_ref_item.get("isshared")))
+          time.sleep(0.1)
+          for nsr_ref_item in nsir_ref_item['nsr-list']:
+            if (nsr_item['subnet-nsdId-ref'] == nsr_ref_item.get("subnet-nsdId-ref") and nsir_ref_item.get("isshared")):
+              nsir_found = nsr_ref_item
+              break
+          if nsir_found:
             LOG.info("NSI_MNGR: SHARED VLD - found a nsir reference with a the same shared nsr.")
             time.sleep(0.1)
             for vld_nsr_item in nsr_item['vld']:
-              for vldr_ref in nsirs_ref['vldr-list']:
+              for vldr_ref in nsir_found['vldr-list']:
                 if vld_nsr_item['vld-ref'] == vldr_ref['id']:
                   for current_vldr_item in vldr_list:
                     if current_vldr_item['id'] == vldr_ref['id']:
@@ -869,6 +877,7 @@ def add_vlds(new_nsir, nst_json):
                       current_vldr_item['vld-status'] = 'ACTIVE'
                       current_vldr_item['type'] = vldr_ref['type']
                       current_vldr_item['shared-nsrs-list'] = vldr_ref['shared-nsrs-list']
+            break
   new_nsir['vldr-list'] = vldr_list
   return new_nsir
 
