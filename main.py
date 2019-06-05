@@ -197,39 +197,8 @@ def get_slice_instance(nsiId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['DELETE'])
 def delete_slice_instance(nsiId):
   deleted_NSIid = nsi_manager.remove_nsi(nsiId)
-  logging.info("SLICE_MAIN: Delete NSI with id: " + str(nsiId))
   
-  if deleted_NSIid == 403:
-    returnMessage = "Not possible to delete, the NSI is either in use or still being processed."
-  else:
-    returnMessage = "NSI with ID:" + str(nsiId) + "deleted from repositories."
-  return jsonify(returnMessage)
-
-
-
-################## TEMPORAL FUNCTIONS ################
-# CREATES/INSTANTIATES a network
-@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/network', methods=['POST'])
-def create_network():
-  logging.info("SLICE_MAIN: Creating networks: " + str(request.json))
-  # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
-  networks_data = request.json
-  nets_creation_response = mapper.create_vim_network(networks_data)
-
-  logging.info("SLICE_MAIN: Network Creation response: " + str(nets_creation_response))
-
-  return jsonify(nets_creation_response)
-
-@app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/network', methods=['DELETE'])
-def remove_network():
-  logging.info("SLICE_MAIN: Removing networks: " + str(request.json))
-  # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
-  networks_data = request.json
-  nets_removal_response = mapper.delete_vim_network(networks_data)
-
-  logging.info("SLICE_MAIN: Network Removal response: " + str(nets_removal_response))
-
-  return jsonify(nets_removal_response)
+  return jsonify(deleted_NSIid[0]), deleted_NSIid[1]
 
 
 ########################################### MAIN SERVER FUNCTION ############################################

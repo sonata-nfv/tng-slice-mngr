@@ -15,16 +15,16 @@
       "nsd-vendor": "quobis",
       "nsd-version": "0.4",
       "sla-name": "GOLD",
-      "sla-ref": "ea0332b4-129a-42a3-b4ae-9a36bf65c273",
+      "sla-ref": "________________________________________________________________",
       "is-shared": false,
       "ingresses": [
         {
           "location": "dd872f1a-33fa-4a79-9196-a1089826d512",
-          "nap": "10.10.10.1/32"
+          "nap": "10.10.10.3/32"
         },
         {
           "location": "fca1ac99-d397-49c1-a629-400e3207d27a",
-          "nap": "10.10.10.2/32"
+          "nap": "10.10.10.4/32"
         }
       ],
       "egresses": []
