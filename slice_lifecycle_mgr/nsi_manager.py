@@ -869,7 +869,7 @@ def add_vlds(new_nsir, nst_json):
               LOG.info("NSI_MNGR: SHARED VLD - found a nsir reference with a the same shared nsr.")
               time.sleep(0.1)
               for vld_nsr_item in nsr_item['vld']:
-                for vldr_ref in nsr_ref_item['vldr-list']:
+                for vldr_ref in nsir_ref_item['vldr-list']:
                   if vld_nsr_item['vld-ref'] == vldr_ref['id']:
                     LOG.info("NSI_MNGR: SHARED VLD -> vld_nsr_item[vld-ref]: " + str(vld_nsr_item['vld-ref']) + " vldr_ref[id]: " + str(vldr_ref['id']))
                     time.sleep(0.1)
