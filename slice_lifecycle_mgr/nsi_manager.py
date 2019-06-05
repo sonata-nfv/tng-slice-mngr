@@ -245,57 +245,49 @@ class thread_ns_instantiate(Thread):
   def run(self):
     # set to true in order to instantiates NSs in case there are no slice_vld to create
     network_ready = True
-    
-    # enters only if there are vld/networks to create and deploy
-    if self.NSI.get('vldr-list'):
-      # sends all the requests to create all the VLDs (networks) within the slice
-      networks_response = self.send_networks_creation_request()
-      LOG.info("NSI_MNGR: network_response: " +str(networks_response))
-      time.sleep(0.1)
+
+    # acquires mutex to have unique access to the nsi (rpositories)
+    mutex_slice2db_access.acquire()
+    try:
+      # enters only if there are vld/networks to create and deploy
+      if self.NSI.get('vldr-list'):
+        # sends all the requests to create all the VLDs (networks) within the slice
+        networks_response = self.send_networks_creation_request()
+        LOG.info("NSI_MNGR: network_response: " +str(networks_response))
+        time.sleep(0.1)
+
+        # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
+        if networks_response['status'] == 'COMPLETED':
+          LOG.info("NSI_MNGR: NETWORKS CREATED")
+          time.sleep(0.1)
+          vld_status = "ACTIVE"
+        else:
+          LOG.info("NSI_MNGR: networks NOT created")
+          time.sleep(0.1)
+          vld_status = "ERROR"
+          self.NSI['nsi-status'] = "ERROR"
+          self.NSI['errorLog'] = networks_response['error']
+          for nss_item in self.NSI['nsr-list']:
+            nss_item['working-status'] = "NOT_INSTANTIATED"
           
-      # acquires mutex to have unique access to the nsi (rpositories)
-      mutex_slice2db_access.acquire()
-      #temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
-      #temp_nsi["id"] = temp_nsi["uuid"]
-      #del temp_nsi["uuid"]
+          # if networks are not created, no need to request NS instantiations
+          network_ready = False
 
-      # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
-      if networks_response['status'] == 'COMPLETED':
-        LOG.info("NSI_MNGR: NETWORKS CREATED")
-        time.sleep(0.1)
-        vld_status = "ACTIVE"
-      else:
-        LOG.info("NSI_MNGR: networks NOT created")
-        time.sleep(0.1)
-        vld_status = "ERROR"
-        self.NSI['nsi-status'] = "ERROR"
-        self.NSI['errorLog'] = networks_response['error']
-        #temp_nsi['nsi-status'] = "ERROR"
-        #temp_nsi['errorLog'] = networks_response['error']
-        for nss_item in self.NSI['nsr-list']:
-        #for nss_item in temp_nsi['nsr-list']:
-          nss_item['working-status'] = "NOT_INSTANTIATED"
+        for vld_item in self.NSI['vldr-list']:
+          vld_item['vld-status'] = vld_status
+
+      if network_ready:
+        # Sends all the requests to instantiate the NSs within the slice
+        for nsr_item in self.NSI['nsr-list']:
+          if (nsr_item['isshared'] == False or nsr_item['isshared'] and nsr_item['working-status'] == "NEW"):
+            instantiation_resp = self.send_instantiation_requests(nsr_item)
+            if instantiation_resp[1] == 201:
+              nsr_item['working-status'] == 'INSTANTIATING'
         
-        # if networks are not created, no need to request NS instantiations
-        network_ready = False
-
-      #for vld_item in temp_nsi['vldr-list']:
-      for vld_item in self.NSI['vldr-list']:
-        vld_item['vld-status'] = vld_status
-
-      # sends the updated NetSlice instance to the repositories
-      #repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
-
-    if network_ready:
-      # Sends all the requests to instantiate the NSs within the slice
-      #self.send_instantiation_requests(nsr_item)
-      for nsr_item in self.NSI['nsr-list']:
-        if (nsr_item['isshared'] == False or nsr_item['isshared'] and nsr_item['working-status'] == "NEW"):
-          instantiation_resp = self.send_instantiation_requests(nsr_item)
-          if instantiation_resp[1] == 201:
-            nsr_item['working-status'] == 'INSTANTIATING'
-      
-      repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
+        # sends the updated NetSlice instance to the repositories
+        repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
+    
+    finally: 
       # releases mutex for any other thread to acquire it
       mutex_slice2db_access.release()
 
@@ -379,6 +371,7 @@ class update_slice_instantiation(Thread):
       repo_responseStatus = nsi_repo.update_nsi(jsonNSI, self.nsiId)
       LOG.info("NSI_MNGR_Update_NSI_done: " +str(jsonNSI))
       time.sleep(0.1)
+    
     finally:
       mutex_slice2db_access.release()
 
