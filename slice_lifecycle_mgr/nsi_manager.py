@@ -855,11 +855,11 @@ def add_vlds(new_nsir, nst_json):
         time.sleep(0.1)
         # looks for the nsir with the current shared nsr
         for nsir_ref_item in nsirs_ref_list:
-          LOG.info("NSI_MNGR: SHARED VLD -> nsr_item['subnet-nsdId-ref']: " + str(nsr_item['subnet-nsdId-ref']) + "nsir_ref_item.get("subnet-nsdId-ref"): " + str(nsir_ref_item.get("subnet-nsdId-ref")))
-          LOG.info("NSI_MNGR: SHARED VLD -> nsir_ref_item.get("isshared"): " + str(nsir_ref_item.get("isshared")))
+          LOG.info("NSI_MNGR: SHARED VLD -> nsr_item[subnet-nsdId-ref]: " + str(nsr_item['subnet-nsdId-ref']) + "nsir_ref_item.get(subnet-nsdId-ref): " + str(nsir_ref_item.get("subnet-nsdId-ref")))
+          LOG.info("NSI_MNGR: SHARED VLD -> nsir_ref_item.get(isshared): " + str(nsir_ref_item.get("isshared")))
           time.sleep(0.1)
           for nsr_ref_item in nsir_ref_item['nsr-list']:
-            if (nsr_item['subnet-nsdId-ref'] == nsr_ref_item.get("subnet-nsdId-ref") and nsir_ref_item.get("isshared")):
+            if (nsr_item['subnet-nsdId-ref'] == nsr_ref_item.get('subnet-nsdId-ref') and nsir_ref_item.get('isshared')):
               nsir_found = nsr_ref_item
               break
           if nsir_found:
