@@ -637,7 +637,7 @@ def create_nsi(nsi_json):
   LOG.info("NSI_MNGR:  After adding subnets:" + str(new_nsir))
   time.sleep(0.1)
   # adds the VLD information within the NSI record
-  if nst_json.get("slice_vld"):
+  if nst_json.get('slice_vld'):
     LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
     time.sleep(0.1)
     new_nsir = add_vlds(new_nsir, nst_json)
@@ -855,29 +855,35 @@ def add_vlds(new_nsir, nst_json):
         time.sleep(0.1)
         # looks for the nsir with the current shared nsr
         for nsir_ref_item in nsirs_ref_list:
-          for nsr_ref_item in nsir_ref_item['nsr-list']:
-            LOG.info("NSI_MNGR: SHARED VLD -> nsr_item[subnet-nsdId-ref]: " + str(nsr_item['subnet-nsdId-ref']) + "nsir_ref_item.get(subnet-nsdId-ref): " + str(nsr_ref_item.get("subnet-nsdId-ref")))
-            LOG.info("NSI_MNGR: SHARED VLD -> nsir_ref_item.get(isshared): " + str(nsr_ref_item.get("isshared")))
-            time.sleep(0.1)
-            if (nsr_item['subnet-nsdId-ref'] == nsr_ref_item.get('subnet-nsdId-ref') and nsr_ref_item.get('isshared')):
-              nsir_found = nsr_ref_item
+          if nsirs_ref_list.get('vldr-list'):
+            nsir_found = False
+            for nsr_ref_item in nsir_ref_item['nsr-list']:
+              LOG.info("NSI_MNGR: SHARED VLD -> nsr_item[subnet-nsdId-ref]: " + str(nsr_item['subnet-nsdId-ref']) + " nsir_ref_item.get(subnet-nsdId-ref): " + str(nsr_ref_item.get("subnet-nsdId-ref")))
+              LOG.info("NSI_MNGR: SHARED VLD -> nsir_ref_item.get(isshared): " + str(nsr_ref_item.get("isshared")))
+              time.sleep(0.1)
+              if (nsr_item['subnet-nsdId-ref'] == nsr_ref_item.get('subnet-nsdId-ref') and nsr_ref_item.get('isshared')):
+                nsir_found = True
+                break
+          
+            if nsir_found:
+              LOG.info("NSI_MNGR: SHARED VLD - found a nsir reference with a the same shared nsr.")
+              time.sleep(0.1)
+              for vld_nsr_item in nsr_item['vld']:
+                for vldr_ref in nsr_ref_item['vldr-list']:
+                  if vld_nsr_item['vld-ref'] == vldr_ref['id']:
+                    LOG.info("NSI_MNGR: SHARED VLD -> vld_nsr_item[vld-ref]: " + str(vld_nsr_item['vld-ref']) + " vldr_ref[id]: " + str(vldr_ref['id']))
+                    time.sleep(0.1)
+                    for current_vldr_item in vldr_list:
+                      if current_vldr_item['id'] == vldr_ref['id']:
+                        LOG.info("NSI_MNGR: SHARED VLD - current_vldr_item[id]: " + str(current_vldr_item['id']) + " & vldr_ref[id]: " + str(vldr_ref['id']))
+                        time.sleep(0.1)
+                        current_vldr_item['vim-net-id'] = vldr_ref['vim-net-id']
+                        current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
+                        current_vldr_item['vld-status'] = 'ACTIVE'
+                        current_vldr_item['type'] = vldr_ref['type']
+                        current_vldr_item['shared-nsrs-list'] = vldr_ref['shared-nsrs-list']
+                        break
               break
-          if nsir_found:
-            LOG.info("NSI_MNGR: SHARED VLD - found a nsir reference with a the same shared nsr.")
-            time.sleep(0.1)
-            for vld_nsr_item in nsr_item['vld']:
-              for vldr_ref in nsir_found['vldr-list']:
-                if vld_nsr_item['vld-ref'] == vldr_ref['id']:
-                  for current_vldr_item in vldr_list:
-                    if current_vldr_item['id'] == vldr_ref['id']:
-                      LOG.info("NSI_MNGR: SHARED VLD - current_vldr_item: " + str(current_vldr_item) + " & vldr_ref: " + str(vldr_ref))
-                      time.sleep(0.1)
-                      current_vldr_item['vim-net-id'] = vldr_ref['vim-net-id']
-                      current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
-                      current_vldr_item['vld-status'] = 'ACTIVE'
-                      current_vldr_item['type'] = vldr_ref['type']
-                      current_vldr_item['shared-nsrs-list'] = vldr_ref['shared-nsrs-list']
-            break
   new_nsir['vldr-list'] = vldr_list
   return new_nsir
 
