@@ -351,7 +351,7 @@ class update_slice_instantiation(Thread):
             # updates shared-nsrs-list in the specific vlds where the shared service is linked
             if service_item['isshared']:
               for nsr_vld_item in service_item['vld']:
-                for vld_vldr_item in service_item['vldr-list']:
+                for vld_vldr_item in jsonNSI['vldr-list']:
                   if vld_vldr_item['id'] == nsr_vld_item['vld-ref']:
                     vld_vldr_item['shared-nsrs-list'].append(service_item['nsrId'])
 
@@ -909,6 +909,8 @@ def terminate_nsi(nsiId, TerminOrder):
           terminate_nsi['nsi-status'] = "TERMINATING"
 
           for terminate_nsr_item in terminate_nsi['nsr-list']:
+            # TODO SHARED: check if the item is shared and used in other nsirs to NOT change its status
+            
             if (terminate_nsr_item['working-status'] != "ERROR"):
               terminate_nsr_item['working-status'] = "TERMINATING"
 
@@ -925,16 +927,13 @@ def terminate_nsi(nsiId, TerminOrder):
           repo_responseStatus = nsi_repo.update_nsi(terminate_nsi, nsiId)
 
           terminate_value = 200
-        
         else:
           inst_time = terminate_nsi['instantiateTime']
           terminate_nsi['errorLog'] = "Wrong value: 0 = instant termination, greater than " + inst_time + " future termination."
           terminate_value = 404
-
       else:
         terminate_nsi['errorLog'] = "This NSi is either terminated or being terminated."
         terminate_value = 404
-    
     else:
       terminate_nsi['errorLog'] = "There is no NSIR in the db."
       terminate_value = 404
