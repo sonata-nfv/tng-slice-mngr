@@ -390,7 +390,7 @@ class thread_ns_terminate(Thread):
     time.sleep(0.1)
 
     data = {}
-    data["instance_uuid"] = str(nsr_item["nsrId"])
+    data["instance_uuid"] = str(nsr_item)
     data["request_type"] = "TERMINATE_SERVICE"
     data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/terminate-change"
 
@@ -999,6 +999,8 @@ def terminate_nsi(nsiId, TerminOrder):
 
           # starts the thread to terminate while sending back the response
           # thread_ns_terminate(nsir_id, nsrID_list, networks_dict to terminate)
+          LOG.info("NSI_MNGR_TERMINATE: list of nsrs to terminate: " + str(termin_nsrids_list))
+          time.sleep(0.1)
           thread_ns_termination = thread_ns_terminate(terminate_nsi, termin_nsrids_list)
           thread_ns_termination.start()
 
