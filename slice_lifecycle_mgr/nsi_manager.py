@@ -536,7 +536,7 @@ class thread_ns_terminate(Thread):
         if vldr_item.get('shared-nsrs-list'):
           for shared_nsrs_item in vldr_item['shared-nsrs-list']:
             for nsrs_item in self.NSI['nsr-list']:
-              if (nsrs_item['nsrId'] = shared_nsrs_item and nsrs_item['working-status'] in ['TERMINATED', 'TERMINATING', 'ERROR']):
+              if (nsrs_item['nsrId'] == shared_nsrs_item and nsrs_item['working-status'] in ['TERMINATED', 'TERMINATING', 'ERROR']):
                 vldrs_2_remove.append(shared_nsrs_item['id'])
                 break
         else:
