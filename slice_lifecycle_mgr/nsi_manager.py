@@ -951,6 +951,7 @@ def terminate_nsi(nsiId, TerminOrder):
           
           # creates a nsris list withouth the current one
           nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+          nsirs_list_no_current = []
           for nsir_item in nsirs_ref_list:
             if nsir_item['uuid'] != terminate_nsi['id']:
               nsirs_list_no_current.append(nsir_item)
