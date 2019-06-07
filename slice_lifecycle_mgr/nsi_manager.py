@@ -410,9 +410,6 @@ class thread_ns_terminate(Thread):
     network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
     network_data['vim_list'] = []
 
-    # SHARED NSR feature/VLD
-    # for nsr_item in self.NSI['nsr-list']:
-      
     # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and adds them into the 'vim_list'
     for vldr_item in self.NSI['vldr-list']:
       if vldr_item['id'] in vldrs_2_remove:
@@ -928,8 +925,12 @@ def terminate_nsi(nsiId, TerminOrder):
   mutex_slice2db_access.acquire()
   try:
     terminate_nsi = nsi_repo.get_saved_nsi(nsiId)
-    if (terminate_nsi):
-      if terminate_nsi['nsi-status'] in ["INSTANTIATED", "ERROR"]:
+    LOG.info("NSI_MNGR_TERMINATE: getting nsi to terminate")
+    time.sleep(0.1)
+    if terminate_nsi:
+      LOG.info("NSI_MNGR_TERMINATE: found the nsir")
+      time.sleep(0.1)
+      if terminate_nsi['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY", "ERROR"]:
         terminate_nsi['id'] = terminate_nsi['uuid']
         del terminate_nsi['uuid']
 
@@ -942,6 +943,8 @@ def terminate_nsi(nsiId, TerminOrder):
 
         # depending on the termin_time executes one action or another
         if termin_time == 0:
+          LOG.info("NSI_MNGR_TERMINATE: terminating NOW!!!")
+          time.sleep(0.1)
           terminate_nsi['terminateTime'] = str(datetime.datetime.now().isoformat())
           terminate_nsi['sliceCallback'] = TerminOrder['callback']
           terminate_nsi['nsi-status'] = "TERMINATING"
@@ -949,6 +952,8 @@ def terminate_nsi(nsiId, TerminOrder):
           # creates a nsris list withouth the current one
           nsirs_ref_list = nsi_repo.get_all_saved_nsi()
           nsirs_list_no_current = [nsir_item for nsir_item in nsirs_ref_list if not (nsir_item['uuid'] == self.NSI['id'])]
+          LOG.info("NSI_MNGR_TERMINATE: getting all nsirs list without the current one: " + str(nsirs_list_no_current))
+          time.sleep(0.1)
           
           # checks if each NSR of the current nsir can be terminated depending if it is shared by other nsirs
           termin_nsrids_list = []
@@ -962,13 +967,17 @@ def terminate_nsi(nsiId, TerminOrder):
                   if nsr_ref_item['nsrId'] == termin_nsr_item['nsrId']:
                     nsirs_list_with_nsr.append(nsir_ref_item)
               
+              LOG.info("NSI_MNGR_TERMINATE: getting nsirs list with the current nsr: " + str(nsirs_list_with_nsr))
+              time.sleep(0.1)
               if nsirs_list_with_nsr:
                 # from the previous reduced list, creates a list of nsirs with status [INSTANTIATED, INSTANTIATING, READY]
                 instantiated_nsirs_list_with_nsr = []
                 for nsir_ref_item in nsirs_list_with_nsr:
                   if nsir_ref_item['nsi-status'] in ['INSTANTIATED', 'INSTANTIATING', 'READY']:
                     instantiated_nsirs_list_with_nsr.append(nsir_ref_item)
-
+                
+                LOG.info("NSI_MNGR_TERMINATE: getting nsirs INSTANTIATED list with the current nsr: " + str(instantiated_nsirs_list_with_nsr))
+                time.sleep(0.1)
                 if instantiated_nsirs_list_with_nsr:
                   nsr_to_terminate = False
                 else:
@@ -1002,16 +1011,14 @@ def terminate_nsi(nsiId, TerminOrder):
           terminate_nsi['errorLog'] = "Wrong value: 0 = instant termination, greater than " + inst_time + " future termination."
           terminate_value = 404
       else:
-        terminate_nsi['errorLog'] = "This NSi is either terminated or being terminated."
+        terminate_nsi['errorLog'] = "This NSI is either terminated or being terminated."
         terminate_value = 404
-    
     else:
       terminate_nsi['errorLog'] = "There is no NSIR in the db."
       terminate_value = 404
-  
   finally:
     mutex_slice2db_access.release()
-    return terminate_nsi, terminate_value
+    return (terminate_nsi, terminate_value)
 
 # Updates a NSI being terminated with the latest information coming from the MANO/GK.
 def update_terminating_nsi(nsiId, request_json):
