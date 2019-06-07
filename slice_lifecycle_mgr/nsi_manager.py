@@ -952,7 +952,7 @@ def terminate_nsi(nsiId, TerminOrder):
           # creates a nsris list withouth the current one
           nsirs_ref_list = nsi_repo.get_all_saved_nsi()
           for nsir_item in nsirs_ref_list:
-            if nsir_item['uuid'] != self.NSI['id']:
+            if nsir_item['uuid'] != terminate_nsi['id']:
               nsirs_list_no_current.append(nsir_item)
           LOG.info("NSI_MNGR_TERMINATE: getting all nsirs list without the current one: " + str(nsirs_list_no_current))
           time.sleep(0.1)
@@ -979,7 +979,7 @@ def terminate_nsi(nsiId, TerminOrder):
                     instantiated_nsirs_list_with_nsr.append(nsir_ref_item)
                 LOG.info("NSI_MNGR_TERMINATE: getting nsirs INSTANTIATED list with the current nsr: " + str(instantiated_nsirs_list_with_nsr))
                 time.sleep(0.1)
-                
+
                 if instantiated_nsirs_list_with_nsr:
                   nsr_to_terminate = False
                 else:
