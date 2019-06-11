@@ -405,7 +405,7 @@ class thread_ns_terminate(Thread):
     time.sleep(0.1)
     # requests to terminate NSI services
     termination_response = mapper.net_serv_terminate(data)
-    LOG.info("NSI_MNGR_Terminate: termination_response: " + str(termination_response[0]) + " status: " + str(termination_response[1]))
+    LOG.info("NSI_MNGR_Terminate: termination_response: " + str(termination_response))
     time.sleep(0.1)
 
     return termination_response, 201
