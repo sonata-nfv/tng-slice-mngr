@@ -422,7 +422,7 @@ class thread_ns_terminate(Thread):
     # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and adds them into the 'vim_list'
     for vldr_item in self.NSI['vldr-list']:
       for vldrs_2_remove_item in vldrs_2_remove:
-        if vldr_item['vim-net-id] == vldrs_2_remove_item:
+        if vldr_item['vim-net-id'] == vldrs_2_remove_item:
           vim_item = {}
           vim_item['uuid'] = vldr_item['vimAccountId']
           vim_item['virtual_links'] = []
