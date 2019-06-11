@@ -604,7 +604,7 @@ class thread_ns_terminate(Thread):
         for virtual_link_item in vim_list_item['virtual_links']:
           for vldr_item in temp_nsi['vldr-list']:
             if virtual_link_item['id'] == vldr_item['vim-net-id']:
-              vld_item['vld-status'] = vld_status
+              vldr_item['vld-status'] = vld_status
       
       # sends the updated NetSlice instance to the repositories
       repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
