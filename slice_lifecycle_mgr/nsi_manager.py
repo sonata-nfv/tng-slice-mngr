@@ -408,7 +408,7 @@ class thread_ns_terminate(Thread):
     LOG.info("NSI_MNGR_Terminate: termination_response: " + str(termination_response[0]) + " status: " + str(termination_response[1]))
     time.sleep(0.1)
 
-    return termination_response
+    return termination_response, 201
 
   def send_networks_removal_request(self, vldrs_2_remove):
     LOG.info("NSI_MNGR: Requesting slice networks removal to the GTK.")
@@ -516,12 +516,14 @@ class thread_ns_terminate(Thread):
       # requests to terminate a NSr
       termination_resp = self.send_termination_requests(nsrid_item)
       for nsr_item in self.NSI['nsr-list']:
-        if termination_resp[1] == 201:
-          nsr_item['working-status'] == 'TERMINATING'
-          nsr_item['requestId'] = termination_resp[0]['id']
-        else:
-          nsr_item['working-status'] == 'ERROR'
-          self.NSI['errorLog'] = 'ERROR when terminating ' + str(nsr_item['nsrName'])
+        if nsrid_item == nsr_item['nsrId']:
+          if termination_resp[1] == 201:
+            nsr_item['working-status'] == 'TERMINATING'
+            nsr_item['requestId'] = termination_resp[0]['id']
+          else:
+            nsr_item['working-status'] == 'ERROR'
+            self.NSI['errorLog'] = 'ERROR when terminating ' + str(nsr_item['nsrName'])
+          break
     
     # sends the updated NetSlice instance to the repositories
     repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
