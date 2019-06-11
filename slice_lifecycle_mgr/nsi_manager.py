@@ -212,8 +212,6 @@ class thread_ns_instantiate(Thread):
           if service_item['working-status'] in ["ERROR", "INSTANTIATING"]:
             service_item['working-status'] = 'ERROR'
             jsonNSI['nsi-status'] = "ERROR"
-          else:
-            service_item['requestId'] = ''
 
         # updates NetSlice template usageState
         if(jsonNSI['nsi-status'] == "INSTANTIATED"):
@@ -284,9 +282,13 @@ class thread_ns_instantiate(Thread):
             instantiation_resp = self.send_instantiation_requests(nsr_item)
             if instantiation_resp[1] == 201:
               nsr_item['working-status'] == 'INSTANTIATING'
+              nsr_item['requestId'] = instantiation_resp[0]['id']
             else:
               nsr_item['working-status'] == 'ERROR'
               self.NSI['errorLog'] = 'ERROR when instantiating ' + str(nsr_item['nsrName'])
+        
+        LOG.info("NSI_MNGR: Update NSI instantiating: " +str(self.NSI))
+        time.sleep(0.1)
         
         # sends the updated NetSlice instance to the repositories
         repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
@@ -304,7 +306,7 @@ class thread_ns_instantiate(Thread):
         nsi_instantiated = True
         jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
         for nsr_item in jsonNSI['nsr-list']: 
-          if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
+          if nsr_item['working-status'] == "INSTANTIATING":
             nsi_instantiated = False
         
         # if all services are instantiated or error, break the while loop to notify the GTK
@@ -343,10 +345,10 @@ class update_slice_instantiation(Thread):
       # looks all the already added services and updates the right
       for service_item in jsonNSI['nsr-list']:
         # if the current request already exists, update it.
-        if (service_item['nsrName'] == self.request_json['name']):
+        if (service_item['nsrName'] == self.request_json['name'] and service_item['requestId'] == self.request_json['id']):
           LOG.info("NSI_MNGR_Update: Service found, let's update it")
           time.sleep(0.1)
-          service_item['requestId'] = self.request_json['id']
+          #service_item['requestId'] = self.request_json['id']
           
           # check if there an id of the instantiation within the VIM
           if (self.request_json['instance_uuid'] != None):
@@ -363,6 +365,7 @@ class update_slice_instantiation(Thread):
 
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "INSTANTIATED"
+            #service_item['requestId'] = ''
           else:
             service_item['working-status'] = self.request_json['status']
                     
@@ -385,7 +388,7 @@ class update_slice_instantiation(Thread):
 ## Objctive: gets the specific nsi record from db and sends the ns termination requests 2 GTK
 ## Params: nsiId (uuid within the incoming request URL)
 class thread_ns_terminate(Thread):
-  def __init__(self,NSI, termin_nsrids_list):
+  def __init__(self, NSI, termin_nsrids_list):
     Thread.__init__(self)
     self.NSI = NSI
     self.termin_nsrids_list = termin_nsrids_list
@@ -506,9 +509,26 @@ class thread_ns_terminate(Thread):
       LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GTK notified with status: " +str(thread_response[1]))
 
   def run(self):
+    # acquires mutex to have unique access to the nsi (rpositories)
+    mutex_slice2db_access.acquire()
+    
+    #sends each of the termination requests
     for nsrid_item in self.termin_nsrids_list:
       # requests to terminate a NSr
-      self.send_termination_requests(nsrid_item)
+      termination_resp = self.send_termination_requests(nsrid_item)
+      for nsr_item in self.NSI['nsr-list']:
+        if instantiation_resp[1] == 201:
+          nsr_item['working-status'] == 'TERMINATING'
+          nsr_item['requestId'] = instantiation_resp[0]['id']
+        else:
+          nsr_item['working-status'] == 'ERROR'
+          self.NSI['errorLog'] = 'ERROR when terminating ' + str(nsr_item['nsrName'])
+    
+    # sends the updated NetSlice instance to the repositories
+    repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
+
+    # releases mutex for any other thread to acquire it
+    mutex_slice2db_access.release()
 
     # Waits until all the NSs are terminated/ready or error
     LOG.info("Processing services terminations...")
@@ -520,14 +540,12 @@ class thread_ns_terminate(Thread):
       nsi_terminated = True
       jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
       for nsr_item in jsonNSI['nsr-list']:
-        
-        #TODO: take the nsr shared into account!!!
-        #if nsr_item['isshared']:
-        #  if nsr_item['working-status'] in ["TERMINATED", "ERROR", "READY"]:
-
-
-        if nsr_item['working-status'] not in ["TERMINATED", "ERROR", "READY"]:
-          nsi_terminated = False
+        if nsr_item['isshared']:
+          if nsr_item['working-status'] == "TERMINATING":
+            nsi_terminated = False
+        else:
+          if nsr_item['working-status'] is ["TERMINATING", "NEW", "INSTANTIATED", "INSTANTIATING"]:
+            nsi_terminated = False
       
       # if all services are instantiated or error, break the while loop to notify the GTK
       if nsi_terminated:
@@ -555,30 +573,30 @@ class thread_ns_terminate(Thread):
       # requests to remove the created networks for the current slice
       net_removal_response = self.send_networks_removal_request(vldrs_2_remove)
 
-      try:
-        # acquires mutex to have unique access to the nsi (rpositories)
-        mutex_slice2db_access.acquire()
-        temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
-        temp_nsi["id"] = temp_nsi["uuid"]
-        del temp_nsi["uuid"]
+      # acquires mutex to have unique access to the nsi (rpositories)
+      mutex_slice2db_access.acquire()
+      
+      # looks for the NSI record to update
+      temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
+      temp_nsi["id"] = temp_nsi["uuid"]
+      del temp_nsi["uuid"]
 
-        # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
-        if net_removal_response['status'] in ['COMPLETED']:
-            vld_status = "INACTIVE"
-        else:
-            vld_status = "ERROR"
-            temp_nsi['nsi-status'] = "ERROR"
-            temp_nsi['errorLog'] = net_removal_response['message']
-        
-        for vld_item in temp_nsi['vldr-list']:
-          vld_item['vld-status'] = vld_status
-        
-        # sends the updated NetSlice instance to the repositories
-        repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
+      # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
+      if net_removal_response['status'] in ['COMPLETED']:
+          vld_status = "INACTIVE"
+      else:
+          vld_status = "ERROR"
+          temp_nsi['nsi-status'] = "ERROR"
+          temp_nsi['errorLog'] = net_removal_response['message']
+      
+      for vld_item in temp_nsi['vldr-list']:
+        vld_item['vld-status'] = vld_status
+      
+      # sends the updated NetSlice instance to the repositories
+      repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
 
-      finally:
-        # releases mutex for any other thread to acquire it
-        mutex_slice2db_access.release()
+      # releases mutex for any other thread to acquire it
+      mutex_slice2db_access.release()
 
     # Notifies the GTK that the Network Slice termination process is done (either complete or error)
     LOG.info("NSI_MNGR_Notify: Updating and notifying terminate to GTK") 
@@ -605,7 +623,7 @@ class update_slice_termination(Thread):
       # looks for the right service within the slice and updates it with the new data
       for service_item in jsonNSI['nsr-list']:
         if (service_item['nsrId'] == self.request_json['instance_uuid']):
-          service_item['requestId'] = self.request_json['id']
+          #service_item['requestId'] = self.request_json['id']
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "TERMINATED"
           else:
