@@ -71,7 +71,7 @@ def net_serv_instantiate(service_data):
   
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
-    LOG.info("MAPPER: Sending instanitation request for the following network slice subnet: " +str(service_data['nsrName']))
+    LOG.info("MAPPER: Sending instanitation request for the following network slice subnet: " +str(service_data['name']))
     time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
 
