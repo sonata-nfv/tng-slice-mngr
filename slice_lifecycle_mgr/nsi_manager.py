@@ -594,18 +594,17 @@ class thread_ns_terminate(Thread):
 
       # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
       if net_removal_response['status'] in ['COMPLETED']:
-        for vim_list_item in net_removal_response['vim_list']:
-          for virtual_link_item in vim_list_item['virtual_links']:
-            for vldr_item in temp_nsi['vldr-list']:
-              if virtual_link_item['id'] == vldr_item['vim-net-id']:
-                vld_status = "INACTIVE"
+        vld_status = "INACTIVE"
       else:
           vld_status = "ERROR"
           temp_nsi['nsi-status'] = "ERROR"
           temp_nsi['errorLog'] = net_removal_response['error']
       
-      for vld_item in temp_nsi['vldr-list']:
-        vld_item['vld-status'] = vld_status
+      for vim_list_item in net_removal_response['vim_list']:
+        for virtual_link_item in vim_list_item['virtual_links']:
+          for vldr_item in temp_nsi['vldr-list']:
+            if virtual_link_item['id'] == vldr_item['vim-net-id']:
+              vld_item['vld-status'] = vld_status
       
       # sends the updated NetSlice instance to the repositories
       repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
