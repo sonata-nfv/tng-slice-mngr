@@ -202,25 +202,24 @@ class thread_ns_instantiate(Thread):
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
-
       # updates the slice information before notifying the GTK
-      if jsonNSI['nsi-status'] == "INSTANTIATING":
+      if (jsonNSI['nsi-status'] == "INSTANTIATING"):
         jsonNSI['nsi-status'] = "INSTANTIATED"
 
         # validates if any service has error status to apply it to the slice status
         for service_item in jsonNSI['nsr-list']:
-          if service_item['working-status'] in ["ERROR", "INSTANTIATING"]:
+          if (service_item['working-status'] == "ERROR"):
             service_item['working-status'] = 'ERROR'
             jsonNSI['nsi-status'] = "ERROR"
 
         # updates NetSlice template usageState
-        if(jsonNSI['nsi-status'] == "INSTANTIATED"):
+        if (jsonNSI['nsi-status'] == "INSTANTIATED"):
           nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
           if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
             nstParameter2update = "usageState=IN_USE"
             updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
       else:
-        # this only happens if networks are not created, NS get "NOT_INSTANTIATED" status
+        # it only happens if networks are not created, all NSs status becomes "NOT_INSTANTIATED"
         for service_item in jsonNSI['nsr-list']:
           service_item['working-status'] == "NOT_INSTANTIATED"
       
@@ -245,7 +244,7 @@ class thread_ns_instantiate(Thread):
     # set to true in order to instantiates NSs in case there are no slice_vld to create
     network_ready = True
 
-    # acquires mutex to have unique access to the nsi (rpositories)
+    # acquires mutex to have unique access to the nsi (repositories)
     mutex_slice2db_access.acquire()
     try:
       # enters only if there are vld/networks to create and deploy
@@ -271,7 +270,6 @@ class thread_ns_instantiate(Thread):
           
           # if networks are not created, no need to request NS instantiations
           network_ready = False
-
         for vld_item in self.NSI['vldr-list']:
           vld_item['vld-status'] = vld_status
 
@@ -306,8 +304,9 @@ class thread_ns_instantiate(Thread):
         nsi_instantiated = True
         jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
         for nsr_item in jsonNSI['nsr-list']: 
-          if nsr_item['working-status'] == "INSTANTIATING":
+          if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
             nsi_instantiated = False
+            break
         
         # if all services are instantiated or error, break the while loop to notify the GTK
         if nsi_instantiated:
@@ -331,6 +330,7 @@ class update_slice_instantiation(Thread):
     self.request_json = request_json
   
   def run(self):
+    # acquires mutex to have unique access to the nsi (repositories)
     mutex_slice2db_access.acquire()
     try:
       LOG.info("NSI_MNGR_Update: Updating NSI instantiation")
@@ -358,8 +358,6 @@ class update_slice_instantiation(Thread):
             if service_item['isshared']:
               for nsr_vld_item in service_item['vld']:
                 for vld_vldr_item in jsonNSI['vldr-list']:
-                  LOG.info("NSI_MNGR_Update: vld_vldr_item['id'] :" +str(vld_vldr_item['id']) + " - nsr_vld_item['vld-ref'] :" + str(nsr_vld_item['vld-ref']))
-                  time.sleep(0.1)
                   if vld_vldr_item['id'] == nsr_vld_item['vld-ref']:
                     vld_vldr_item['shared-nsrs-list'].append(service_item['nsrId'])
 
@@ -382,6 +380,7 @@ class update_slice_instantiation(Thread):
       time.sleep(0.1)
     
     finally:
+      # releases mutex for any other thread to acquire it
       mutex_slice2db_access.release()
 
 # SENDS NETWORK SERVICE (NS) TERMINATION REQUESTS
