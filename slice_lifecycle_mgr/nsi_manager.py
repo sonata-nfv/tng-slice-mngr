@@ -566,10 +566,10 @@ class thread_ns_terminate(Thread):
           for shared_nsrs_item in vldr_item['shared-nsrs-list']:
             for nsrs_item in self.NSI['nsr-list']:
               if (nsrs_item['nsrId'] == shared_nsrs_item and nsrs_item['working-status'] in ['TERMINATED', 'TERMINATING', 'ERROR']):
-                vldrs_2_remove.append(shared_nsrs_item['id'])
+                vldrs_2_remove.append(shared_nsrs_item)
                 break
         else:
-          vldrs_2_remove.append(shared_nsrs_item['id'])
+          vldrs_2_remove.append(shared_nsrs_item)
 
       # requests to remove the created networks for the current slice
       net_removal_response = self.send_networks_removal_request(vldrs_2_remove)
