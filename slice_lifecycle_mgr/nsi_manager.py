@@ -212,6 +212,8 @@ class thread_ns_instantiate(Thread):
           if service_item['working-status'] in ["ERROR", "INSTANTIATING"]:
             service_item['working-status'] = 'ERROR'
             jsonNSI['nsi-status'] = "ERROR"
+          else:
+            service_item['requestId'] = ''
 
         # updates NetSlice template usageState
         if(jsonNSI['nsi-status'] == "INSTANTIATED"):
@@ -401,6 +403,8 @@ class thread_ns_terminate(Thread):
     LOG.info("NSI_MNGR_Terminate: termination_response: " +str(termination_response))
     time.sleep(0.1)
 
+    return termination_response
+
   def send_networks_removal_request(self, vldrs_2_remove):
     LOG.info("NSI_MNGR: Requesting slice networks removal to the GTK.")
     time.sleep(0.1)
@@ -512,7 +516,13 @@ class thread_ns_terminate(Thread):
       # Check ns instantiation status
       nsi_terminated = True
       jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
-      for nsr_item in jsonNSI['nsr-list']: 
+      for nsr_item in jsonNSI['nsr-list']:
+        
+        #TODO: take the nsr shared into account!!!
+        #if nsr_item['isshared']:
+        #  if nsr_item['working-status'] in ["TERMINATED", "ERROR", "READY"]:
+
+
         if nsr_item['working-status'] not in ["TERMINATED", "ERROR", "READY"]:
           nsi_terminated = False
       
@@ -949,7 +959,8 @@ def terminate_nsi(nsiId, TerminOrder):
           terminate_nsi['sliceCallback'] = TerminOrder['callback']
           terminate_nsi['nsi-status'] = "TERMINATING"
           
-          # creates a nsris list withouth the current one
+          ## CREATES A LIST OF ALL THE NSRs TO TERMINATE CHECKING IF THEY ARE SHARED OR NOT a AND THE LAST ONES
+          # creates a nsris list without the current one
           nsirs_ref_list = nsi_repo.get_all_saved_nsi()
           nsirs_list_no_current = []
           for nsir_item in nsirs_ref_list:
