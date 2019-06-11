@@ -421,32 +421,35 @@ class thread_ns_terminate(Thread):
 
     # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and adds them into the 'vim_list'
     for vldr_item in self.NSI['vldr-list']:
-      if vldr_item['id'] in vldrs_2_remove:
-        vim_item = {}
-        vim_item['uuid'] = vldr_item['vimAccountId']
-        vim_item['virtual_links'] = []
-        if not network_data['vim_list']:
-          network_data['vim_list'].append(vim_item)
-        else:
-          if vim_item not in network_data['vim_list']:
+      for vldrs_2_remove_item in vldrs_2_remove:
+        if vldr_item['id'] == vldrs_2_remove_item:
+          vim_item = {}
+          vim_item['uuid'] = vldr_item['vimAccountId']
+          vim_item['virtual_links'] = []
+          if not network_data['vim_list']:
             network_data['vim_list'].append(vim_item)
           else:
-            continue
+            if vim_item not in network_data['vim_list']:
+              network_data['vim_list'].append(vim_item)
+            else:
+              continue
     
     # creates the elements of the 3rd json level struture {id: ___, access: bool} and adds them into the 'virtual_links'
     for vldr_item in self.NSI['vldr-list']:
-      if vldr_item['id'] in vldrs_2_remove:
-        for vim_item in network_data['vim_list']:
-          if vldr_item['vimAccountId'] == vim_item['uuid']:
-            virtual_link_item = {}
-            virtual_link_item['id'] = vldr_item['vim-net-id']
-            if not vim_item['virtual_links']:
-              vim_item['virtual_links'].append(virtual_link_item)
-            else:
-              if virtual_link_item not in vim_item['virtual_links']:
+      #if vldr_item['id'] in vldrs_2_remove:
+      for vldrs_2_remove_item in vldrs_2_remove:
+        if vldr_item['id'] == vldrs_2_remove_item:
+          for vim_item in network_data['vim_list']:
+            if vldr_item['vimAccountId'] == vim_item['uuid']:
+              virtual_link_item = {}
+              virtual_link_item['id'] = vldr_item['vim-net-id']
+              if not vim_item['virtual_links']:
                 vim_item['virtual_links'].append(virtual_link_item)
               else:
-                continue
+                if virtual_link_item not in vim_item['virtual_links']:
+                  vim_item['virtual_links'].append(virtual_link_item)
+                else:
+                  continue
 
     LOG.info("NSI_MNGR_Instantiate: json to remove networks: " + str(network_data))
     time.sleep(0.1)
@@ -567,12 +570,14 @@ class thread_ns_terminate(Thread):
         if vldr_item.get('shared-nsrs-list'):
           for shared_nsrs_item in vldr_item['shared-nsrs-list']:
             for nsrs_item in self.NSI['nsr-list']:
-              if (nsrs_item['nsrId'] == shared_nsrs_item and nsrs_item['working-status'] in ['TERMINATED', 'TERMINATING', 'ERROR']):
+              if (nsrs_item['nsrId'] == shared_nsrs_item and nsrs_item['working-status'] in ['TERMINATED', 'ERROR']):
                 vldrs_2_remove.append(shared_nsrs_item)
                 break
         else:
           vldrs_2_remove.append(shared_nsrs_item)
 
+      LOG.info("NSI_MNGR: This is the list of networks to remove: " + str(vldrs_2_remove))
+      time.sleep(0.1)
       # requests to remove the created networks for the current slice
       net_removal_response = self.send_networks_removal_request(vldrs_2_remove)
 
@@ -590,7 +595,7 @@ class thread_ns_terminate(Thread):
       else:
           vld_status = "ERROR"
           temp_nsi['nsi-status'] = "ERROR"
-          temp_nsi['errorLog'] = net_removal_response['message']
+          temp_nsi['errorLog'] = net_removal_response['error']
       
       for vld_item in temp_nsi['vldr-list']:
         vld_item['vld-status'] = vld_status
