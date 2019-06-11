@@ -284,6 +284,9 @@ class thread_ns_instantiate(Thread):
             instantiation_resp = self.send_instantiation_requests(nsr_item)
             if instantiation_resp[1] == 201:
               nsr_item['working-status'] == 'INSTANTIATING'
+            else:
+              nsr_item['working-status'] == 'ERROR'
+              self.NSI['errorLog'] = 'ERROR when instantiating ' + str(nsr_item['nsrName'])
         
         # sends the updated NetSlice instance to the repositories
         repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])

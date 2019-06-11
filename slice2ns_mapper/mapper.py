@@ -74,10 +74,10 @@ def net_serv_instantiate(service_data):
     LOG.info("MAPPER: Sending Instanitation request")
     time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    if (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
-    else:
-      jsonresponse = response.json()
+    #if (response.status_code == 201):
+    jsonresponse = json.loads(response.text)
+    #else:
+    #  jsonresponse = response.json()
     
     LOG.info("MAPPER: Service Instanitation request response: " + str(jsonresponse) + ", HTTP.status: " + str(response.status_code))
     time.sleep(0.1)
