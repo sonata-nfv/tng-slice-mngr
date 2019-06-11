@@ -453,6 +453,8 @@ class thread_ns_terminate(Thread):
 
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
     nets_removal_response = mapper.delete_vim_network(network_data)
+    LOG.info("NSI_MNGR_Instantiate: remove networks response: " + str(nets_removal_response))
+    time.sleep(0.1)
     return nets_removal_response
 
   def update_nsi_notify_terminate(self):
