@@ -516,9 +516,9 @@ class thread_ns_terminate(Thread):
       # requests to terminate a NSr
       termination_resp = self.send_termination_requests(nsrid_item)
       for nsr_item in self.NSI['nsr-list']:
-        if instantiation_resp[1] == 201:
+        if termination_resp[1] == 201:
           nsr_item['working-status'] == 'TERMINATING'
-          nsr_item['requestId'] = instantiation_resp[0]['id']
+          nsr_item['requestId'] = termination_resp[0]['id']
         else:
           nsr_item['working-status'] == 'ERROR'
           self.NSI['errorLog'] = 'ERROR when terminating ' + str(nsr_item['nsrName'])
