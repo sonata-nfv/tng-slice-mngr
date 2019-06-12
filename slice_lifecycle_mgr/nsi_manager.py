@@ -786,9 +786,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
   nsr_list = []                         # empty list to add all the created slice-subnets
   serv_seq = 1                          # to put in order the services within a slice in the portal
   nsirs_ref_list = nsi_repo.get_all_saved_nsi()
-
   for subnet_item in nst_json["slice_ns_subnets"]:
-    
     # Checks if there is already a shared nsr and copies its information
     found_shared_nsr = False
     if subnet_item['is-shared']:
@@ -796,15 +794,14 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       time.sleep(0.1)
       if nsirs_ref_list:
         for nsir_ref_item in nsirs_ref_list:
-          for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
-            if nsir_subnet_ref_item['subnet-nsdId-ref'] == subnet_item['nsd-ref'] and\
-                nsir_subnet_ref_item['isshared'] and\
-                nsir_subnet_ref_item['working-status'] in ["NEW", "INSTANTIATING", "INSTANTIATED", "READY"]:
-              LOG.info("NSI_MNGR: SHARED SUBNET - found a nsr reference")
-              time.sleep(0.1)
-              subnet_record = nsir_subnet_ref_item
-              found_shared_nsr = True
-              break
+          if nsir_ref_item['nsi-status'] in ['NEW', 'INSTANTIATING', 'INSTANTIATED', 'READY']:
+            for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
+              if nsir_subnet_ref_item['subnet-nsdId-ref'] == subnet_item['nsd-ref'] and nsir_subnet_ref_item['isshared']:
+                LOG.info("NSI_MNGR: SHARED SUBNET - found a nsr reference")
+                time.sleep(0.1)
+                subnet_record = nsir_subnet_ref_item
+                found_shared_nsr = True
+                break
           if found_shared_nsr:
             break
         #TODO: what about the ingress and egress of a new slice having the shared NSR???
