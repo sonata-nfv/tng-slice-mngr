@@ -544,21 +544,20 @@ class thread_ns_terminate(Thread):
     # deployment_timeout = 2 * 3600   # Two hours
     deployment_timeout = 900         # 15 minutes  #TODO: mmodify for the reviews
     while deployment_timeout > 0:
-      time.sleep(0.1)
       # Check ns instantiation status
       nsi_terminated = True
       jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
       for nsr_item in jsonNSI['nsr-list']:
         if nsr_item['isshared']:
-          if nsr_item['working-status'] == "TERMINATING":
-          #if nsr_item['working-status'] is not ["TERMINATED", "INSTANTIATED", "ERROR", "READY"]:
+          #if nsr_item['working-status'] == "TERMINATING":
+          if nsr_item['working-status'] not in ["TERMINATED", "INSTANTIATED", "ERROR", "READY"]:
             nsi_terminated = False
         else:
           #if nsr_item['working-status'] is ["TERMINATING", "NEW", "INSTANTIATED", "INSTANTIATING"]:
-          if nsr_item['working-status'] is not ["TERMINATED", "ERROR", "READY"]:
+          if nsr_item['working-status'] not in ["TERMINATED", "ERROR", "READY"]:
             nsi_terminated = False
         
-        if nsi_terminated == False:
+        if not nsi_terminated:
           break
       
       # if all services are instantiated or error, break the while loop to notify the GTK
