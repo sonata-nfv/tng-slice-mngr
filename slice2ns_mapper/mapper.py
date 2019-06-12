@@ -71,16 +71,12 @@ def net_serv_instantiate(service_data):
   
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
-    LOG.info("MAPPER: Sending Instanitation request")
+    LOG.info("MAPPER: Sending instanitation request for the following network slice subnet: " +str(service_data['name']))
     time.sleep(0.1)
     response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    if (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
-    else:
-      jsonresponse = response.json()
+
+    jsonresponse = json.loads(response.text)
     
-    LOG.info("MAPPER: Service Instanitation request response: " + str(jsonresponse) + ", HTTP.status: " + str(response.status_code))
-    time.sleep(0.1)
     return jsonresponse, response.status_code
     
   else:
@@ -301,6 +297,8 @@ def delete_vim_network(network_data):
     LOG.info("MAPPER: Sending network removal request")
     time.sleep(0.1)
     response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    LOG.info("MAPPER: Networks removal response: " +str(response))
+    time.sleep(0.1)
     
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)
