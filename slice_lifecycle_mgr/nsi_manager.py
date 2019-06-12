@@ -928,7 +928,7 @@ def add_vlds(new_nsir, nst_json):
       if nsr_item['isshared']:
         # looks for the nsir with the current shared nsr
         for nsir_ref_item in nsirs_ref_list:
-          if nsir_ref_item['vldr-list'] and nsir_ref_item['nsi-status'] in ['NEW', 'INSTANTIATING', 'INSTANTIATED', 'READY']::
+          if nsir_ref_item['vldr-list'] and nsir_ref_item['nsi-status'] in ['NEW', 'INSTANTIATING', 'INSTANTIATED', 'READY']:
             nsir_found = False
             for nsr_ref_item in nsir_ref_item['nsr-list']:
               if (nsr_item['subnet-nsdId-ref'] == nsr_ref_item.get('subnet-nsdId-ref') and nsr_ref_item.get('isshared')):
