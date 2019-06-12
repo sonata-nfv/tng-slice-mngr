@@ -297,6 +297,8 @@ def delete_vim_network(network_data):
     LOG.info("MAPPER: Sending network removal request")
     time.sleep(0.1)
     response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    LOG.info("MAPPER: Networks removal response: " +str(response))
+    time.sleep(0.1)
     
     if (response.status_code == 201):
       jsonresponse = json.loads(response.text)

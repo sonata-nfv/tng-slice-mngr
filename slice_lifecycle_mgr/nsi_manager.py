@@ -570,10 +570,10 @@ class thread_ns_terminate(Thread):
       deployment_timeout -= 15
     
     # enters only if there are vld/networks to terminate
-    if self.NSI.get('vldr-list'):
+    if jsonNSI.get('vldr-list'):
       #creates the list of vldrs to remove (if they are not shared or shared with terminated nsrs)
       vldrs_2_remove = []
-      for vldr_item in self.NSI['vldr-list']:
+      for vldr_item in jsonNSI['vldr-list']:
         LOG.info("NSI_MNGR: Checking vldr: " +str(vldr_item['id']))
         time.sleep(0.1)
         if vldr_item.get('shared-nsrs-list'):
@@ -581,7 +581,7 @@ class thread_ns_terminate(Thread):
           time.sleep(0.1)
           for shared_nsrs_item in vldr_item['shared-nsrs-list']:
             remove_vldr_item = True
-            for nsrs_item in self.NSI['nsr-list']:
+            for nsrs_item in jsonNSI['nsr-list']:
               LOG.info("NSI_MNGR: shared_nsrs_item: " +str(shared_nsrs_item)+ " nsrs_item['nsrId']: " +str(nsrs_item['nsrId'])+ " and nsrs_item['working-status']: " +str(nsrs_item['working-status']))
               time.sleep(0.1)
               if (shared_nsrs_item == nsrs_item['nsrId'] and nsrs_item['working-status'] in ['NEW', 'INSTANTIATING', 'INSTANTIATED', 'READY']):
