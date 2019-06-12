@@ -305,7 +305,7 @@ class thread_ns_instantiate(Thread):
         jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
         for nsr_item in jsonNSI['nsr-list']: 
 
-          #TODO: check shared services if they are ready (use the requestID to check and update the status)
+          #TODO: check shared services instantiated by other nsirs are ready (use the requestID to check and update the status)
 
           if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
             nsi_instantiated = False
@@ -550,11 +550,17 @@ class thread_ns_terminate(Thread):
       jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
       for nsr_item in jsonNSI['nsr-list']:
         if nsr_item['isshared']:
-          if nsr_item['working-status'] == "TERMINATING":
+          #if nsr_item['working-status'] == "TERMINATING":
+          if nsr_item['working-status'] is not ["TERMINATED", "INSTANTIATED", "ERROR", "READY"]:
             nsi_terminated = False
+          else:
+            continue
         else:
-          if nsr_item['working-status'] is ["TERMINATING", "NEW", "INSTANTIATED", "INSTANTIATING"]:
+          #if nsr_item['working-status'] is ["TERMINATING", "NEW", "INSTANTIATED", "INSTANTIATING"]:
+          if nsr_item['working-status'] is not ["TERMINATED", "ERROR", "READY"]:
             nsi_terminated = False
+            else:
+              continue
       
       # if all services are instantiated or error, break the while loop to notify the GTK
       if nsi_terminated:
@@ -616,7 +622,8 @@ class thread_ns_terminate(Thread):
       mutex_slice2db_access.release()
 
     # Notifies the GTK that the Network Slice termination process is done (either complete or error)
-    LOG.info("NSI_MNGR_Notify: Updating and notifying terminate to GTK") 
+    LOG.info("NSI_MNGR_Notify: Updating and notifying terminate to GTK")
+    time.sleep(0.1)
     self.update_nsi_notify_terminate()
 
 # UPDATES THE SLICE TERMINATION INFORMATION
@@ -792,7 +799,9 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       if nsirs_ref_list:
         for nsir_ref_item in nsirs_ref_list:
           for nsir_subnet_ref_item in nsir_ref_item['nsr-list']:
-            if nsir_subnet_ref_item['subnet-nsdId-ref'] == subnet_item['nsd-ref'] and nsir_subnet_ref_item['isshared']:
+            if nsir_subnet_ref_item['subnet-nsdId-ref'] == subnet_item['nsd-ref'] and\
+                nsir_subnet_ref_item['isshared'] and\
+                nsir_subnet_ref_item['working-status'] in ["NEW", "INSTANTIATING", "INSTANTIATED", "READY"]:
               LOG.info("NSI_MNGR: SHARED SUBNET - found a nsr reference")
               time.sleep(0.1)
               subnet_record = nsir_subnet_ref_item
