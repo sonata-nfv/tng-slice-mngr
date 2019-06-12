@@ -574,11 +574,19 @@ class thread_ns_terminate(Thread):
       #creates the list of vldrs to remove (if they are not shared or shared with terminated nsrs)
       vldrs_2_remove = []
       for vldr_item in self.NSI['vldr-list']:
+        LOG.info("NSI_MNGR: Checking vldr: " +str(vldr_item['id']))
+        time.sleep(0.1)
         if vldr_item.get('shared-nsrs-list'):
+          LOG.info("NSI_MNGR: USED BY SHARED NSRS")
+          time.sleep(0.1)
           for shared_nsrs_item in vldr_item['shared-nsrs-list']:
             remove_vldr_item = True
             for nsrs_item in self.NSI['nsr-list']:
+              LOG.info("NSI_MNGR: shared_nsrs_item: " +str(shared_nsrs_item)+ " nsrs_item['nsrId']: " +str(nsrs_item['nsrId'])+ " and nsrs_item['working-status']: " +str(nsrs_item['working-status']))
+              time.sleep(0.1)
               if (shared_nsrs_item == nsrs_item['nsrId'] and nsrs_item['working-status'] in ['NEW', 'INSTANTIATING', 'INSTANTIATED', 'READY']):
+                LOG.info("NSI_MNGR: FOUND A SHARED NSR USING THIS VLD, DO NOT REMOVE IT.")
+                time.sleep(0.1)
                 remove_vldr_item = False
                 break
         else:
