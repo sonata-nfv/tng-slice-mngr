@@ -926,32 +926,21 @@ def add_vlds(new_nsir, nst_json):
   if nsirs_ref_list:
     for nsr_item in new_nsir['nsr-list']:
       if nsr_item['isshared']:
-        LOG.info("NSI_MNGR: SHARED VLDs")
-        time.sleep(0.1)
         # looks for the nsir with the current shared nsr
         for nsir_ref_item in nsirs_ref_list:
-          if nsir_ref_item['vldr-list']:
+          if nsir_ref_item['vldr-list'] and nsir_ref_item['nsi-status'] in ['NEW', 'INSTANTIATING', 'INSTANTIATED', 'READY']::
             nsir_found = False
             for nsr_ref_item in nsir_ref_item['nsr-list']:
-              LOG.info("NSI_MNGR: SHARED VLD -> nsr_item[subnet-nsdId-ref]: " + str(nsr_item['subnet-nsdId-ref']) + " nsir_ref_item.get(subnet-nsdId-ref): " + str(nsr_ref_item.get("subnet-nsdId-ref")))
-              LOG.info("NSI_MNGR: SHARED VLD -> nsir_ref_item.get(isshared): " + str(nsr_ref_item.get("isshared")))
-              time.sleep(0.1)
               if (nsr_item['subnet-nsdId-ref'] == nsr_ref_item.get('subnet-nsdId-ref') and nsr_ref_item.get('isshared')):
                 nsir_found = True
                 break
           
             if nsir_found:
-              LOG.info("NSI_MNGR: SHARED VLD - found a nsir reference with a the same shared nsr.")
-              time.sleep(0.1)
               for vld_nsr_item in nsr_item['vld']:
                 for vldr_ref in nsir_ref_item['vldr-list']:
                   if vld_nsr_item['vld-ref'] == vldr_ref['id']:
-                    LOG.info("NSI_MNGR: SHARED VLD -> vld_nsr_item[vld-ref]: " + str(vld_nsr_item['vld-ref']) + " vldr_ref[id]: " + str(vldr_ref['id']))
-                    time.sleep(0.1)
                     for current_vldr_item in vldr_list:
                       if current_vldr_item['id'] == vldr_ref['id']:
-                        LOG.info("NSI_MNGR: SHARED VLD - current_vldr_item[id]: " + str(current_vldr_item['id']) + " & vldr_ref[id]: " + str(vldr_ref['id']))
-                        time.sleep(0.1)
                         current_vldr_item['vim-net-id'] = vldr_ref['vim-net-id']
                         current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
                         current_vldr_item['vld-status'] = 'ACTIVE'
