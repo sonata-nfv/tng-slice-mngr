@@ -550,17 +550,16 @@ class thread_ns_terminate(Thread):
       jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
       for nsr_item in jsonNSI['nsr-list']:
         if nsr_item['isshared']:
-          #if nsr_item['working-status'] == "TERMINATING":
-          if nsr_item['working-status'] is not ["TERMINATED", "INSTANTIATED", "ERROR", "READY"]:
+          if nsr_item['working-status'] == "TERMINATING":
+          #if nsr_item['working-status'] is not ["TERMINATED", "INSTANTIATED", "ERROR", "READY"]:
             nsi_terminated = False
-          else:
-            continue
         else:
           #if nsr_item['working-status'] is ["TERMINATING", "NEW", "INSTANTIATED", "INSTANTIATING"]:
           if nsr_item['working-status'] is not ["TERMINATED", "ERROR", "READY"]:
             nsi_terminated = False
-          else:
-            continue
+        
+        if nsi_terminated == False:
+          break
       
       # if all services are instantiated or error, break the while loop to notify the GTK
       if nsi_terminated:
