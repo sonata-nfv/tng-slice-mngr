@@ -304,6 +304,9 @@ class thread_ns_instantiate(Thread):
         nsi_instantiated = True
         jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
         for nsr_item in jsonNSI['nsr-list']: 
+
+          #TODO: check shared services if they are ready (use the requestID to check and update the status)
+
           if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
             nsi_instantiated = False
             break
