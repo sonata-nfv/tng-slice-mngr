@@ -559,8 +559,8 @@ class thread_ns_terminate(Thread):
           #if nsr_item['working-status'] is ["TERMINATING", "NEW", "INSTANTIATED", "INSTANTIATING"]:
           if nsr_item['working-status'] is not ["TERMINATED", "ERROR", "READY"]:
             nsi_terminated = False
-            else:
-              continue
+          else:
+            continue
       
       # if all services are instantiated or error, break the while loop to notify the GTK
       if nsi_terminated:
