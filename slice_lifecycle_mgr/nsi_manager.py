@@ -288,36 +288,37 @@ class thread_ns_instantiate(Thread):
         LOG.info("NSI_MNGR: Update NSI instantiating: " +str(self.NSI))
         time.sleep(0.1)
         
-        # sends the updated NetSlice instance to the repositories
-        repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
+      # sends the updated NetSlice instance to the repositories
+      repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
     
     finally: 
       # releases mutex for any other thread to acquire it
       mutex_slice2db_access.release()
 
-      # Waits until all the NSs are instantiated/ready or error
-      LOG.info("Processing services instantiations...")
-      #deployment_timeout = 2 * 3600   # Two hours
-      deployment_timeout = 900   # 15min   #TODO: mmodify for the reviews
-      while deployment_timeout > 0:
-        # Check ns instantiation status
-        nsi_instantiated = True
-        jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
-        for nsr_item in jsonNSI['nsr-list']: 
+      if network_ready:
+        # Waits until all the NSs are instantiated/ready or error
+        LOG.info("Processing services instantiations...")
+        #deployment_timeout = 2 * 3600   # Two hours
+        deployment_timeout = 900   # 15min   #TODO: mmodify for the reviews
+        while deployment_timeout > 0:
+          # Check ns instantiation status
+          nsi_instantiated = True
+          jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+          for nsr_item in jsonNSI['nsr-list']: 
 
-          #TODO: check shared services instantiated by other nsirs are ready (use the requestID to check and update the status)
+            #TODO: check shared services instantiated by other nsirs are ready (use the requestID to check and update the status)
 
-          if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
-            nsi_instantiated = False
+            if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
+              nsi_instantiated = False
+              break
+          
+          # if all services are instantiated or error, break the while loop to notify the GTK
+          if nsi_instantiated:
+            LOG.info("All service instantiations requests processed!")
             break
-        
-        # if all services are instantiated or error, break the while loop to notify the GTK
-        if nsi_instantiated:
-          LOG.info("All service instantiations requests processed!")
-          break
-    
-        time.sleep(15)
-        deployment_timeout -= 15
+      
+          time.sleep(15)
+          deployment_timeout -= 15
       
     LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")    
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
