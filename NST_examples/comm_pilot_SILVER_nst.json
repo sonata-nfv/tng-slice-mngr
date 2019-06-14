@@ -1,29 +1,29 @@
 {
-  "name": "SILVER_CommunicationsPilot_NST",
-  "description": "NST for the communication pilot with SILVER SLA.",
+  "name": "EUCNC_SILVER_CommPilot_NST",
+  "description": "NST for the EUCNC Communications Pilot with SILVER SLA.",
   "vendor": "5gtango",
   "version": "2.0",
   "author": "5GTango",
   "usageState": "NOT_IN_USE",
   "SNSSAI_identifier": {
-    "slice-service-type": "eMBB"
+    "slice-service-type": "URLLC"
   },
   "slice_ns_subnets": [
     {
       "id": "comm-pilot-subnet",
       "nsd-name": "communication-pilot",
       "nsd-vendor": "quobis",
-      "nsd-version": "0.4",
-      "sla-name": "SILVER",
-      "sla-ref": "64327e47-2d4b-4fc0-8b6a-76aaea345069",
+      "nsd-version": "0.6",
+      "sla-name": "eucnc_silver",
+      "sla-ref": "cfb65526-cdc7-4bd3-bf13-995d5b8874f9",
       "is-shared": false,
       "ingresses": [
         {
-          "location": "dd872f1a-33fa-4a79-9196-a1089826d512",
+          "location": "af19440f-16e4-4b5c-ad34-753f8ddbb921",
           "nap": "10.10.10.3/32"
         },
         {
-          "location": "fca1ac99-d397-49c1-a629-400e3207d27a",
+          "location": "169fe416-fcd2-4e24-85e2-189ba38cf8ef",
           "nap": "10.10.10.4/32"
         }
       ],

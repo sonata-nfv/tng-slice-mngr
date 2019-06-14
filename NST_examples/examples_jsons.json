@@ -648,6 +648,21 @@
 
 /* Json to requests networks creation (& removal) */
 {
+  "instance_id": "vim-net-id",
+  "vim_list": [
+    {
+      "uuid": "vimAccountId",
+      "virtual_links": [
+        {
+          "id": "name",
+          "access": "String"
+        }
+      ]
+    }
+  ]
+}
+
+{
   "vim_list":[
     {"virtual_links":[
       {"access":"true","id":"8may_1.mgmt.net.763a7400-6112-47fd-bfc6-58861a740513"},
