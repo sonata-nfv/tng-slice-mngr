@@ -335,9 +335,8 @@ class thread_ns_instantiate(Thread):
           for vld_item in self.NSI['vldr-list']:
             vld_item['vld-status'] = vld_status
           '''
-
+      # if TRUE = instantiates the services, otherwise uremoves the created networks
       if network_ready:
-        # Sends all the requests to instantiate the NSs within the slice
         for nsr_item in self.NSI['nsr-list']:
           if (nsr_item['isshared'] == False or nsr_item['isshared'] and nsr_item['working-status'] == "NEW"):
             instantiation_resp = self.send_instantiation_requests(nsr_item)
@@ -403,9 +402,7 @@ class thread_ns_instantiate(Thread):
           nsi_instantiated = True
           jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
           for nsr_item in jsonNSI['nsr-list']: 
-
             #TODO: check shared services instantiated by other nsirs are ready (use the requestID to check and update the status)
-
             if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
               nsi_instantiated = False
               break
