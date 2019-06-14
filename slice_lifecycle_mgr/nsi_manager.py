@@ -686,6 +686,7 @@ class thread_ns_terminate(Thread):
         if vldr_item.get('shared-nsrs-list'):
           for shared_nsrs_item in vldr_item['shared-nsrs-list']:
             remove_vldr_item = True
+            # looks for any 'active' nsr attached to the vld to not remove the net, otherwise...
             for nsrs_item in self.NSI['nsr-list']:
               if (shared_nsrs_item == nsrs_item['nsrId'] and nsrs_item['working-status'] in ['NEW', 'INSTANTIATING', 'INSTANTIATED', 'READY']):
                 LOG.info("NSI_MNGR: FOUND A SHARED NSR USING THIS VLD, DO NOT REMOVE IT.")
@@ -694,20 +695,22 @@ class thread_ns_terminate(Thread):
                 break
         else:
           remove_vldr_item = True
+        
         if remove_vldr_item:
-          network_data = {}
-          network_data['instance_id'] = vldr_item['vim-net-id']
-          network_data['vim_list'] = []
-          
-          vim_list_item = {}
-          vim_list_item['uuid'] = vldr_item['vimAccountId']
-          vim_list_item['virtual_links'] = []
-
+          virtual_links = []
           virtual_links_item = {}
           virtual_links_item['id'] = self.NSI['name'] +"-"+ vldr_item['name']
-          
-          vim_list_item['virtual_links'].append(virtual_link_item)
-          network_data['vim_list'].append(vim_list_item)
+          virtual_links.append(virtual_links_item)
+
+          vim_list = []
+          vim_list_item = {}
+          vim_list_item['uuid'] = vldr_item['vimAccountId']
+          vim_list_item['virtual_links'] = virtual_links
+          vim_list.append(vim_list_item)
+
+          network_data = {}
+          network_data['instance_id'] = vldr_item['vim-net-id']
+          network_data['vim_list'] = vim_list
 
           #networks_response = self.send_networks_creation_request(network_data)
           networks_response = mapper.create_vim_network(network_data)
