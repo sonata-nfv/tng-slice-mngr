@@ -33,7 +33,7 @@
 ## partner consortium (www.5gtango.eu).
 """
 
-import os, sys, logging, datetime, uuid, time, json
+import os, sys, logging, datetime, uuid, time, json, ast
 import dateutil.parser
 from threading import Thread, Lock
 
@@ -463,6 +463,10 @@ class update_slice_instantiation(Thread):
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "INSTANTIATED"
             #service_item['requestId'] = ''
+          elif (self.request_json['status'] == "ERROR"):
+            service_item['working-status'] = "ERROR"
+            error_msg = ast.literal_eval(self.request_json['error'])
+            jsonNSI['errorLog'] = error_msg['message']
           else:
             service_item['working-status'] = self.request_json['status']
                     
