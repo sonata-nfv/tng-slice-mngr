@@ -468,8 +468,7 @@ class update_slice_instantiation(Thread):
             #service_item['requestId'] = ''
           elif (self.request_json['status'] == "ERROR"):
             service_item['working-status'] = "ERROR"
-            error_msg = ast.literal_eval(self.request_json['error'])
-            jsonNSI['errorLog'] = error_msg['message']
+            jsonNSI['errorLog'] = self.request_json['error']
           else:
             service_item['working-status'] = self.request_json['status']
                     
