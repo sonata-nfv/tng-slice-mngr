@@ -650,6 +650,10 @@ class thread_ns_terminate(Thread):
       # Check ns instantiation status
       nsi_terminated = True
       self.NSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+      #due to a missmatch with repositories
+      self.NSI["id"] = self.NSI["uuid"]
+      del self.NSI["uuid"]
+      
       for nsr_item in self.NSI['nsr-list']:
         if nsr_item['isshared']:
           #if nsr_item['working-status'] == "TERMINATING":
@@ -670,10 +674,6 @@ class thread_ns_terminate(Thread):
   
       time.sleep(15)
       deployment_timeout -= 15
-    
-    #due to a missmatch with repositories
-    self.NSI["id"] = self.NSI["uuid"]
-    del self.NSI["uuid"]
     
     # enters only if there are vld/networks to terminate
     if self.NSI.get('vldr-list'):
