@@ -263,9 +263,11 @@ class thread_ns_instantiate(Thread):
         time.sleep(0.1)
         # creates each one of the vlds defined within the nsir
         for vldr_item in self.NSI['vldr-list']:
+          LOG.info("NSI_MNGR: Creating the following vld: " + str(self.NSI['name'] +"-"+ vldr_item['name']))
+          time.sleep(0.1)
           # if there's an ACTIVE vld, it means it is shared and there's no need to create it again
           if vldr_item['vld-status'] == "INACTIVE":
-            LOG.info("NSI_MNGR: Creating the following vld: " + str(self.NSI['name'] +"-"+ vldr_item['name']))
+            LOG.info("NSI_MNGR: Creating the payload for the net_request: ")
             time.sleep(0.1)
             network_data = {}
             network_data['instance_id'] = vldr_item['vim-net-id']
