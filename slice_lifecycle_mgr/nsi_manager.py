@@ -712,7 +712,7 @@ class thread_ns_terminate(Thread):
           network_data['vim_list'] = vim_list
 
           #networks_response = self.send_networks_creation_request(network_data)
-          networks_response = mapper.create_vim_network(network_data)
+          networks_response = mapper.delete_vim_network(network_data)
 
           # checks that all the networks are terminated
           if networks_response['status'] in ['COMPLETED']:
