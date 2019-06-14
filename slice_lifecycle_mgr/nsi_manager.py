@@ -309,9 +309,6 @@ class thread_ns_instantiate(Thread):
               vldr_item['vld-status'] = 'ERROR'
               self.NSI['errorLog'] = networks_response['error']
               network_ready = False
-          
-          if networks_response['status'] == 'ERROR':
-            break
 
           '''#OLD NETWORKS CREATION REQUEST
           # sends all the requests to create all the VLDs (networks) within the slice
@@ -358,19 +355,25 @@ class thread_ns_instantiate(Thread):
         self.NSI['nsi-status'] = 'ERROR'
         for vldr_item in self.NSI['vldr-list']:
           if vldr_item['vld-status'] == 'ACTIVE':
-            network_data = {}
-            network_data['instance_id'] = vldr_item['vim-net-id']
-            network_data['vim_list'] = []
-            
-            vim_list_item = {}
-            vim_list_item['uuid'] = vldr_item['vimAccountId']
-            vim_list_item['virtual_links'] = []
-
+            virtual_links = []
             virtual_links_item = {}
             virtual_links_item['id'] = self.NSI['name'] +"-"+ vldr_item['name']
-            
-            vim_list_item['virtual_links'].append(virtual_link_item)
-            network_data['vim_list'].append(vim_list_item)
+            virtual_links.append(virtual_links_item)
+            #FUTURE: there are other parameters that could be added (i.e. minimum_BW, qos_requirements...)
+            LOG.info("NSI_MNGR: payload of the request: " + str(virtual_links))
+            time.sleep(0.1)
+
+            vim_list = []
+            vim_list_item = {}
+            vim_list_item['uuid'] = vldr_item['vimAccountId']
+            vim_list_item['virtual_links'] = virtual_links
+            vim_list.append(vim_list_item)
+            LOG.info("NSI_MNGR: payload of the request: " + str(vim_list))
+            time.sleep(0.1)
+
+            network_data = {}
+            network_data['instance_id'] = vldr_item['vim-net-id']
+            network_data['vim_list'] = vim_list
             #networks_response = self.undo_created_networks(network_data)
             networks_response = mapper.delete_vim_network(network_data)
           
