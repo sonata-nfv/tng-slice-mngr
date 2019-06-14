@@ -267,24 +267,26 @@ class thread_ns_instantiate(Thread):
           time.sleep(0.1)
           # if there's an ACTIVE vld, it means it is shared and there's no need to create it again
           if vldr_item['vld-status'] == "INACTIVE":
+            # creates the json object with the information for the request payload
             LOG.info("NSI_MNGR: Creating the payload for the net_request: ")
             time.sleep(0.1)
-            network_data = {}
-            network_data['instance_id'] = vldr_item['vim-net-id']
-            network_data['vim_list'] = []
-            
-            vim_list_item = {}
-            vim_list_item['uuid'] = vldr_item['vimAccountId']
-            vim_list_item['virtual_links'] = []
-
+            virtual_links = []
             virtual_links_item = {}
             virtual_links_item['id'] = self.NSI['name'] +"-"+ vldr_item['name']
             virtual_link_item['access'] = vldr_item['access_net']
+            virtual_links.append(virtual_link_item)
             #FUTURE: there are other parameters that could be added (i.e. minimum_BW, qos_requirements...)
-            
-            vim_list_item['virtual_links'].append(virtual_link_item)
-            network_data['vim_list'].append(vim_list_item)
 
+            vim_list = []
+            vim_list_item = {}
+            vim_list_item['uuid'] = vldr_item['vimAccountId']
+            vim_list_item['virtual_links'] = virtual_links
+            vim_list.append(vim_list_item)
+
+            network_data = {}
+            network_data['instance_id'] = vldr_item['vim-net-id']
+            network_data['vim_list'] = vim_list
+                        
             LOG.info("NSI_MNGR: payload of the request: " + str(network_data))
             time.sleep(0.1)
             #networks_response = self.send_networks_creation_request(network_data)
