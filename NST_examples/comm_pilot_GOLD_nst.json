@@ -1,30 +1,30 @@
 {
-  "name": "GOLD_CommunicationsPilot_NST",
-  "description": "NST for the communication pilot with GOLD SLA.",
+  "name": "EUCNC_GOLD_CommPilot_NST",
+  "description": "NST for the EUCNC Communications Pilot with GOLD SLA.",
   "vendor": "5gtango",
   "version": "2.0",
   "author": "5GTango",
   "usageState": "NOT_IN_USE",
   "SNSSAI_identifier": {
-    "slice-service-type": "eMBB"
+    "slice-service-type": "URLLC"
   },
   "slice_ns_subnets": [
     {
       "id": "comm-pilot-subnet",
       "nsd-name": "communication-pilot",
       "nsd-vendor": "quobis",
-      "nsd-version": "0.4",
-      "sla-name": "GOLD",
-      "sla-ref": "________________________________________________________________",
+      "nsd-version": "0.6",
+      "sla-name": "eucnc_gold",
+      "sla-ref": "f07e364e-c884-4aa8-a50d-da70a708c663",
       "is-shared": false,
       "ingresses": [
         {
-          "location": "dd872f1a-33fa-4a79-9196-a1089826d512",
-          "nap": "10.10.10.3/32"
+          "location": "dd1a1746-5f82-4900-8c8d-71e24fe8aafe",
+          "nap": "10.10.10.1/32"
         },
         {
-          "location": "fca1ac99-d397-49c1-a629-400e3207d27a",
-          "nap": "10.10.10.4/32"
+          "location": "1e993339-aa00-41cb-bdcd-fc5cd9fc6561",
+          "nap": "10.10.10.2/32"
         }
       ],
       "egresses": []

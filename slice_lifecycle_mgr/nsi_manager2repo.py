@@ -94,7 +94,7 @@ def update_nsi(update_NSI, nsiId):
     url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
     data = json.dumps(update_NSI)
 
-    response = requests.put(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
+    response = requests.put(url, data, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
     if(response.status_code != 200):
