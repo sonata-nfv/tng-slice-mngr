@@ -259,10 +259,14 @@ class thread_ns_instantiate(Thread):
     try:
       # enters only if there are vld/networks to create
       if self.NSI.get('vldr-list'):
+        LOG.info("NSI_MNGR: There are networks to create")
+        time.sleep(0.1)
         # creates each one of the vlds defined within the nsir
         for vldr_item in self.NSI['vldr-list']:
           # if there's an ACTIVE vld, it means it is shared and there's no need to create it again
           if vldr_item['vld-status'] == "INACTIVE":
+            LOG.info("NSI_MNGR: Creating the following vld: " + str(self.NSI['name'] +"-"+ vldr_item['name']))
+            time.sleep(0.1)
             network_data = {}
             network_data['instance_id'] = vldr_item['vim-net-id']
             network_data['vim_list'] = []
@@ -279,8 +283,12 @@ class thread_ns_instantiate(Thread):
             vim_list_item['virtual_links'].append(virtual_link_item)
             network_data['vim_list'].append(vim_list_item)
 
+            LOG.info("NSI_MNGR: payload of the request: " + str(network_data))
+            time.sleep(0.1)
             #networks_response = self.send_networks_creation_request(network_data)
             networks_response = mapper.create_vim_network(network_data)
+            LOG.info("NSI_MNGR: response of the request: " + str(networks_response))
+            time.sleep(0.1)
 
             # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
             if networks_response['status'] == 'COMPLETED':
@@ -293,7 +301,9 @@ class thread_ns_instantiate(Thread):
               vldr_item['vld-status'] = 'ERROR'
               self.NSI['errorLog'] = networks_response['error']
               network_ready = False
-              break
+          
+          if networks_response['status'] == 'ERROR':
+            break
 
           '''#OLD NETWORKS CREATION REQUEST
           # sends all the requests to create all the VLDs (networks) within the slice
@@ -376,7 +386,6 @@ class thread_ns_instantiate(Thread):
       if network_ready:
         # Waits until all the NSs are instantiated/ready or error
         LOG.info("Processing services instantiations...")
-        #deployment_timeout = 2 * 3600   # Two hours
         deployment_timeout = 900   # 15min   #TODO: mmodify for the reviews
         while deployment_timeout > 0:
           # Check ns instantiation status
