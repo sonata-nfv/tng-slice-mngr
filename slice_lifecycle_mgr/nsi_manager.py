@@ -273,7 +273,7 @@ class thread_ns_instantiate(Thread):
             virtual_links = []
             virtual_links_item = {}
             virtual_links_item['id'] = self.NSI['name'] +"-"+ vldr_item['name']
-            virtual_link_item['access'] = vldr_item['access_net']
+            virtual_links_item['access'] = vldr_item['access_net']
             virtual_links.append(virtual_link_item)
             #FUTURE: there are other parameters that could be added (i.e. minimum_BW, qos_requirements...)
             LOG.info("NSI_MNGR: payload of the request: " + str(virtual_links))
