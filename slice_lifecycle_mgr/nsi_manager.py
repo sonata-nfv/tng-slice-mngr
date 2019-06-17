@@ -177,6 +177,8 @@ class thread_ns_instantiate(Thread):
         virt_link['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
         virtual_links_list.append(virt_link)
       mapping['virtual_links'] = virtual_links_list
+      
+      #all the previous information into the mapping dict
       data['mapping'] = mapping
 
     if (nsr_item['sla-ref'] != "None"):
@@ -263,7 +265,7 @@ class thread_ns_instantiate(Thread):
         time.sleep(0.1)
         # creates each one of the vlds defined within the nsir
         for vldr_item in self.NSI['vldr-list']:
-          LOG.info("NSI_MNGR: Creating the following vld: " + str(self.NSI['name'] +"-"+ vldr_item['name']))
+          LOG.info("NSI_MNGR: Creating the following vld: " + str(vldr_item['vim-net-id']))
           time.sleep(0.1)
           # if there's an ACTIVE vld, it means it is shared and there's no need to create it again
           if vldr_item['vld-status'] == "INACTIVE":
@@ -272,7 +274,7 @@ class thread_ns_instantiate(Thread):
             time.sleep(0.1)
             virtual_links = []
             virtual_links_item = {}
-            virtual_links_item['id'] = self.NSI['name'] +"-"+ vldr_item['name']
+            virtual_links_item['id'] = vldr_item['vim-net-id']
             virtual_links_item['access'] = vldr_item['access_net']
             virtual_links.append(virtual_links_item)
             #FUTURE: there are other parameters that could be added (i.e. minimum_BW, qos_requirements...)
@@ -288,7 +290,7 @@ class thread_ns_instantiate(Thread):
             time.sleep(0.1)
 
             network_data = {}
-            network_data['instance_id'] = vldr_item['vim-net-id']
+            network_data['instance_id'] = vldr_item['_stack-net-ref']
             network_data['vim_list'] = vim_list
                         
             LOG.info("NSI_MNGR: payload of the request: " + str(network_data))
@@ -695,7 +697,7 @@ class thread_ns_terminate(Thread):
         if remove_vldr_item:
           virtual_links = []
           virtual_links_item = {}
-          virtual_links_item['id'] = self.NSI['name'] +"-"+ vldr_item['name']
+          virtual_links_item['id'] = vldr_item['vim-net-id']
           virtual_links.append(virtual_links_item)
 
           vim_list = []
@@ -705,7 +707,7 @@ class thread_ns_terminate(Thread):
           vim_list.append(vim_list_item)
 
           network_data = {}
-          network_data['instance_id'] = vldr_item['vim-net-id']
+          network_data['instance_id'] = vldr_item['_stack-net-ref']
           network_data['vim_list'] = vim_list
 
           #networks_response = self.send_networks_creation_request(network_data)
@@ -1027,8 +1029,8 @@ def add_vlds(new_nsir, nst_json):
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
     vld_record['vimAccountId'] = new_nsir['datacenter']  #TODO: improve with placement
-    # vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
-    vld_record['vim-net-id']  = str(uuid.uuid4())
+    vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
+    vld_record['_stack-net-ref']  = str(uuid.uuid4())
     if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True
     vld_record['type'] = vld_item['type']
