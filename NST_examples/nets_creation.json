@@ -50,7 +50,6 @@
   }
 }
 
-
 /* NSD media pilot*/
 {
   "created_at": "2019-04-29T13:10:51.716+00:00",
@@ -129,7 +128,6 @@
   "username": null,
   "uuid": "b0f2f090-1104-4271-9612-8010b5696043"
 }
-
 
 {
   "instance_id":"8bd07918-8878-4bab-bc9b-a9e6902f713f",
