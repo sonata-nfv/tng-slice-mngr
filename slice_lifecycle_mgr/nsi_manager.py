@@ -293,11 +293,11 @@ class thread_ns_instantiate(Thread):
             network_data['instance_id'] = vldr_item['_stack-net-ref']
             network_data['vim_list'] = vim_list
                         
-            LOG.info("NSI_MNGR: payload of the request: " + str(network_data))
+            LOG.info("NSI_MNGR: payload of the network creation request: " + str(network_data))
             time.sleep(0.1)
             #networks_response = self.send_networks_creation_request(network_data)
             networks_response = mapper.create_vim_network(network_data)
-            LOG.info("NSI_MNGR: response of the request: " + str(networks_response))
+            LOG.info("NSI_MNGR: response of the network creation request: " + str(networks_response))
             time.sleep(0.1)
 
             # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
@@ -358,25 +358,25 @@ class thread_ns_instantiate(Thread):
           if vldr_item['vld-status'] == 'ACTIVE':
             virtual_links = []
             virtual_links_item = {}
-            virtual_links_item['id'] = self.NSI['name'] +"-"+ vldr_item['name']
+            virtual_links_item['id'] = vldr_item['vim-net-id']
             virtual_links.append(virtual_links_item)
-            #FUTURE: there are other parameters that could be added (i.e. minimum_BW, qos_requirements...)
-            LOG.info("NSI_MNGR: payload of the request: " + str(virtual_links))
-            time.sleep(0.1)
 
             vim_list = []
             vim_list_item = {}
             vim_list_item['uuid'] = vldr_item['vimAccountId']
             vim_list_item['virtual_links'] = virtual_links
             vim_list.append(vim_list_item)
-            LOG.info("NSI_MNGR: payload of the request: " + str(vim_list))
-            time.sleep(0.1)
 
             network_data = {}
-            network_data['instance_id'] = vldr_item['vim-net-id']
+            network_data['instance_id'] = vldr_item['_stack-net-ref']
             network_data['vim_list'] = vim_list
-            #networks_response = self.undo_created_networks(network_data)
+
+            LOG.info("NSI_MNGR: payload of the network termination: " + str(network_data))
+            time.sleep(0.1)
+            #networks_response = self.send_networks_creation_request(network_data)
             networks_response = mapper.delete_vim_network(network_data)
+            LOG.info("NSI_MNGR: response of the net termiantion request: " + str(networks_response))
+            time.sleep(0.1)
           
             if networks_response['status'] == 'COMPLETED':
               vldr_item['vld-status'] = 'INACTIVE'
@@ -710,8 +710,12 @@ class thread_ns_terminate(Thread):
           network_data['instance_id'] = vldr_item['_stack-net-ref']
           network_data['vim_list'] = vim_list
 
+          LOG.info("NSI_MNGR: payload of the network termination: " + str(network_data))
+          time.sleep(0.1)
           #networks_response = self.send_networks_creation_request(network_data)
           networks_response = mapper.delete_vim_network(network_data)
+          LOG.info("NSI_MNGR: response of the net termiantion request: " + str(networks_response))
+          time.sleep(0.1)
 
           # checks that all the networks are terminated
           if networks_response['status'] in ['COMPLETED']:
