@@ -1088,6 +1088,7 @@ def add_vlds(new_nsir, nst_json):
                   if vld_nsr_item['vld-ref'] == vldr_ref['id']:
                     for current_vldr_item in vldr_list:
                       if current_vldr_item['id'] == vldr_ref['id']:
+                        current_vldr_item['_stack-net-ref'] = vldr_ref['_stack-net-ref']
                         current_vldr_item['vim-net-id'] = vldr_ref['vim-net-id']
                         current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
                         current_vldr_item['vld-status'] = 'ACTIVE'

@@ -1,0 +1,142 @@
+/* Networks Request JSON*/
+{
+  "instance_id": "String",        // use the NSIR uuid
+  "vim_list": [
+    {
+      "uuid": "String",           // uuid of the VIM where to dcreate nets
+      "virtual_links": [
+        {
+          "id": "String",         // name of the network (must be unique) --> nsir_uuid - vld_name
+          "access": "String",     // does the network needs 2 connect 2 the router 4 floating IPs? --> true/false
+          "dhcp": "String",       // optional, not used for now... --> true/false
+          "cidr": "String",       // optional, not used for now... --> network IP@ (10.10.10.10/24)
+          "qos": "String",        // optional check wiky: https://github.com/sonata-nfv/tng-sp-ia/wiki/QoS
+          "qos_requirements":     
+          {
+            "bandwidth_limit": 
+            {
+                "bandwidth": 10,
+                "bandwidth_unit": "String"
+            },
+            "minimum_bandwidth":
+            {
+                "bandwidth": 5,
+                "bandwidth_unit": "String"
+              }
+          }
+        }
+      ]
+    }
+  ]
+}
+
+/* Services Request JSON*/
+{
+  "mapping": {
+    "network_functions":[
+      {"vnf_id": "nsd_object[nsd.network_functions.ANYINDEX.vnf_id]", "vim_id": "subnet_item[datacenter]"},
+      {"vnf_id": "nsd_object[nsd.network_functions.ANYINDEX.vnf_id]", "vim_id": "subnet_item[datacenter]"},
+      {"vnf_id": "nsd_object[nsd.network_functions.ANYINDEX.vnf_id]", "vim_id": "subnet_item[datacenter]"}
+    ],
+    "virtual_links":[
+      // vld_id and external_net are found when the throught the 
+      //nst.vldr-list.ns-connection-point-ref
+      {
+          "vl_id": "nsd_object[nsd.virtual_links.id]",
+          "external_net": "nsi[nsi.vldr-list.ANYINDEX.vim-net-id]",
+          "vim_id": "subnet_item[datacenter]"
+      }
+    ]
+  }
+}
+
+/* NSD media pilot*/
+{
+  "created_at": "2019-04-29T13:10:51.716+00:00",
+  "md5": "da14ba3ce04a3f5567d0b1feed767487",
+  "nsd": {
+      "author": "Ignacio Dominguez @: atos",
+      "connection_points": [
+          {
+              "id": "nscpexternal",
+              "interface": "ipv4",
+              "type": "external"
+          }
+      ],
+      "description": "This NS provides the video streaming service for the immersive media pilot.",
+      "descriptor_schema": "https://raw.githubusercontent.com/sonata-nfv/tng-schema/master/service-descriptor/nsd-schema.yml",
+      "name": "mediapilot-service",
+      "network_functions": [
+          {
+              "vnf_id": "vnf-ma",
+              "vnf_name": "vnf-ma",
+              "vnf_vendor": "eu.5gtango",
+              "vnf_version": "0.3"
+          },
+          {
+              "vnf_id": "vnf-mse",
+              "vnf_name": "vnf-mse",
+              "vnf_vendor": "eu.5gtango",
+              "vnf_version": "0.3"
+          },
+          {
+              "vnf_id": "vnf-cms",
+              "vnf_name": "vnf-cms",
+              "vnf_vendor": "eu.5gtango",
+              "vnf_version": "0.3"
+          }
+      ],
+      "testing_tags": [
+          "http"
+      ],
+      "vendor": "eu.sonata-nfv",
+      "version": "0.3",
+      "virtual_links": [
+          {
+              "connection_points_reference": [
+                  "vnf-ma:rtmp",
+                  "vnf-mse:hls",
+                  "vnf-cms:api",
+                  "nscpexternal"
+              ],
+              "connectivity_type": "E-LAN",
+              "id": "vlexternal"
+          },
+          {
+              "connection_points_reference": [
+                  "vnf-cms:api",
+                  "vnf-ma:api"
+              ],
+              "connectivity_type": "E-Line",
+              "id": "cms-aggregator"
+          },
+          {
+              "connection_points_reference": [
+                  "vnf-ma:rtmp",
+                  "vnf-mse:rtmp"
+              ],
+              "connectivity_type": "E-Line",
+              "id": "aggregator-mse"
+          }
+      ]
+  },
+  "pkg_ref": 1,
+  "platform": "5gtango",
+  "signature": null,
+  "status": "active",
+  "updated_at": "2019-04-29T13:10:51.716+00:00",
+  "username": null,
+  "uuid": "b0f2f090-1104-4271-9612-8010b5696043"
+}
+
+{
+  "instance_id":"8bd07918-8878-4bab-bc9b-a9e6902f713f",
+  "vim_list":[
+    {
+      "uuid":"11111111-2222-3333-4444-555555555555",
+      "virtual_links":[
+        {"id":"7may_2.mgmt.net.516ce5b2-751d-4734-a094-667a0101b492","access":"true"}
+      ]
+    }
+  ]
+}
