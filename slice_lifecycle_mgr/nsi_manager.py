@@ -248,6 +248,8 @@ class thread_ns_instantiate(Thread):
       json_slice_info = {}
       json_slice_info['status'] = jsonNSI['nsi-status']
       json_slice_info['updateTime'] = jsonNSI['updateTime']
+      json_slice_info['name'] = jsonNSI['name']
+      json_slice_info['instance_uuid'] = jsonNSI['id']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
       LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GTK notified with status: " +str(thread_response[1]))
@@ -612,6 +614,8 @@ class thread_ns_terminate(Thread):
       json_slice_info = {}
       json_slice_info['status'] = jsonNSI['nsi-status']
       json_slice_info['updateTime'] = jsonNSI['updateTime']
+      json_slice_info['name'] = jsonNSI['name']
+      json_slice_info['instance_uuid'] = jsonNSI['id']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
       LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GTK notified with status: " +str(thread_response[1]))
