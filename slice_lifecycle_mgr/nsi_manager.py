@@ -832,14 +832,17 @@ def create_nsi(nsi_json):
     return_msg['error'] = "There is NO NSTd with this uuid in the DDBB."
     return return_msg, 400
 
-  # check if there is another nsir with the same name AND based to the same NSTd (uuid, version, vendor)
+  # check if exists another nsir with the same name, based on the same NSTd and not instantiated
   nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi()
   if nsirepo_jsonresponse:
     for nsir_item in nsirepo_jsonresponse:
-      if (nsir_item["name"] == nsi_json['name'] and nsir_item["nst-ref"] == nst_json['uuid'] and \
-          nsir_item["nst-version"] == nst_json['version'] and nsir_item["vendor"] == nst_json['vendor']):
+      if (nsir_item["name"] == nsi_json['name'] and \
+          nsir_item["nst-ref"] == nstId and \
+          nsir_item["nst-version"] == nst_json['version'] and \
+          nsir_item["vendor"] == nst_json['vendor'] and \
+          nsir_item["nsi-status"] not in ["TERMINATED", "TERMINATING", "ERROR"] ):
         return_msg = {}
-        return_msg['error'] = "There is already a slice with thie name and based to the selected NSTd (id/name/vendor/version)."
+        return_msg['error'] = "There is already an INSTANTIATED slice with this name and based on the selected NSTd (id/name/vendor/version)."
         return (return_msg, 400)
 
   # Network Slice Placement  
@@ -1008,7 +1011,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       
       # adding the vld id where each subnet is connected to
       subnet_vld_list = []
-      if (nst_json["slice_vld"]):
+      if not nst_json["slice_vld"]:
         for vld_item in nst_json["slice_vld"]:
           for nsd_cp_item in vld_item['nsd-connection-point-ref']:
             if subnet_item['id'] == nsd_cp_item['subnet-ref']:
