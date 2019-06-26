@@ -45,7 +45,7 @@ LOG.setLevel(logging.INFO)
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 # Returns the last URL version to send reqauests to the Repositories Docker
-def get_base_url():
+def get_url_repositories():
     ip_address = os.environ.get("SONATA_REP")
     port = os.environ.get("SONATA_REP_PORT")
     base_url = 'http://'+ip_address+':'+port
@@ -53,7 +53,7 @@ def get_base_url():
 
 # POST to send the NSI information to the repositories
 def safe_nsi(NSI_dict):
-    url = get_base_url() + '/records/nsir/ns-instances'
+    url = get_url_repositories() + '/records/nsir/ns-instances'
     data = json.dumps(NSI_dict)
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
@@ -66,7 +66,7 @@ def safe_nsi(NSI_dict):
 
 # GET all NSI items from the repositories
 def get_all_saved_nsi():
-    url = get_base_url() + '/records/nsir/ns-instances'
+    url = get_url_repositories() + '/records/nsir/ns-instances'
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
@@ -78,7 +78,7 @@ def get_all_saved_nsi():
 
 # GET specific NSI item from the repositories
 def get_saved_nsi(nsiId):
-    url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
+    url = get_url_repositories() + '/records/nsir/ns-instances/' + nsiId
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
@@ -91,7 +91,7 @@ def get_saved_nsi(nsiId):
 # PUT to update specific NSI information in repositories
 def update_nsi(update_NSI, nsiId):
     time.sleep(0.1)
-    url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
+    url = get_url_repositories() + '/records/nsir/ns-instances/' + nsiId
     data = json.dumps(update_NSI)
 
     response = requests.put(url, data, headers=JSON_CONTENT_HEADER)
@@ -106,7 +106,7 @@ def update_nsi(update_NSI, nsiId):
 # DELETE soecific NSI item in repositories
 def delete_nsi(nsiId):
     time.sleep(0.1)
-    url = get_base_url() + '/records/nsir/ns-instances/' + nsiId
+    url = get_url_repositories() + '/records/nsir/ns-instances/' + nsiId
     jsonresponse = requests.delete(url)
     
     if(response.status_code != 200):
