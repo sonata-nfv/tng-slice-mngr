@@ -818,7 +818,8 @@ def create_nsi(nsi_json):
     # starts the thread to instantiate while sending back the response
     #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
     #thread_ns_instantiation.start()
-    continue
+    LOG.info("NSI_MNGR: SENDING NSR REQUESTS!!!")
+    time.sleep(0.1)
   else:
     error_msg = nsirepo_jsonresponse[0]
     new_nsir['errorLog'] = error_msg['message']
