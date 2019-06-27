@@ -1040,7 +1040,7 @@ def nsi_placement(new_nsir):
     LOG.info("NSI_MNGR: NSD information: " +str(nsd_obj))
     time.sleep(0.1)
     if nsd_obj:
-      for vnfd_item in nsd_obj['network_functions']:
+      for vnfd_item in nsd_obj['nsd']['network_functions']:
         vnfd_obj = mapper.get_vnfd(vnfd_item['vnf_name'], vnfd_item['vnf_vendor'], vnfd_item['vnf_version'])
         LOG.info("NSI_MNGR: VNFD information: " +str(vnfd_obj))
         time.sleep(0.1)
@@ -1125,7 +1125,7 @@ def nsi_placement(new_nsir):
   #     time.sleep(0.1)
   #     new_nsir = vim_item['vim_uuid']
   #     break
-  LOG.info("NSI_MNGR: VIMs list information AFTER placement: " +str(vims_list))
+  LOG.info("NSI_MNGR: VIMs list information before placement: " +str(vims_list))
   LOG.info("NSI_MNGR: PLACEMENT DONE: " +str(new_nsir))
   time.sleep(0.1)
   
