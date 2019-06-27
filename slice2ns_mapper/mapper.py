@@ -364,6 +364,9 @@ def get_nsd_list():
         service_response = db.nsInfo_list
     else:
         service_response = {'http_code': response.status_code,'message': response.json()}
+    
+    LOG.info("MAPPER: Retrieving all available NSDs: "+str(service_response))
+    time.sleep(0.1)
     return service_response
   else:
     URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)

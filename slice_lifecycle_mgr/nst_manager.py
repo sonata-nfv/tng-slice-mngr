@@ -50,7 +50,7 @@ LOG.setLevel(logging.INFO)
 # Creates a NST and sends it to catalogues
 def create_nst(jsondata):
   logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
-
+  time.sleep(0.1)
   # Validates that no existing NSTD has the same NAME-VENDOR-VERSION (avoid duplicate NSTDs)
   nst_list = nst_catalogue.get_all_saved_nst()
   if nst_list:
@@ -62,19 +62,28 @@ def create_nst(jsondata):
   
   # Get the current services list to get the uuid for each slice-subnet (NSD) reference
   current_services_list = mapper.get_nsd_list()
-  for subnet_item  in jsondata["slice_ns_subnets"]:
-    for service_item in current_services_list:
-      # Validates if NSDs exist in DDBB by comapring name/vendor/version
-      if (subnet_item["nsd-name"] == service_item["name"] and subnet_item["nsd-vendor"] == service_item["vendor"] and subnet_item["nsd-version"] == service_item["version"]):
-        subnet_item["nsd-ref"] = service_item["uuid"]
-    # Checks if all subnets have the field nsd-ref with the copied nsd-id
-    if 'nsd-ref' not in subnet_item:
-      return_msg = {}
-      return_msg['error'] = "The following NSD does not exist in the SP database."
-      return_msg['nsd-name'] = subnet_item["nsd-name"]
-      return_msg['nsd-vendor'] = subnet_item["nsd-vendor"]
-      return_msg['nsd-version'] = subnet_item["nsd-version"]
-      return return_msg, 400
+  if current_services_list:
+    for subnet_item  in jsondata["slice_ns_subnets"]:
+      for service_item in current_services_list:
+        # Validates if NSDs exist in DDBB by comparing name/vendor/version
+        logging.info("NST_MNGR: subnet_item: " +str(subnet_item))
+        logging.info("NST_MNGR: service_item: " +str(service_item))
+        time.sleep(0.1)
+        if (subnet_item["nsd-name"] == service_item["name"] and subnet_item["nsd-vendor"] == service_item["vendor"] and subnet_item["nsd-version"] == service_item["version"]):
+          subnet_item["nsd-ref"] = service_item["uuid"]
+        
+      # Checks if all subnets have the field nsd-ref with the copied nsd-id
+      if 'nsd-ref' not in subnet_item:
+        return_msg = {}
+        return_msg['error'] = "The following NSD does not exist in the SP database."
+        return_msg['nsd-name'] = subnet_item["nsd-name"]
+        return_msg['nsd-vendor'] = subnet_item["nsd-vendor"]
+        return_msg['nsd-version'] = subnet_item["nsd-version"]
+        return return_msg, 400
+  else:
+    return_msg = {}
+    return_msg['error'] = "The list of NSDs is empty."
+    return return_msg, 400
   
   #Sends the new NST to the catalogues (DB)
   nst_response = nst_catalogue.safe_nst(jsondata)

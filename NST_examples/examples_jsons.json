@@ -760,3 +760,232 @@
   },
   "bidirectional": true
 }
+
+/* NEW NSI JSON EXAMPLE*/
+{
+  "id": "69e4a590-7417-4786-a629-1604636b06a6",
+  "name": "NSI_example",
+  "description": "This is the description of a NSI.",
+  "vendor": "5GTango",
+  "nst-ref": "8859d979-e264-45b4-b6bf-a3a5f4df3732",
+  "nst-name": "NST_example_name",
+  "nst-version": "3.0",
+  "nsi-status": "INSTANTIATED",
+  "errorLog": "null",
+  "datacenter": [
+    "cc75dd7e-9c61-4e0a-8cb2-8825a98fe418",
+    "0af860f6-8124-42c0-a355-2ffdd669fa51"
+  ],
+  "instantiateTime": "2019-03-19T08:59:46.250+00:00",
+  "terminateTime": "null",
+  "scaleTime": "null",
+  "updateTime": "2019-03-19T09:01:32.250+00:00",
+  "sliceCallback": "http://tng-gtk-sp:5000/requests/e88097fb-cd31-403c-b028-9aa955bcc5e2/on-change",
+  "nsr-list": [
+    {
+      "nsrName": "NSI_example-Service_subnet_1-1",
+      "nsrId": "5e28f931-7558-4a8c-9894-7a8787c4492b",
+      "subnet-ref": "Service_subnet_1",
+      "subnet-nsdId-ref": "6a01afdc-9d42-4bc9-866c-a8a3868fdf5e",
+      "sla-name": "GOLD_SLA_2",
+      "sla-ref": "aabbccdd-9d42-4bc9-866c-a8a3868fdf5e",
+      "working-status": "INSTANTIATED",
+      "requestId": "1e150bc1-78fd-47b1-a0f6-30cf55dc08a9",
+      "nsr-placement": [
+        {
+          "nsd-comp-ref": "cnf_0",
+          "vim-id": "cc75dd7e-9c61-4e0a-8cb2-8825a98fe418"
+        },
+        {
+          "nsd-comp-ref": "vnf_1",
+          "vim-id": "0af860f6-8124-42c0-a355-2ffdd669fa51"
+        }
+      ],
+      "isshared": false,
+      "ingresses": [
+        {
+          "location": "daf77638-7d9a-44ec-b54b-97a03876a479",
+          "nap": "10.10.10.1/32"
+        }
+      ],
+      "egresses": [
+        {
+          "location": "b9311207-c87f-4d68-8698-5870aa441e2f",
+          "nap": "10.10.10.2/32"
+        }
+      ],
+      "vld": [
+        {
+          "vld-ref": "15ee31cd-ea36-4cba-8551-81fe95a72f23"
+        },
+        {
+          "vld-ref": "3dee74bd-e83d-47fe-a433-a0772c330478"
+        }
+      ]
+    },
+    {
+      "nsrName": "NSI_example-Service_subnet_2-1",
+      "nsrId": "8efced90-1971-40d1-8a9a-d421b79ab335",
+      "subnet-ref": "Service_subnet_2",
+      "subnet-nsdId-ref": "6a01afdc-9d42-4bc9-866c-a8a3868fdf5e",
+      "sla-name": "GOLD_SLA_2",
+      "sla-ref": "aabbccdd-9d42-4bc9-866c-a8a3868fdf5e",
+      "working-status": "INSTANTIATED",
+      "requestId": "7ccf9584-8b1f-45f9-9193-fb3bcf4cf33e",
+      "nsr-placement": [
+        {
+          "nsd-comp-ref": "cnf_0",
+          "vim-id": "cc75dd7e-9c61-4e0a-8cb2-8825a98fe418"
+        },
+        {
+          "nsd-comp-ref": "vnf_1",
+          "vim-id": "0af860f6-8124-42c0-a355-2ffdd669fa51"
+        }
+      ],
+      "isshared": true,
+      "ingresses": [
+        {
+          "location": "daf77638-7d9a-44ec-b54b-97a03876a479",
+          "nap": "10.10.10.3/32"
+        }
+      ],
+      "egresses": [
+        {
+          "location": "b9311207-c87f-4d68-8698-5870aa441e2f",
+          "nap": "10.10.10.4/32"
+        }
+      ],
+      "vld": [
+        {
+          "vld-ref": "15ee31cd-ea36-4cba-8551-81fe95a72f23"
+        },
+        {
+          "vld-ref": "3dee74bd-e83d-47fe-a433-a0772c330478"
+        },
+        {
+          "vld-ref": "4bf00376-b9aa-41ba-affe-a01991e4b6c7"
+        }
+      ]
+    },
+    {
+      "nsrName": "NSI_example-Service_subnet_3-1",
+      "nsrId": "51957551-e562-47b3-9cc8-874053aea538",
+      "subnet-ref": "Service_subnet_3",
+      "subnet-nsdId-ref": "6a01afdc-9d42-4bc9-866c-a8a3868fdf5e",
+      "sla-name": "GOLD_SLA_2",
+      "sla-ref": "aabbccdd-9d42-4bc9-866c-a8a3868fdf5e",
+      "working-status": "INSTANTIATED",
+      "requestId": "1e150bc1-78fd-47b1-a0f6-30cf55dc08a9",
+      "nsr-placement": [
+        {
+          "nsd-comp-ref": "cnf_0",
+          "vim-id": "cc75dd7e-9c61-4e0a-8cb2-8825a98fe418"
+        },
+        {
+          "nsd-comp-ref": "vnf_1",
+          "vim-id": "0af860f6-8124-42c0-a355-2ffdd669fa51"
+        }
+      ],
+      "isshared": false,
+      "ingresses": [
+        {
+          "location": "daf77638-7d9a-44ec-b54b-97a03876a479",
+          "nap": "10.10.10.5/32"
+        }
+      ],
+      "egresses": [
+        {
+          "location": "b9311207-c87f-4d68-8698-5870aa441e2f",
+          "nap": "10.10.10.6/32"
+        }
+      ],
+      "vld": [
+        {
+          "vld-ref": "15ee31cd-ea36-4cba-8551-81fe95a72f23"
+        },
+        {
+          "vld-ref": "4bf00376-b9aa-41ba-affe-a01991e4b6c7"
+        }
+      ]
+    }
+  ],
+  "vldr-list": [
+    {
+      "id": "mgmt",
+      "name": "mgmt",
+      "vimAccountId": [
+        "0af860f6-8124-42c0-a355-2ffdd669fa51",
+        "51957551-e562-47b3-9cc8-874053aea538"
+      ],
+      "vim-net-id": "NSI_Example.mgmt.net.15ee31cd-ea36-4cba-8551-81fe95a72f23",
+      "_stack-net-ref": "584ee26e-8cb9-4b9c-841f-234246b61157",
+      "mgmt-network": true,
+      "type": "E-LAN",
+      "vld-status": "ACTIVE",
+      "access_net": true,
+      "shared-nsrs-list": [
+        "5e28f931-7558-4a8c-9894-7a8787c4492b",
+        "8efced90-1971-40d1-8a9a-d421b79ab335",
+        "51957551-e562-47b3-9cc8-874053aea538"
+      ],
+      "ns-conn-point-ref": [
+        {
+          "Service_subnet_1": "mgmt"
+        },
+        {
+          "Service_subnet_2": "mgmt"
+        },
+        {
+          "Service_subnet_3": "mgmt"
+        }
+      ]
+    },
+    {
+      "id": "data_1",
+      "name": "data_1",
+      "vimAccountId": [
+        "51957551-e562-47b3-9cc8-874053aea538"
+      ],
+      "vim-net-id": "NSI_Example.data_1.net.3dee74bd-e83d-47fe-a433-a0772c330478",
+      "_stack-net-ref": "76c81cf1-0d39-46de-a032-26becf232f45",
+      "type": "E-LAN",
+      "vld-status": "ACTIVE",
+      "shared-nsrs-list": [
+        "5e28f931-7558-4a8c-9894-7a8787c4492b",
+        "8efced90-1971-40d1-8a9a-d421b79ab335"
+      ],
+      "ns-conn-point-ref": [
+        {
+          "Service_subnet_1": "data_1"
+        },
+        {
+          "Service_subnet_2": "data_1"
+        }
+      ]
+    },
+    {
+      "id": "data_2",
+      "name": "data_2",
+      "vimAccountId": [
+        "0af860f6-8124-42c0-a355-2ffdd669fa51",
+        "51957551-e562-47b3-9cc8-874053aea538"
+      ],
+      "vim-net-id": "NSI_Example.data_2.net.4bf00376-b9aa-41ba-affe-a01991e4b6c7",
+      "_stack-net-ref": "01dbff12-3011-4d2f-b66a-28523225dec8",
+      "type": "E-LAN",
+      "vld-status": "ACTIVE",
+      "shared-nsrs-list": [
+        "8efced90-1971-40d1-8a9a-d421b79ab335",
+        "51957551-e562-47b3-9cc8-874053aea538"
+      ],
+      "ns-conn-point-ref": [
+        {
+          "Service_subnet_2": "data_2"
+        },
+        {
+          "Service_subnet_3": "data_2"
+        }
+      ]
+    }
+  ]
+}
