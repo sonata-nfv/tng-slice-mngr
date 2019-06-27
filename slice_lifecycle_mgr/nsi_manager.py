@@ -1059,8 +1059,10 @@ def nsi_placement(new_nsir):
               else:
                 req_sto = vdu_item['resource_requirements']['storage']['size']
               
+              LOG.info("NSI_MNGR: req_core: " +str(req_core)+ ", req_mem: "+str(req_mem))
+              time.sleep(0.1)
               vims_list_len = len(vims_list)-1
-              for vim_item in vims_list:
+              for vim_item in vims_list['vim_list']:
                 if vim_item['type'] == "vm":
                   available_core = vim_item['core_total'] - vim_item['core_used']
                   available_memory = vim_item['memory_total'] - vim_item['memory_used']
