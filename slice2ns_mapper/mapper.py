@@ -54,11 +54,10 @@ JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
 # Returns the last URL version to send reqauests to the Catalogues Docker
 def get_url_catalogues():
-    ip_address = os.environ.get("SONATA_CAT")
-    port = os.environ.get("SONATA_CAT_PORT")
-    base_url = 'http://'+ip_address+':'+port
-    
-    return base_url
+  ip_address = os.environ.get("SONATA_CAT")
+  port = os.environ.get("SONATA_CAT_PORT")
+  base_url = 'http://'+ip_address+':'+port
+  return base_url
     
 # Prepares the URL_requests to manage Network Services instantiations belonging to the NST/NSI
 def get_url_sp_gtk():
@@ -329,7 +328,7 @@ def get_nsd(nsd_uuid):
   LOG.info("MAPPER: Preparing the request to get the NetServices Information")
   url = get_url_catalogues() + "/api/v2/network-services/" + str(nsd_uuid)
 
-  response = requests.get(url)
+  response = requests.get(url, headers=JSON_CONTENT_HEADER)
     
   if (response.status_code == 200):
     service_response = json.loads(response.text)
@@ -340,7 +339,7 @@ def get_nsd(nsd_uuid):
   return service_response
 
 def get_nsd_list():
-  LOG.info("MAPPER: Preparing the request to get the NetServices Information")
+  LOG.info("MAPPER: GET the Network Services Information")
   time.sleep(0.1)
   # cleans the current nsInfo_list to have the information updated
   del db.nsInfo_list[:]
@@ -348,7 +347,7 @@ def get_nsd_list():
 
   #SONATA SP or EMULATED Mode 
   if use_sonata() == "True":
-    response = requests.get(url)
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
     
     if (response.status_code == 200):
         services_array = json.loads(response.text)
@@ -390,7 +389,7 @@ def get_vnfd(vnfd_name, vnfd_vendor, vnfd_version):
   LOG.info("MAPPER: Preparing the request to get the Function Information")
   url = get_url_catalogues() + "/api/v2/vnfs?vendor="+str(vnfd_vendor)+"&name="+str(vnfd_name)+"&version="+str(vnfd_version)
 
-  response = requests.get(url)
+  response = requests.get(url,headers=JSON_CONTENT_HEADER)
     
   if (response.status_code == 200):
     function_response = json.loads(response.text)
