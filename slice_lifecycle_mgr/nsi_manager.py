@@ -1047,7 +1047,7 @@ def nsi_placement(new_nsir):
         time.sleep(0.1)
         if vnfd_obj:
           if vnfd_obj[0]['vnfd']['virtual_deployment_units']:
-            for vdu_item in vnfd_obj['virtual_deployment_units']:
+            for vdu_item in vnfd_obj[0]['vnfd']['virtual_deployment_units']:
               # sums up al the individual VNF resources requirements into a total NS resources required
               req_core = vdu_item['resource_requirements']['cpu']['vcpus']
               if vdu_item['resource_requirements']['memory']['size_unit'] == "MB":
@@ -1086,7 +1086,7 @@ def nsi_placement(new_nsir):
                     vim_item['memory_used'] = vim_item['memory_used'] + req_mem
                     #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
           elif vnfd_obj[0]['vnfd']['cloudnative_deployment_units']:
-            # for vdu_item in vnfd_obj['cloudnative_deployment_units']:
+            # for vdu_item in vnfd_obj[0]['vnfd']['cloudnative_deployment_units']:
             continue
           else:
             new_nsir['errorLog'] = "VNF type not accepted for placement, only VNF and CNF."
