@@ -1044,7 +1044,6 @@ def nsi_placement(new_nsir):
         # it msut return a list of one element as the trio (name/vendor/version) makes it unique
         vnfd_obj = mapper.get_vnfd(vnfd_item['vnf_name'], vnfd_item['vnf_vendor'], vnfd_item['vnf_version'])
         LOG.info("NSI_MNGR: VNFD information: " +str(vnfd_obj))
-        LOG.info("NSI_MNGR: VNFD_virtual_deployment_units: " +str(vnfd_obj['vnfd']['virtual_deployment_units']))
         time.sleep(0.1)
         if vnfd_obj:
           if vnfd_obj[0]['vnfd']['virtual_deployment_units']:
