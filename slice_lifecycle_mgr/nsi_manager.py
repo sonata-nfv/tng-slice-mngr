@@ -809,25 +809,26 @@ def create_nsi(nsi_json):
     time.sleep(0.1)
   
   # Network Slice Placement  
-  vim_nsi = nsi_placement(new_nsir)
-  if vim_nsi[1] == 500:
-    return vim_nsi
-
+  new_nsir = nsi_placement(new_nsir)
+  
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
-
-  if nsirepo_jsonresponse[1] == 200:
-    # starts the thread to instantiate while sending back the response
-    #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
-    #thread_ns_instantiation.start()
-    LOG.info("NSI_MNGR: SENDING NSR REQUESTS!!!")
-    time.sleep(0.1)
-  else:
-    error_msg = nsirepo_jsonresponse[0]
-    new_nsir['errorLog'] = error_msg['message']
-    nsirepo_jsonresponse = new_nsir
   
-  return nsirepo_jsonresponse
+  if new_nsir[1] != 200:
+    return new_nsir
+  else:
+    if nsirepo_jsonresponse[1] == 200:
+      # starts the thread to instantiate while sending back the response
+      #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+      #thread_ns_instantiation.start()
+      LOG.info("NSI_MNGR: SENDING NSR REQUESTS!!!")
+      time.sleep(0.1)
+    else:
+      error_msg = nsirepo_jsonresponse[0]
+      new_nsir['errorLog'] = error_msg['message']
+      nsirepo_jsonresponse = new_nsir
+    
+    return nsirepo_jsonresponse
   
 # Basic NSI structure
 def add_basic_nsi_info(nst_json, nsi_json):
@@ -1022,7 +1023,6 @@ def add_vlds(new_nsir, nst_json):
 # does the NSs placement based on the available VIMs resources & the required of each NS.
 def nsi_placement(new_nsir):
   # get the VIMs information registered to the SP
-  nsr_placement_list = []
   vims_list = mapper.get_vims_info()
   LOG.info("NSI_MNGR: VIMs list information before placement: " +str(vims_list))
   time.sleep(0.1)
@@ -1035,6 +1035,7 @@ def nsi_placement(new_nsir):
 
   # NSR placement based on the required nsr resources vs available vim resources
   for nsr_item in new_nsir['nsr-list']:
+    nsr_placement_list = []
     nsd_obj = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
     req_core = req_mem = req_sto = 0
     LOG.info("NSI_MNGR: NSD information: " +str(nsd_obj))
@@ -1112,19 +1113,20 @@ def nsi_placement(new_nsir):
             for nsr_placement_item in nsr_item['nsr-placement']:
               if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']:
                 vldr_item['vimAccountId'].append(nsr_placement_item['vim-id'])
+    else:
+      new_nsir['errorLog'] = "No " + str(nsr_item['subnet-nsdId-ref']) + " NSD FOUND."
+      new_nsir['nsi-status'] = 'ERROR'
+      # 409 = The request could not be completed due to a conflict with the current state of the resource.
+      return new_nsir, 409
 
-  if nsd_obj:
-    nsi_datacenter_list = []
-    for vldr_item in new_nsir['vldr-list']:
-      for vimAccountId_item in vldr_item['vimAccountId']:
-        if vimAccountId_item not in nsi_datacenter_list:
-          nsi_datacenter_list.append(vimAccountId_item)
-    new_nsir['datacenter'] = nsi_datacenter_list
-  else:
-    new_nsir['errorLog'] = "No NSD found for one of the sevices composing the requested Network Slice."
-    new_nsir['nsi-status'] = 'ERROR'
-    # 409 = The request could not be completed due to a conflict with the current state of the resource.
-    return new_nsir, 409
+  
+  nsi_datacenter_list = []
+  for vldr_item in new_nsir['vldr-list']:
+    for vimAccountId_item in vldr_item['vimAccountId']:
+      if vimAccountId_item not in nsi_datacenter_list:
+        nsi_datacenter_list.append(vimAccountId_item)
+  new_nsir['datacenter'] = nsi_datacenter_list
+
   
   # for vim_item in vims_list['vim_list']:
   #   LOG.info("NSI_MNGR: looking for a vim: " +str(vim_item))
@@ -1134,7 +1136,7 @@ def nsi_placement(new_nsir):
   #     time.sleep(0.1)
   #     new_nsir = vim_item['vim_uuid']
   #     break
-  LOG.info("NSI_MNGR: VIMs list information before placement: " +str(vims_list))
+  LOG.info("NSI_MNGR: VIMs list information after placement: " +str(vims_list))
   LOG.info("NSI_MNGR: PLACEMENT DONE: " +str(new_nsir))
   time.sleep(0.1)
   
