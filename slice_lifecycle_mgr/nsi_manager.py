@@ -1044,7 +1044,7 @@ def nsi_placement(new_nsir):
         vnfd_obj = mapper.get_vnfd(vnfd_item['vnf_name'], vnfd_item['vnf_vendor'], vnfd_item['vnf_version'])
         LOG.info("NSI_MNGR: VNFD information: " +str(vnfd_obj))
         time.sleep(0.1)
-        if vnfd_obj.get('virtual_deployment_units'):
+        if vnfd_obj['vnfd']['virtual_deployment_units']:
           for vdu_item in vnfd_obj['virtual_deployment_units']:
             # sums up al the individual VNF resources requirements into a total NS resources required
             req_core = vdu_item['resource_requirements']['cpu']['vcpus']
@@ -1083,7 +1083,7 @@ def nsi_placement(new_nsir):
                   vim_item['core_used'] = vim_item['core_used'] + req_core    
                   vim_item['memory_used'] = vim_item['memory_used'] + req_mem
                   #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
-        elif vnfd_obj.get('cloudnative_deployment_units'):
+        elif vnfd_obj['vnfd']['cloudnative_deployment_units']:
           # for vdu_item in vnfd_obj['cloudnative_deployment_units']:
           continue
         else:
