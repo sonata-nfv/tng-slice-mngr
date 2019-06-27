@@ -810,25 +810,22 @@ def create_nsi(nsi_json):
   
   # Network Slice Placement  
   new_nsir = nsi_placement(new_nsir)
+  if new_nsir[1] != 200:
+    return new_nsir
   
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
-  
-  if new_nsir[1] != 200:
-    return new_nsir
+  if nsirepo_jsonresponse[1] == 200:
+    # starts the thread to instantiate while sending back the response
+    #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+    #thread_ns_instantiation.start()
+    LOG.info("NSI_MNGR: SENDING NSR REQUESTS!!!")
+    time.sleep(0.1)
   else:
-    if nsirepo_jsonresponse[1] == 200:
-      # starts the thread to instantiate while sending back the response
-      #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
-      #thread_ns_instantiation.start()
-      LOG.info("NSI_MNGR: SENDING NSR REQUESTS!!!")
-      time.sleep(0.1)
-    else:
-      error_msg = nsirepo_jsonresponse[0]
-      new_nsir['errorLog'] = error_msg['message']
-      nsirepo_jsonresponse = new_nsir
-    
-    return nsirepo_jsonresponse
+    new_nsir['errorLog'] = nsirepo_jsonresponse[0]['message']
+    return (new_nsir, 400)
+
+  return nsirepo_jsonresponse
   
 # Basic NSI structure
 def add_basic_nsi_info(nst_json, nsi_json):
