@@ -797,6 +797,8 @@ def create_nsi(nsi_json):
   new_nsir = add_subnets(new_nsir, nst_json, nsi_json)
   LOG.info("NSI_MNGR:  After adding subnets:" + str(new_nsir))
   time.sleep(0.1)
+
+  #TODO: validate if all NSD composing the slice axist in the database.
   
   # adds the VLD information within the NSI record
   if nst_json.get('slice_vld'):
@@ -1022,7 +1024,7 @@ def nsi_placement(new_nsir):
   # get the VIMs information registered to the SP
   nsr_placement_list = []
   vims_list = mapper.get_vims_info()
-  LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
+  LOG.info("NSI_MNGR: VIMs list information before placement: " +str(vims_list))
   time.sleep(0.1)
 
   # validates if the incoming vim_list is empty (return 500) or not (follow)
@@ -1035,77 +1037,86 @@ def nsi_placement(new_nsir):
   for nsr_item in new_nsir['nsr-list']:
     nsd_obj = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
     req_core = req_mem = req_sto = 0
-    for vnfd_item in nsd_obj['network_functions']:
-      vnfd_obj = mapper.get_vnfd(vnfd_item['vnf_name'], vnfd_item['vnf_vendor'], vnfd_item['vnf_version'])
-      if vnfd_obj.get('virtual_deployment_units'):
-        for vdu_item in vnfd_obj['virtual_deployment_units']:
-          # sums up al the individual VNF resources requirements into a total NS resources required
-          req_core = vdu_item['resource_requirements']['cpu']['vcpus']
-          if vdu_item['resource_requirements']['memory']['size_unit'] == "MB":
-            req_mem = vdu_item['resource_requirements']['memory']['size']/1024
-          else:
-            req_mem = vdu_item['resource_requirements']['memory']['size']
-          if vdu_item['resource_requirements']['storage']['size_unit'] == "MB":
-            req_sto = vdu_item['resource_requirements']['storage']['size']/1024
-          else:
-            req_sto = vdu_item['resource_requirements']['storage']['size']
-          
-          vims_list_len = len(vims_list)-1
-          for vim_item in vims_list:
-            if vim_item['type'] == "vm":
-              available_core = vim_item['core_total'] - vim_item['core_used']
-              available_memory = vim_item['memory_total'] - vim_item['memory_used']
-              #TODO: missing to use storage but this data is not coming in the VIMs information
-              # available_storage = vim_item['storage_total'] - vim_item['storage_used']
-              # if req_core > available_core or req_mem > available_memory or req_sto > available_storage:
-              if req_core > available_core or req_mem > available_memory:
-                if vims_list.index(x) == vims_list_len:
-                  new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no resources available."
-                  new_nsir['nsi-status'] = 'ERROR'
-                  # 409 = The request could not be completed due to a conflict with the current state of the resource.
-                  return new_nsir, 409
-                continue
-              else:
-                # assigns the VIM to the NSr and adds it ninto the list for the NSIr
-                nsd_comp_dict = {}
-                nsd_comp_dict['nsd-comp-ref'] = vnfd_item['vnf_name']
-                nsd_comp_dict['vim-id'] = vim_item['vim_uuid']
-                nsr_placement_list.append(nsd_comp_dict)
-                
-                # adds assigned resources into the temp vims list json to have the latest info for the next assignment
-                vim_item['core_used'] = vim_item['core_used'] + req_core    
-                vim_item['memory_used'] = vim_item['memory_used'] + req_mem
-                #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
+    LOG.info("NSI_MNGR: NSD information: " +str(nsd_obj))
+    time.sleep(0.1)
+    if nsd_obj:
+      for vnfd_item in nsd_obj['network_functions']:
+        vnfd_obj = mapper.get_vnfd(vnfd_item['vnf_name'], vnfd_item['vnf_vendor'], vnfd_item['vnf_version'])
+        LOG.info("NSI_MNGR: VNFD information: " +str(vnfd_obj))
+        time.sleep(0.1)
+        if vnfd_obj.get('virtual_deployment_units'):
+          for vdu_item in vnfd_obj['virtual_deployment_units']:
+            # sums up al the individual VNF resources requirements into a total NS resources required
+            req_core = vdu_item['resource_requirements']['cpu']['vcpus']
+            if vdu_item['resource_requirements']['memory']['size_unit'] == "MB":
+              req_mem = vdu_item['resource_requirements']['memory']['size']/1024
+            else:
+              req_mem = vdu_item['resource_requirements']['memory']['size']
+            if vdu_item['resource_requirements']['storage']['size_unit'] == "MB":
+              req_sto = vdu_item['resource_requirements']['storage']['size']/1024
+            else:
+              req_sto = vdu_item['resource_requirements']['storage']['size']
+            
+            vims_list_len = len(vims_list)-1
+            for vim_item in vims_list:
+              if vim_item['type'] == "vm":
+                available_core = vim_item['core_total'] - vim_item['core_used']
+                available_memory = vim_item['memory_total'] - vim_item['memory_used']
+                #TODO: missing to use storage but this data is not coming in the VIMs information
+                # available_storage = vim_item['storage_total'] - vim_item['storage_used']
+                # if req_core > available_core or req_mem > available_memory or req_sto > available_storage:
+                if req_core > available_core or req_mem > available_memory:
+                  # if there are no more VIMs in the list, returns error
+                  if vims_list.index(x) == vims_list_len:
+                    new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM resources available."
+                    new_nsir['nsi-status'] = 'ERROR'
+                    return new_nsir, 409
+                  continue
+                else:
+                  # assigns the VIM to the NSr and adds it ninto the list for the NSIr
+                  nsd_comp_dict = {}
+                  nsd_comp_dict['nsd-comp-ref'] = vnfd_item['vnf_name']
+                  nsd_comp_dict['vim-id'] = vim_item['vim_uuid']
+                  nsr_placement_list.append(nsd_comp_dict)
+                  
+                  # adds assigned resources into the temp vims list json to have the latest info for the next assignment
+                  vim_item['core_used'] = vim_item['core_used'] + req_core    
+                  vim_item['memory_used'] = vim_item['memory_used'] + req_mem
+                  #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
+        elif vnfd_obj.get('cloudnative_deployment_units'):
+          # for vdu_item in vnfd_obj['cloudnative_deployment_units']:
+          continue
+        else:
+          new_nsir['errorLog'] = "VNF type not accepted for placement, only VNF and CNF."
+          new_nsir['nsi-status'] = 'ERROR'
+          # 409 = The request could not be completed due to a conflict with the current state of the resource.
+          return new_nsir, 409
       
-      elif vnfd_obj.get('cloudnative_deployment_units'):
-        # for vdu_item in vnfd_obj['cloudnative_deployment_units']:
-        continue
-      else:
-        new_nsir['errorLog'] = "VNF type not accepted for placement, only VNF and CNF."
-        new_nsir['nsi-status'] = 'ERROR'
-        # 409 = The request could not be completed due to a conflict with the current state of the resource.
-        return new_nsir, 409
-    
-    # assigns the generated placement list to the NSir key
-    nsr_item['nsr-placement'] = nsr_placement_list
+      # assigns the generated placement list to the NSir key
+      nsr_item['nsr-placement'] = nsr_placement_list
 
-    # VLDR placement: if two nsr are placed in different VIMs, their networks must know it to be deployed in both VIMs
-    #for nsr_item in new_nsir['nsr-list']:
-    for vld_ref_item in nsr-item['vld']:
-      for vldr_item in new_nsir['vldr-list']:
-        if vld['vld-ref'] == vldr_item['id']:
-          for nsr_placement_item in nsr_item['nsr-placement']:
-            if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']:
-              vldr_item['vimAccountId'].append(nsr_placement_item['vim-id'])
+      # VLDR placement: if two nsr are placed in different VIMs, their networks must know it to be deployed in both VIMs
+      #for nsr_item in new_nsir['nsr-list']:
+      for vld_ref_item in nsr-item['vld']:
+        for vldr_item in new_nsir['vldr-list']:
+          if vld['vld-ref'] == vldr_item['id']:
+            for nsr_placement_item in nsr_item['nsr-placement']:
+              if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']:
+                vldr_item['vimAccountId'].append(nsr_placement_item['vim-id'])
 
-  nsi_datacenter_list = []
-  for vldr_item in new_nsir['vldr-list']:
-    for vimAccountId_item in vldr_item['vimAccountId']:
-      if vimAccountId_item not in nsi_datacenter_list:
-        nsi_datacenter_list.append(vimAccountId_item)
-  new_nsir['datacenter'] = nsi_datacenter_list
+  if nsd_obj:
+    nsi_datacenter_list = []
+    for vldr_item in new_nsir['vldr-list']:
+      for vimAccountId_item in vldr_item['vimAccountId']:
+        if vimAccountId_item not in nsi_datacenter_list:
+          nsi_datacenter_list.append(vimAccountId_item)
+    new_nsir['datacenter'] = nsi_datacenter_list
+  else:
+    new_nsir['errorLog'] = "No NSD found for one of the sevices composing the requested Network Slice."
+    new_nsir['nsi-status'] = 'ERROR'
+    # 409 = The request could not be completed due to a conflict with the current state of the resource.
+    return new_nsir, 409
   
-
   # for vim_item in vims_list['vim_list']:
   #   LOG.info("NSI_MNGR: looking for a vim: " +str(vim_item))
   #   time.sleep(0.1)
@@ -1114,8 +1125,8 @@ def nsi_placement(new_nsir):
   #     time.sleep(0.1)
   #     new_nsir = vim_item['vim_uuid']
   #     break
-
-  LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(new_nsir))
+  LOG.info("NSI_MNGR: VIMs list information AFTER placement: " +str(vims_list))
+  LOG.info("NSI_MNGR: PLACEMENT DONE: " +str(new_nsir))
   time.sleep(0.1)
   
   return new_nsir, 200
