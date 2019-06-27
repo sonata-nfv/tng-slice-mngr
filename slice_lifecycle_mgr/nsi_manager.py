@@ -1106,7 +1106,7 @@ def nsi_placement(new_nsir):
 
       # VLDR placement: if two nsr are placed in different VIMs, their networks must know it to be deployed in both VIMs
       #for nsr_item in new_nsir['nsr-list']:
-      for vld_ref_item in nsr-item['vld']:
+      for vld_ref_item in nsr_item['vld']:
         for vldr_item in new_nsir['vldr-list']:
           if vld['vld-ref'] == vldr_item['id']:
             for nsr_placement_item in nsr_item['nsr-placement']:
