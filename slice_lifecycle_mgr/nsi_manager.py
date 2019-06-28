@@ -33,7 +33,7 @@
 ## partner consortium (www.5gtango.eu).
 """
 
-import os, sys, logging, datetime, uuid, time, json, ast
+import os, sys, logging, datetime, uuid, time, json, ast, jsonify
 import dateutil.parser
 from threading import Thread, Lock
 
@@ -811,7 +811,7 @@ def create_nsi(nsi_json):
     return new_nsir
   
   # saving the NSI into the repositories
-  nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir[0])
+  nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
   if nsirepo_jsonresponse[1] == 200:
     # starts the thread to instantiate while sending back the response
     #thread_ns_instantiation = thread_ns_instantiate(new_nsir)
@@ -821,9 +821,7 @@ def create_nsi(nsi_json):
   else:
     LOG.info("NSI_MNGR:  nsirepo_jsonresponse:" + str(nsirepo_jsonresponse))
     time.sleep(0.1)
-    error_msg = nsirepo_jsonresponse[0]
-    LOG.info("NSI_MNGR: ERROR SAVING NSIR: " +str(error_msg))
-    time.sleep(0.1)
+    error_msg = jsonify(nsirepo_jsonresponse[0])
     new_nsir['errorLog'] = error_msg['message']
     return (new_nsir, 400)
 
