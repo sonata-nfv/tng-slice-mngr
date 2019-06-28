@@ -1109,7 +1109,7 @@ def nsi_placement(new_nsir):
       #for nsr_item in new_nsir['nsr-list']:
       for vld_ref_item in nsr_item['vld']:
         for vldr_item in new_nsir['vldr-list']:
-          if vld['vld-ref'] == vldr_item['id']:
+          if vld_ref_item['vld-ref'] == vldr_item['id']:
             for nsr_placement_item in nsr_item['nsr-placement']:
               if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']:
                 vldr_item['vimAccountId'].append(nsr_placement_item['vim-id'])
