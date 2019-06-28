@@ -388,9 +388,8 @@ class update_slice_instantiation(Thread):
         if (service_item['nsrName'] == self.request_json['name'] and service_item['requestId'] == self.request_json['id']):
           LOG.info("NSI_MNGR_Update: Service found, let's update it")
           time.sleep(0.1)
-          #service_item['requestId'] = self.request_json['id']
           
-          # check if there an id of the instantiation within the VIM
+          # check if there's an id of the instantiation within the VIM
           if (self.request_json['instance_uuid'] != None):
             service_item['nsrId'] = self.request_json['instance_uuid']
             
@@ -403,7 +402,6 @@ class update_slice_instantiation(Thread):
 
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "INSTANTIATED"
-            #service_item['requestId'] = ''
           elif (self.request_json['status'] == "ERROR"):
             service_item['working-status'] = "ERROR"
             jsonNSI['errorLog'] = self.request_json['error']
@@ -741,7 +739,6 @@ class update_slice_termination(Thread):
       # looks for the right service within the slice and updates it with the new data
       for service_item in jsonNSI['nsr-list']:
         if (service_item['nsrId'] == self.request_json['instance_uuid']):
-          #service_item['requestId'] = self.request_json['id']
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "TERMINATED"
           else:
@@ -893,7 +890,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       subnet_record['working-status'] = 'NEW'    
       subnet_record['subnet-ref'] = subnet_item['id']
       subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
-      subnet_record['requestId'] = ''
+      subnet_record['requestId'] = '00000000-0000-0000-0000-000000000000'
       subnet_record['isshared'] = subnet_item['is-shared']
       
       #TODO: validate instantiation parameters
