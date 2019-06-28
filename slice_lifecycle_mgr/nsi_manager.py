@@ -824,7 +824,8 @@ def create_nsi(nsi_json):
   else:
     LOG.info("NSI_MNGR:  nsirepo_jsonresponse:" + str(nsirepo_jsonresponse))
     time.sleep(0.1)
-    new_nsir['errorLog'] = nsirepo_jsonresponse[0]['message']
+    error_msg = nsirepo_jsonresponse[0]
+    new_nsir['errorLog'] = error_msg['message']
     return (new_nsir, 400)
 
   return nsirepo_jsonresponse
@@ -928,7 +929,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       
       # adding the vld id where each subnet is connected to
       subnet_vld_list = []
-      if not nst_json["slice_vld"]:
+      if nst_json["slice_vld"]:
         for vld_item in nst_json["slice_vld"]:
           for nsd_cp_item in vld_item['nsd-connection-point-ref']:
             if subnet_item['id'] == nsd_cp_item['subnet-ref']:
