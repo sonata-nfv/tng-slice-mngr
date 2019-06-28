@@ -1,6 +1,6 @@
 /* Networks Request JSON*/
 {
-  "instance_id": "String",        // use the NSIR uuid
+  "instance_id": "String",        // uses the _stack-net-ref parameter to manage each network individually
   "vim_list": [
     {
       "uuid": "String",           // uuid of the VIM where to dcreate nets
@@ -139,4 +139,34 @@
       ]
     }
   ]
+}
+
+
+/* WIM Link Creation Request*/
+{
+  "service_instance_id": "String",        //slice instance_uuid
+  "wim_uuid": "String",                   //wim uuid que contiene los dos vims
+  "vl_id": "String",                      //uuid del slice-vld entre servicios
+  "ingress": {                            //información del vim de entrada
+    "location": "String",
+    "nap": "String"
+  },
+  "egress": {                             //información del vim de salida
+    "location": "String",
+    "nap": "String"
+  },
+  "qos": {                                //??????????????
+    "latency": "int",
+    "latency_unit": "String",
+    "bandwidth": "int",
+    "bandwidth_unit": "String"
+  },
+  "bidirectional": true
+}
+
+/* WIM Link Removal Request*/
+{
+  "service_instance_id": "String",
+  "wim_uuid": "String",
+  "vl_id": "String"
 }
