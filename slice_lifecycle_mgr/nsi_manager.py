@@ -33,7 +33,7 @@
 ## partner consortium (www.5gtango.eu).
 """
 
-import os, sys, logging, datetime, uuid, time, json, ast, jsonify
+import os, sys, logging, datetime, uuid, time, json, ast
 import dateutil.parser
 from threading import Thread, Lock
 
@@ -821,7 +821,7 @@ def create_nsi(nsi_json):
   else:
     LOG.info("NSI_MNGR:  nsirepo_jsonresponse:" + str(nsirepo_jsonresponse))
     time.sleep(0.1)
-    error_msg = jsonify(nsirepo_jsonresponse[0])
+    error_msg = json.loads(nsirepo_jsonresponse[0])
     new_nsir['errorLog'] = error_msg['message']
     return (new_nsir, 400)
 
