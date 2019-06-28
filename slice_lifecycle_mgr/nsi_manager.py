@@ -246,12 +246,13 @@ class thread_ns_instantiate(Thread):
             time.sleep(0.1)
 
             vim_list = []
-            vim_list_item = {}
-            vim_list_item['uuid'] = vldr_item['vimAccountId']
-            vim_list_item['virtual_links'] = virtual_links
-            vim_list.append(vim_list_item)
-            LOG.info("NSI_MNGR: payload of the request: " + str(vim_list))
-            time.sleep(0.1)
+            for vim_item in vldr_item['vimAccountId']:
+              vim_list_item = {}
+              vim_list_item['uuid'] = vim_item
+              vim_list_item['virtual_links'] = virtual_links
+              vim_list.append(vim_list_item)
+              LOG.info("NSI_MNGR: payload of the request: " + str(vim_list))
+              time.sleep(0.1)
 
             network_data = {}
             network_data['instance_id'] = vldr_item['_stack-net-ref']
@@ -276,7 +277,7 @@ class thread_ns_instantiate(Thread):
               self.NSI['errorLog'] = networks_response['error']
               network_ready = False
 
-      # if TRUE = instantiates the services, otherwise uremoves the created networks
+      # if TRUE = instantiates the services, otherwise removes the created networks
       if network_ready:
         for nsr_item in self.NSI['nsr-list']:
           if (nsr_item['isshared'] == False or nsr_item['isshared'] and nsr_item['working-status'] == "NEW"):
@@ -355,7 +356,9 @@ class thread_ns_instantiate(Thread):
       
           time.sleep(15)
           deployment_timeout -= 15
-      
+    
+    #TODO: WIM connection request
+
     LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")    
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
     self.update_nsi_notify_instantiate()
@@ -814,7 +817,7 @@ def create_nsi(nsi_json):
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir[0])
   if nsirepo_jsonresponse[1] == 200:
     # starts the thread to instantiate while sending back the response
-    thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+    thread_ns_instantiation = thread_ns_instantiate(new_nsir[0])
     thread_ns_instantiation.start()
     LOG.info("NSI_MNGR: SENDING NSR REQUESTS!!!")
     time.sleep(0.1)
