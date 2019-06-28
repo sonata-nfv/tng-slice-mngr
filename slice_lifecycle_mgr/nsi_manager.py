@@ -822,6 +822,8 @@ def create_nsi(nsi_json):
     LOG.info("NSI_MNGR: SENDING NSR REQUESTS!!!")
     time.sleep(0.1)
   else:
+    LOG.info("NSI_MNGR:  nsirepo_jsonresponse:" + str(nsirepo_jsonresponse))
+    time.sleep(0.1)
     new_nsir['errorLog'] = nsirepo_jsonresponse[0]['message']
     return (new_nsir, 400)
 
