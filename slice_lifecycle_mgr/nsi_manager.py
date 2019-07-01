@@ -94,6 +94,8 @@ class thread_ns_instantiate(Thread):
 
     # Creates the extra parameters for the requests: slice-vld, ingresses, egresses, SLA
     if self.NSI.get('vldr-list'):
+      LOG.info("NSI_MNGR_Instantiate: Preparing jso to stitch NS to nets.")
+      time.sleep(0.1)
       # Preparing the dict to stitch the NS to the Networks (VLDs)
       mapping = {}
       network_functions_list = []
@@ -109,6 +111,8 @@ class thread_ns_instantiate(Thread):
         net_funct['vim_id'] = nsr_place_item['vim-id']
         network_functions_list.append(net_funct)
       mapping['network_functions'] = network_functions_list
+      LOG.info("NSI_MNGR_Instantiate: Mapping after 1st level placement: " +str(mapping))
+      time.sleep(0.1)
       
       ## 'virtual_links' object creation
       # for each nsr, checks its vlds and looks for its infortmation in vldr-list
@@ -140,6 +144,8 @@ class thread_ns_instantiate(Thread):
         virt_link['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
         virtual_links_list.append(virt_link)
       mapping['virtual_links'] = virtual_links_list
+      LOG.info("NSI_MNGR_Instantiate: Mapping after 2nd level palcement: " +str(mapping))
+      time.sleep(0.1)
       
       #all the previous information into the mapping dict
       data['mapping'] = mapping
@@ -282,6 +288,8 @@ class thread_ns_instantiate(Thread):
       if network_ready:
         for nsr_item in self.NSI['nsr-list']:
           if (nsr_item['isshared'] == False or nsr_item['isshared'] and nsr_item['working-status'] == "NEW"):
+            LOG.info("NSI_MNGR: Passing nsr_item: " +str(nsr_item))
+            time.sleep(0.1)
             instantiation_resp = self.send_instantiation_requests(nsr_item)
             if instantiation_resp[1] == 201:
               nsr_item['working-status'] == 'INSTANTIATING'
