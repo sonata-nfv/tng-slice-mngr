@@ -117,6 +117,7 @@ class thread_ns_instantiate(Thread):
       ## 'virtual_links' object creation
       # for each nsr, checks its vlds and looks for its infortmation in vldr-list
       for vld_nsr_item in nsr_item['vld']:
+        inner_net_found = False
         vld_ref = vld_nsr_item['vld-ref']
         for vldr_item in self.NSI['vldr-list']:
           # vld connected to the nsd found, keeps the external network
@@ -139,9 +140,12 @@ class thread_ns_instantiate(Thread):
                       vl_id = nsd_vl_item['id']
                       LOG.info("NSI_MNGR_Instantiate: nsd_vl_item[id]: " +str(nsd_vl_item['id']))
                       time.sleep(0.1)
-                      break 
+                      inner_net_found  =True
+                      break
+                  if inner_net_found:
+                    break
+              if inner_net_found:
                 break
-            break 
         virt_link = {}
         virt_link['vl_id'] = vl_id
         virt_link['external_net'] = external_net
