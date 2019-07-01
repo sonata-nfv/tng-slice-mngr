@@ -152,7 +152,7 @@ class thread_ns_instantiate(Thread):
             virt_link['vl_id'] = vl_id
             virt_link['external_net'] = external_net
             for vim_id_item in vldr_item['vimAccountId']:
-              virt_link['vim_id'] = vldr_item['vimAccountId']
+              virt_link['vim_id'] = vim_id_item
               virtual_links_list.append(virt_link)
       
       mapping['virtual_links'] = virtual_links_list
