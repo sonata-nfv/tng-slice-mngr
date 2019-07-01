@@ -98,14 +98,15 @@ class thread_ns_instantiate(Thread):
       mapping = {}
       network_functions_list = []
       virtual_links_list = []
-      repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
-      nsd_item = repo_item['nsd']
+      #repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+      #nsd_item = repo_item['nsd']
       
       ## 'network_functions' object creation
-      for vnf_item in nsd_item['network_functions']:
+      #for vnf_item in nsd_item['network_functions']:
+      for nsr_place_item in nsr_item['nsr-placement']:
         net_funct = {}
-        net_funct['vnf_id'] = vnf_item['vnf_id']
-        net_funct['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
+        net_funct['vnf_id'] = nsr_place_item['nsd-comp-ref']
+        net_funct['vim_id'] = nsr_place_item['vim-id']
         network_functions_list.append(net_funct)
       mapping['network_functions'] = network_functions_list
       
@@ -811,7 +812,7 @@ def create_nsi(nsi_json):
   # Network Slice Placement  
   new_nsir = nsi_placement(new_nsir)
   if new_nsir[1] != 200:
-    return new_nsir
+    return (new_nsir[0], new_nsir[1])
   
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir[0])
@@ -1080,8 +1081,11 @@ def nsi_placement(new_nsir):
                   else:
                     # assigns the VIM to the NSr and adds it ninto the list for the NSIr
                     nsd_comp_dict = {}
-                    nsd_comp_dict['nsd-comp-ref'] = vnfd_item['vnf_name']
+                    nsd_comp_dict['nsd-comp-ref'] = vnfd_item['vnf_id']
                     nsd_comp_dict['vim-id'] = vim_item['vim_uuid']
+                    
+                    #TODO: ara amteix em posa 3 VNF quan en són 2 (amb 3 vdus), corregir-ho per quan toqui fer stitching NS
+                    
                     nsr_placement_list.append(nsd_comp_dict)
                     
                     # adds assigned resources into the temp vims list json to have the latest info for the next assignment
