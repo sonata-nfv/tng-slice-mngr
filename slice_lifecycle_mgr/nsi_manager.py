@@ -137,6 +137,8 @@ class thread_ns_instantiate(Thread):
                   for ns_cp_ref_item in nsd_vl_item['connection_points_reference']:
                     if ns_cp_ref_item == ns_cp_ref:
                       vl_id = nsd_vl_item['id']
+                      LOG.info("NSI_MNGR_Instantiate: nsd_vl_item[id]: " +str(nsd_vl_item['id']))
+                      time.sleep(0.1)
                       break 
                 break
             break 
