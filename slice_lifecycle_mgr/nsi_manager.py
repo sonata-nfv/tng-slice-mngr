@@ -149,10 +149,14 @@ class thread_ns_instantiate(Thread):
         virt_link = {}
         virt_link['vl_id'] = vl_id
         virt_link['external_net'] = external_net
+        LOG.info("NSI_MNGR_Instantiate BEFOR virt_link['vim_id']")
+        time.sleep(0.1)
         virt_link['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
+        LOG.info("NSI_MNGR_Instantiate AFTER virt_link['vim_id']")
+        time.sleep(0.1)
         virtual_links_list.append(virt_link)
       mapping['virtual_links'] = virtual_links_list
-      LOG.info("NSI_MNGR_Instantiate: Mapping after 2nd level palcement: " +str(mapping))
+      LOG.info("NSI_MNGR_Instantiate: Mapping after 2nd level placement: " +str(mapping))
       time.sleep(0.1)
       
       #all the previous information into the mapping dict
