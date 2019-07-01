@@ -147,13 +147,13 @@ class thread_ns_instantiate(Thread):
               if inner_net_found:
                 break
           
-          #creates the objects to define how the slice-vld must be connected to the ns-vld.
-          virt_link = {}
-          virt_link['vl_id'] = vl_id
-          virt_link['external_net'] = external_net
-          for vim_id_item in vldr_item['vimAccountId']:
-            virt_link['vim_id'] = vldr_item['vimAccountId']
-            virtual_links_list.append(virt_link)
+            #creates the objects to define how the slice-vld must be connected to the ns-vld.
+            virt_link = {}
+            virt_link['vl_id'] = vl_id
+            virt_link['external_net'] = external_net
+            for vim_id_item in vldr_item['vimAccountId']:
+              virt_link['vim_id'] = vldr_item['vimAccountId']
+              virtual_links_list.append(virt_link)
       
       mapping['virtual_links'] = virtual_links_list
       LOG.info("NSI_MNGR_Instantiate: Mapping after 2nd level placement: " +str(mapping))
