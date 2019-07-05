@@ -701,3 +701,40 @@
     ]
   }
 }
+
+/* VIMs List */
+{
+  "nep_list": [
+      {
+          "nep_name": "NeP_1",
+          "nep_uuid": "12345678-1234-1234-1234-123456789999",
+          "type": "endpoint"
+      }
+  ],
+  "vim_list": [
+      {
+          "core_total": 30,
+          "core_used": 0,
+          "memory_total": 100000,
+          "memory_used": 0,
+          "type": "vm",
+          "vim_city": "Athens-North",
+          "vim_domain": "default",
+          "vim_endpoint": "10.100.32.200",
+          "vim_name": "Athens-200",
+          "vim_uuid": "11111111-2222-3333-4444-555555555555"
+      },
+      {
+          "core_total": 30,
+          "core_used": 0,
+          "memory_total": 100000,
+          "memory_used": 0,
+          "type": "vm",
+          "vim_city": "Athens-North",
+          "vim_domain": "default",
+          "vim_endpoint": "10.100.32.201",
+          "vim_name": "Athens-201",
+          "vim_uuid": "55555555-2222-3333-4444-555555555555"
+      }
+  ]
+}

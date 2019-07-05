@@ -61,48 +61,10 @@ class thread_ns_instantiate(Thread):
     Thread.__init__(self)
     self.NSI = NSI
   
+  #TODO: (not used) extract the code from run into this function
   def send_networks_creation_request(self, network_data):
     LOG.info("NSI_MNGR: Requesting slice networks creation to the GTK.")
     time.sleep(0.1)
-
-    ''' OLD NETWORK JSON CREATION PROCESS
-    # creates the 1st json level structure {instance_id: ___, vim_list: []}
-    network_data = {}
-    network_data['instance_id'] = self.NSI['id']
-    network_data['vim_list'] = []
-
-    # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and ...
-    # ...adds them into the 'vim_list'
-    for vldr_item in self.NSI['vldr-list']:
-      if vldr_item['vld-status'] == "INACTIVE":              # to avoid create already existing networks
-        vim_item = {}
-        vim_item['uuid'] = vldr_item['vimAccountId']
-        vim_item['virtual_links'] = []
-        if not network_data['vim_list']:
-          network_data['vim_list'].append(vim_item)
-        else:
-          if vim_item not in network_data['vim_list']:
-            network_data['vim_list'].append(vim_item)
-          else:
-            continue
-    
-    # creates the elements of the 3rd json level struture {id: ___, access: bool} and...
-    # ... adds them into the 'virtual_links'
-    for vldr_item in self.NSI['vldr-list']:
-      if vldr_item['vld-status'] == "INACTIVE":              # to avoid create already existing networks
-        for vim_item in network_data['vim_list']:
-          if vldr_item['vimAccountId'] == vim_item['uuid']:
-            virtual_link_item = {}
-            virtual_link_item['id'] = vldr_item['vim-net-id']
-            virtual_link_item['access'] = vldr_item['access_net']
-            if not vim_item['virtual_links']:
-              vim_item['virtual_links'].append(virtual_link_item)
-            else:
-              if virtual_link_item not in vim_item['virtual_links']:
-                vim_item['virtual_links'].append(virtual_link_item)
-              else:
-                continue
-    '''
     
     LOG.info("NSI_MNGR_Instantiate: json to create networks: " + str(network_data))
     time.sleep(0.1)
@@ -132,24 +94,30 @@ class thread_ns_instantiate(Thread):
 
     # Creates the extra parameters for the requests: slice-vld, ingresses, egresses, SLA
     if self.NSI.get('vldr-list'):
+      LOG.info("NSI_MNGR_Instantiate: Preparing jso to stitch NS to nets.")
+      time.sleep(0.1)
       # Preparing the dict to stitch the NS to the Networks (VLDs)
       mapping = {}
       network_functions_list = []
       virtual_links_list = []
-      repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
-      nsd_item = repo_item['nsd']
+      #repo_item = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+      #nsd_item = repo_item['nsd']
       
       ## 'network_functions' object creation
-      for vnf_item in nsd_item['network_functions']:
+      #for vnf_item in nsd_item['network_functions']:
+      for nsr_place_item in nsr_item['nsr-placement']:
         net_funct = {}
-        net_funct['vnf_id'] = vnf_item['vnf_id']
-        net_funct['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
+        net_funct['vnf_id'] = nsr_place_item['nsd-comp-ref']
+        net_funct['vim_id'] = nsr_place_item['vim-id']
         network_functions_list.append(net_funct)
       mapping['network_functions'] = network_functions_list
+      LOG.info("NSI_MNGR_Instantiate: Mapping after 1st level placement: " +str(mapping))
+      time.sleep(0.1)
       
       ## 'virtual_links' object creation
       # for each nsr, checks its vlds and looks for its infortmation in vldr-list
       for vld_nsr_item in nsr_item['vld']:
+        inner_net_found = False
         vld_ref = vld_nsr_item['vld-ref']
         for vldr_item in self.NSI['vldr-list']:
           # vld connected to the nsd found, keeps the external network
@@ -163,20 +131,33 @@ class thread_ns_instantiate(Thread):
                 ns_cp_ref = ns_cp_item[subnet_key]
                 # gets the right nsd to find the internal NS vld to which the CP is connected
                 nsd_catalogue_object = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+                LOG.info("NSI_MNGR_Instantiate: vitual_links within NSD: " +str(nsd_catalogue_object['nsd']['virtual_links']))
+                time.sleep(0.1)
                 nsd_virtual_links_list = nsd_catalogue_object['nsd']['virtual_links']
                 for nsd_vl_item in nsd_virtual_links_list:
                   for ns_cp_ref_item in nsd_vl_item['connection_points_reference']:
                     if ns_cp_ref_item == ns_cp_ref:
                       vl_id = nsd_vl_item['id']
-                      break 
+                      LOG.info("NSI_MNGR_Instantiate: nsd_vl_item[id]: " +str(nsd_vl_item['id']))
+                      time.sleep(0.1)
+                      inner_net_found  =True
+                      break
+                  if inner_net_found:
+                    break
+              if inner_net_found:
                 break
-            break 
-        virt_link = {}
-        virt_link['vl_id'] = vl_id
-        virt_link['external_net'] = external_net
-        virt_link['vim_id'] = nsr_item['vimAccountId']  #TODO: FUTURE think about placement
-        virtual_links_list.append(virt_link)
+          
+            #creates the objects to define how the slice-vld must be connected to the ns-vld.
+            virt_link = {}
+            virt_link['vl_id'] = vl_id
+            virt_link['external_net'] = external_net
+            for vim_id_item in vldr_item['vimAccountId']:
+              virt_link['vim_id'] = vim_id_item
+              virtual_links_list.append(virt_link)
+      
       mapping['virtual_links'] = virtual_links_list
+      LOG.info("NSI_MNGR_Instantiate: Mapping after 2nd level placement: " +str(mapping))
+      time.sleep(0.1)
       
       #all the previous information into the mapping dict
       data['mapping'] = mapping
@@ -284,12 +265,13 @@ class thread_ns_instantiate(Thread):
             time.sleep(0.1)
 
             vim_list = []
-            vim_list_item = {}
-            vim_list_item['uuid'] = vldr_item['vimAccountId']
-            vim_list_item['virtual_links'] = virtual_links
-            vim_list.append(vim_list_item)
-            LOG.info("NSI_MNGR: payload of the request: " + str(vim_list))
-            time.sleep(0.1)
+            for vim_item in vldr_item['vimAccountId']:
+              vim_list_item = {}
+              vim_list_item['uuid'] = vim_item
+              vim_list_item['virtual_links'] = virtual_links
+              vim_list.append(vim_list_item)
+              LOG.info("NSI_MNGR: payload of the request: " + str(vim_list))
+              time.sleep(0.1)
 
             network_data = {}
             network_data['instance_id'] = vldr_item['_stack-net-ref']
@@ -314,35 +296,12 @@ class thread_ns_instantiate(Thread):
               self.NSI['errorLog'] = networks_response['error']
               network_ready = False
 
-          '''#OLD NETWORKS CREATION REQUEST
-          # sends all the requests to create all the VLDs (networks) within the slice
-          networks_response = self.send_networks_creation_request()
-          LOG.info("NSI_MNGR: network_response: " +str(networks_response))
-          time.sleep(0.1)
-
-          # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
-          if networks_response['status'] == 'COMPLETED':
-            LOG.info("NSI_MNGR: NETWORKS CREATED")
-            time.sleep(0.1)
-            vld_status = "ACTIVE"
-          else:
-            LOG.info("NSI_MNGR: networks NOT created")
-            time.sleep(0.1)
-            vld_status = "ERROR"
-            self.NSI['nsi-status'] = "ERROR"
-            self.NSI['errorLog'] = networks_response['error']
-            for nss_item in self.NSI['nsr-list']:
-              nss_item['working-status'] = "NOT_INSTANTIATED"
-            
-            # if networks are not created, no need to request NS instantiations
-            network_ready = False
-          for vld_item in self.NSI['vldr-list']:
-            vld_item['vld-status'] = vld_status
-          '''
-      # if TRUE = instantiates the services, otherwise uremoves the created networks
+      # if TRUE = instantiates the services, otherwise removes the created networks
       if network_ready:
         for nsr_item in self.NSI['nsr-list']:
           if (nsr_item['isshared'] == False or nsr_item['isshared'] and nsr_item['working-status'] == "NEW"):
+            LOG.info("NSI_MNGR: Passing nsr_item: " +str(nsr_item))
+            time.sleep(0.1)
             instantiation_resp = self.send_instantiation_requests(nsr_item)
             if instantiation_resp[1] == 201:
               nsr_item['working-status'] == 'INSTANTIATING'
@@ -418,7 +377,9 @@ class thread_ns_instantiate(Thread):
       
           time.sleep(15)
           deployment_timeout -= 15
-      
+    
+    #TODO: WIM connection request
+
     LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")    
     # Notifies the GTK that the Network Slice instantiation process is done (either complete or error)
     self.update_nsi_notify_instantiate()
@@ -451,9 +412,8 @@ class update_slice_instantiation(Thread):
         if (service_item['nsrName'] == self.request_json['name'] and service_item['requestId'] == self.request_json['id']):
           LOG.info("NSI_MNGR_Update: Service found, let's update it")
           time.sleep(0.1)
-          #service_item['requestId'] = self.request_json['id']
           
-          # check if there an id of the instantiation within the VIM
+          # check if there's an id of the instantiation within the VIM
           if (self.request_json['instance_uuid'] != None):
             service_item['nsrId'] = self.request_json['instance_uuid']
             
@@ -466,7 +426,6 @@ class update_slice_instantiation(Thread):
 
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "INSTANTIATED"
-            #service_item['requestId'] = ''
           elif (self.request_json['status'] == "ERROR"):
             service_item['working-status'] = "ERROR"
             jsonNSI['errorLog'] = self.request_json['error']
@@ -804,7 +763,6 @@ class update_slice_termination(Thread):
       # looks for the right service within the slice and updates it with the new data
       for service_item in jsonNSI['nsr-list']:
         if (service_item['nsrId'] == self.request_json['instance_uuid']):
-          #service_item['requestId'] = self.request_json['id']
           if (self.request_json['status'] == "READY"):
             service_item['working-status'] = "TERMINATED"
           else:
@@ -848,16 +806,11 @@ def create_nsi(nsi_json):
         return_msg = {}
         return_msg['error'] = "There is already an INSTANTIATED slice with this name and based on the selected NSTd (id/name/vendor/version)."
         return (return_msg, 400)
-
-  # Network Slice Placement  
-  vim_nsi = nsi_placement()               #TODO: improve internal logic (resources?)
-  if vim_nsi[1] == 500:
-    return vim_nsi
    
   # creates NSI with the received information
   LOG.info("NSI_MNGR: Creating NSI basic structure.")
   time.sleep(0.1)
-  new_nsir = add_basic_nsi_info(nst_json, nsi_json, vim_nsi[0]) #TODO: improve placement
+  new_nsir = add_basic_nsi_info(nst_json, nsi_json)
   
   # adds the NetServices (subnets) information within the NSI record
   LOG.info("NSI_MNGR:  Adding subnets into the NSI structure.")
@@ -865,6 +818,9 @@ def create_nsi(nsi_json):
   new_nsir = add_subnets(new_nsir, nst_json, nsi_json)
   LOG.info("NSI_MNGR:  After adding subnets:" + str(new_nsir))
   time.sleep(0.1)
+
+  #TODO: validate if all NSD composing the slice axist in the database.
+  
   # adds the VLD information within the NSI record
   if nst_json.get('slice_vld'):
     LOG.info("NSI_MNGR:  Adding vlds into the NSI structure.")
@@ -873,51 +829,30 @@ def create_nsi(nsi_json):
     LOG.info("NSI_MNGR:  After adding vlds:" + str(new_nsir))
     time.sleep(0.1)
   
+  # Network Slice Placement  
+  new_nsir = nsi_placement(new_nsir)
+  if new_nsir[1] != 200:
+    return (new_nsir[0], new_nsir[1])
+  
   # saving the NSI into the repositories
-  nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir)
-
+  nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir[0])
   if nsirepo_jsonresponse[1] == 200:
     # starts the thread to instantiate while sending back the response
-    thread_ns_instantiation = thread_ns_instantiate(new_nsir)
+    thread_ns_instantiation = thread_ns_instantiate(new_nsir[0])
     thread_ns_instantiation.start()
+    LOG.info("NSI_MNGR: SENDING NSR REQUESTS!!!")
+    time.sleep(0.1)
   else:
+    LOG.info("NSI_MNGR:  nsirepo_jsonresponse:" + str(nsirepo_jsonresponse))
+    time.sleep(0.1)
     error_msg = nsirepo_jsonresponse[0]
     new_nsir['errorLog'] = error_msg['message']
-    nsirepo_jsonresponse = new_nsir
-  
+    return (new_nsir, 400)
+
   return nsirepo_jsonresponse
   
-# TODO: improve placement logic
-# does the placement of all the subnets within the NSI
-def nsi_placement():
-  # get the VIMs information registered to the SP
-  vims_list = mapper.get_vims_info()
-  LOG.info("NSI_MNGR: VIMs list information: " +str(vims_list))
-  time.sleep(0.1)
-
-  # validates if the incoming vim_list is empty (return 500) or not (follow)
-  if not vims_list['vim_list']:
-    return_msg = {}
-    return_msg['error'] = "Not found any VIM information, register one to the SP."
-    return return_msg, 500
-  
-  #nsi_placed = vims_list['vim_list'][0]['vim_uuid']
-  for vim_item in vims_list['vim_list']:
-    LOG.info("NSI_MNGR: looking for a vim: " +str(vim_item))
-    time.sleep(0.1)
-    if vim_item['type'] == "vm":
-      LOG.info("NSI_MNGR: VIM FOUND -> " +str(vim_item['type']) + " with uuid ->  " +str(vim_item['vim_uuid']))
-      time.sleep(0.1)
-      nsi_placed = vim_item['vim_uuid']
-      break
-
-  LOG.info("NSI_MNGR: SELECTED VIM UUID: " +str(nsi_placed))
-  time.sleep(0.1)
-  
-  return nsi_placed, 200
-
 # Basic NSI structure
-def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
+def add_basic_nsi_info(nst_json, nsi_json):
   nsir_dict = {}
   nsir_dict['id'] = str(uuid.uuid4())
   nsir_dict['name'] = nsi_json['name']
@@ -931,7 +866,7 @@ def add_basic_nsi_info(nst_json, nsi_json, main_datacenter):
   nsir_dict['nst-version'] = nst_json['version']
   nsir_dict['nsi-status'] = 'INSTANTIATING'
   nsir_dict['errorLog'] = ''
-  nsir_dict['datacenter'] = main_datacenter
+  nsir_dict['datacenter'] = []
   nsir_dict['instantiateTime'] = str(datetime.datetime.now().isoformat())
   nsir_dict['terminateTime'] = ''
   nsir_dict['scaleTime'] = ''
@@ -973,11 +908,11 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       subnet_record = {}
       subnet_record['nsrName'] = new_nsir['name'] + "-" + subnet_item['id'] + "-" + str(serv_seq)
       subnet_record['nsrId'] = '00000000-0000-0000-0000-000000000000'
-      subnet_record['vimAccountId'] = new_nsir['datacenter']
+      subnet_record['nsr-placement'] = []
       subnet_record['working-status'] = 'NEW'    
       subnet_record['subnet-ref'] = subnet_item['id']
       subnet_record['subnet-nsdId-ref'] = subnet_item['nsd-ref']
-      subnet_record['requestId'] = ''
+      subnet_record['requestId'] = '00000000-0000-0000-0000-000000000000'
       subnet_record['isshared'] = subnet_item['is-shared']
       
       #TODO: validate instantiation parameters
@@ -1015,7 +950,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       
       # adding the vld id where each subnet is connected to
       subnet_vld_list = []
-      if not nst_json["slice_vld"]:
+      if nst_json["slice_vld"]:
         for vld_item in nst_json["slice_vld"]:
           for nsd_cp_item in vld_item['nsd-connection-point-ref']:
             if subnet_item['id'] == nsd_cp_item['subnet-ref']:
@@ -1039,7 +974,7 @@ def add_vlds(new_nsir, nst_json):
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
-    vld_record['vimAccountId'] = new_nsir['datacenter']  #TODO: improve with placement
+    vld_record['vimAccountId'] = []
     vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
     vld_record['_stack-net-ref']  = str(uuid.uuid4())
     if 'mgmt-network' in vld_item.keys():
@@ -1105,6 +1040,131 @@ def add_vlds(new_nsir, nst_json):
               break
   new_nsir['vldr-list'] = vldr_list
   return new_nsir
+
+# does the NSs placement based on the available VIMs resources & the required of each NS.
+def nsi_placement(new_nsir):
+  # get the VIMs information registered to the SP
+  vims_list = mapper.get_vims_info()
+  LOG.info("NSI_MNGR: VIMs list information before placement: " +str(vims_list))
+  time.sleep(0.1)
+
+  # validates if the incoming vim_list is empty (return 500) or not (follow)
+  if not vims_list['vim_list']:
+    return_msg = {}
+    return_msg['error'] = "Not found any VIM information, register one to the SP."
+    return return_msg, 500
+
+  # NSR placement based on the required nsr resources vs available vim resources
+  for nsr_item in new_nsir['nsr-list']:
+    nsr_placement_list = []
+    nsd_obj = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+    req_core = req_mem = req_sto = 0
+    LOG.info("NSI_MNGR: NSD information: " +str(nsd_obj))
+    time.sleep(0.1)
+    if nsd_obj:
+      for vnfd_item in nsd_obj['nsd']['network_functions']:
+        # it msut return a list of one element as the trio (name/vendor/version) makes it unique
+        vnfd_obj = mapper.get_vnfd(vnfd_item['vnf_name'], vnfd_item['vnf_vendor'], vnfd_item['vnf_version'])
+        LOG.info("NSI_MNGR: VNFD information: " +str(vnfd_obj))
+        time.sleep(0.1)
+        if vnfd_obj:
+          if vnfd_obj[0]['vnfd']['virtual_deployment_units']:
+            for vdu_item in vnfd_obj[0]['vnfd']['virtual_deployment_units']:
+              # sums up al the individual VNF resources requirements into a total NS resources required
+              req_core = vdu_item['resource_requirements']['cpu']['vcpus']
+              if vdu_item['resource_requirements']['memory']['size_unit'] == "MB":
+                req_mem = vdu_item['resource_requirements']['memory']['size']/1024
+              else:
+                req_mem = vdu_item['resource_requirements']['memory']['size']
+              if vdu_item['resource_requirements']['storage']['size_unit'] == "MB":
+                req_sto = vdu_item['resource_requirements']['storage']['size']/1024
+              else:
+                req_sto = vdu_item['resource_requirements']['storage']['size']
+              
+              LOG.info("NSI_MNGR: req_core: " +str(req_core)+ ", req_mem: "+str(req_mem))
+              time.sleep(0.1)
+              vims_list_len = len(vims_list)-1
+              for vim_item in vims_list['vim_list']:
+                if vim_item['type'] == "vm":
+                  available_core = vim_item['core_total'] - vim_item['core_used']
+                  available_memory = vim_item['memory_total'] - vim_item['memory_used']
+                  #TODO: missing to use storage but this data is not coming in the VIMs information
+                  # available_storage = vim_item['storage_total'] - vim_item['storage_used']
+                  # if req_core > available_core or req_mem > available_memory or req_sto > available_storage:
+                  if req_core > available_core or req_mem > available_memory:
+                    # if there are no more VIMs in the list, returns error
+                    if vims_list.index(x) == vims_list_len:
+                      new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM resources available."
+                      new_nsir['nsi-status'] = 'ERROR'
+                      return new_nsir, 409
+                    continue
+                  else:
+                    # assigns the VIM to the NSr and adds it ninto the list for the NSIr
+                    nsd_comp_dict = {}
+                    nsd_comp_dict['nsd-comp-ref'] = vnfd_item['vnf_id']
+                    nsd_comp_dict['vim-id'] = vim_item['vim_uuid']
+                    
+                    #TODO: ara amteix em posa 3 VNF quan en són 2 (amb 3 vdus), corregir-ho per quan toqui fer stitching NS
+                    
+                    nsr_placement_list.append(nsd_comp_dict)
+                    
+                    # adds assigned resources into the temp vims list json to have the latest info for the next assignment
+                    vim_item['core_used'] = vim_item['core_used'] + req_core    
+                    vim_item['memory_used'] = vim_item['memory_used'] + req_mem
+                    #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
+          elif vnfd_obj[0]['vnfd']['cloudnative_deployment_units']:
+            # for vdu_item in vnfd_obj[0]['vnfd']['cloudnative_deployment_units']:
+            continue
+          else:
+            new_nsir['errorLog'] = "VNF type not accepted for placement, only VNF and CNF."
+            new_nsir['nsi-status'] = 'ERROR'
+            # 409 = The request could not be completed due to a conflict with the current state of the resource.
+            return new_nsir, 409
+        else:
+          new_nsir['errorLog'] = "No VNFD available, please use a NSD with available VNFDs."
+          new_nsir['nsi-status'] = 'ERROR'
+          # 409 = The request could not be completed due to a conflict with the current state of the resource.
+          return new_nsir, 409
+      
+      # assigns the generated placement list to the NSir key
+      nsr_item['nsr-placement'] = nsr_placement_list
+
+      # VLDR placement: if two nsr are placed in different VIMs, their networks must know it to be deployed in both VIMs
+      #for nsr_item in new_nsir['nsr-list']:
+      for vld_ref_item in nsr_item['vld']:
+        for vldr_item in new_nsir['vldr-list']:
+          if vld_ref_item['vld-ref'] == vldr_item['id']:
+            for nsr_placement_item in nsr_item['nsr-placement']:
+              if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']:
+                vldr_item['vimAccountId'].append(nsr_placement_item['vim-id'])
+    else:
+      new_nsir['errorLog'] = "No " + str(nsr_item['subnet-nsdId-ref']) + " NSD FOUND."
+      new_nsir['nsi-status'] = 'ERROR'
+      # 409 = The request could not be completed due to a conflict with the current state of the resource.
+      return new_nsir, 409
+
+  
+  nsi_datacenter_list = []
+  for vldr_item in new_nsir['vldr-list']:
+    for vimAccountId_item in vldr_item['vimAccountId']:
+      if vimAccountId_item not in nsi_datacenter_list:
+        nsi_datacenter_list.append(vimAccountId_item)
+  new_nsir['datacenter'] = nsi_datacenter_list
+
+  
+  # for vim_item in vims_list['vim_list']:
+  #   LOG.info("NSI_MNGR: looking for a vim: " +str(vim_item))
+  #   time.sleep(0.1)
+  #   if vim_item['type'] == "vm":
+  #     LOG.info("NSI_MNGR: VIM FOUND -> " +str(vim_item['type']) + " with uuid ->  " +str(vim_item['vim_uuid']))
+  #     time.sleep(0.1)
+  #     new_nsir = vim_item['vim_uuid']
+  #     break
+  LOG.info("NSI_MNGR: VIMs list information after placement: " +str(vims_list))
+  LOG.info("NSI_MNGR: PLACEMENT DONE: " +str(new_nsir))
+  time.sleep(0.1)
+  
+  return new_nsir, 200
 
 # Updates a NSI with the latest information coming from the MANO/GK
 def update_instantiating_nsi(nsiId, request_json):

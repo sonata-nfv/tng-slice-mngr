@@ -129,6 +129,6 @@ def delete_nst(nstId):
 #GET 	  /api/catalogues/v2/{collection}?version=last             --> Lists only the last version for all descriptors
 #PUT 	  /api/catalogues/v2/{collection}/{id}                     --> Updates a descriptor using the UUID
 #PUT 	  /api/catalogues/v2/{collection}/{id}                     --> Sets status of a descriptor using the UUID
-#DELETE /api/catalogues/v2/{collection}                          --> Deletes a descriptor using the naming triplet, i.e., name, vendor & version
+#DELETE   /api/catalogues/v2/{collection}                          --> Deletes a descriptor using the naming triplet, i.e., name, vendor & version
 
 
