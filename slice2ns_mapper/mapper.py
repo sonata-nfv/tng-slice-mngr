@@ -44,14 +44,7 @@ LOG.setLevel(logging.INFO)
 
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
-#################################### GENERAL URLs TO THE GATEKEEPERS #####################################
-# Prepare the URL to ask for the available network services to create NST.
-# def get_url_common_gtk():
-#   ip_address = os.environ.get("SONATA_GTK_COMMON")
-#   port = os.environ.get("SONATA_GTK_COMMON_PORT")
-#   base_url = 'http://'+ip_address+':'+port
-#   return base_url
-
+######################################### URLs PREPARATION #########################################
 # Returns the last URL version to send reqauests to the Catalogues Docker
 def get_url_catalogues():
   ip_address = os.environ.get("SONATA_CAT")
@@ -66,104 +59,18 @@ def get_url_sp_gtk():
   base_url = 'http://'+ip_address+':'+port
   return base_url
 
+# Returns the last URL version to send reqauests to the Repositories Docker
+def get_url_repositories():
+    ip_address = os.environ.get("SONATA_REP")
+    port = os.environ.get("SONATA_REP_PORT")
+    base_url = 'http://'+ip_address+':'+port
+    return base_url
+
 # Defines wether if we are using sthe Sonata SP Emulator or not.
 def use_sonata():
   return os.environ.get("USE_SONATA")
 
-##################################### SERVICES MANAGEMENT REQUESTS #######################################
-# POST /requests to INSTANTIATE Network Service instance
-def net_serv_instantiate(service_data):
-  url = get_url_sp_gtk() + '/requests'
-  data_json = json.dumps(service_data)
-  
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Sending instanitation request for the following network slice subnet: " +str(service_data['name']))
-    time.sleep(0.1)
-    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-
-    jsonresponse = json.loads(response.text)
-    
-    return jsonresponse, response.status_code
-    
-  else:
-    print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
-    uuident = uuid.uuid4()
-    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
-    return jsonresponse, 201
-
-# POST /requests to TERMINATE Network Service instance
-def net_serv_terminate(service_data):
-  url = get_url_sp_gtk() + "/requests"
-  data_json = json.dumps(service_data)
-  
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Sending Terminate request")
-    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    if (response.status_code == 200) or (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
-    else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}
-    return jsonresponse
-  else:
-    jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
-    return jsonresponse
-
-# POST to call the Gk when a slice is READY (either instantiated or terminated)
-def sliceUpdated(slice_callback, json_slice_info):
-  url = str(slice_callback)
-  data_json = json.dumps(json_slice_info)
-  
-  LOG.info("MAPPER: Sending Slice updated to GTK")
-  response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-  
-  if (response.status_code == 201):
-      return json.loads(response.text), 201
-  else:
-      error_json = {'http_code': response.status_code,'message': response.json()}
-      return error_json, response.status_code
-  
-# GET /requests to pull the information of all Network Services INSTANCES
-def get_all_all_nsr():
-  url = get_url_sp_gtk() + "/requests"
-
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Getting all NetServicesInstances")
-    response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    if (response.status_code == 200):
-        jsonresponse = json.loads(response.text)
-    else:
-        jsonresponse = {'http_code': response.status_code,'message': response.json()}
-    return jsonresponse  
-  else:
-    jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
-    LOG.info(jsonresponse)
-    return jsonresponse
-
-# GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
-def get_requested_nsr(request_uuid):
-  url = get_url_sp_gtk() + "/requests/" + str(request_uuid)
-
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Getting desired NetServicesInstance")
-    response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    if (response.status_code == 200):
-        jsonresponse = json.loads(response.text)
-    else:
-        jsonresponse = {'http_code': response.status_code,'message': response.json()}
-    return jsonresponse
-  else:
-    print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER))
-    uuident = uuid.uuid4()
-    example_json_result='{"blacklist": "[]","callback": "","created_at": "2018-07-23T08:38:10.544Z","customer_uuid": null,"egresses": "[]","id": "1f5c8d55-651c-49cf-853d-c281dbef5639","ingresses": "[]","instance_uuid": "'+str(uuident)+'","request_type": "CREATE_SERVICE","service": {"name": "myns","uuid": "9ce92c4a-5355-47e0-9ed8-e008c201fdfc","vendor": "eu.5gtango","version": "0.1"},"sla_id": null,"status": "READY","updated_at": "2018-07-23T08:39:17.074Z"}'
-    jsonresponse = json.loads(example_json_result)
-    return jsonresponse 
-
-
-##################################### VIM NETWORKS MANAGEMENT REQUESTS #######################################
+##################################### VIM NETWORKS MANAGEMENT REQUESTS ##############################
 '''
 Objective: Request to get all registered VIMs information
   Params: null
@@ -322,8 +229,115 @@ def delete_vim_network(network_data):
     jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
     return jsonresponse
 
+################################ NETWORK SERVICES REQUESTS/RECORDS ##################################
+# POST /requests to INSTANTIATE Network Service instance
+def net_serv_instantiate(service_data):
+  #url = get_url_repositories() + '/nsrs' #TODO change from gtk to rep once it works everything
+  url = get_url_sp_gtk() + '/requests'
+  data_json = json.dumps(service_data)
+  
+  #REAL or EMULATED usage of Sonata SP 
+  if use_sonata() == "True":
+    LOG.info("MAPPER: Sending instanitation request for the following network slice subnet: " +str(service_data['name']))
+    time.sleep(0.1)
+    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
 
-################################## INTERNAL REQUESTS TO CHECK EXISTING NSDs / VNFDs ####################################
+    jsonresponse = json.loads(response.text)
+    
+    return jsonresponse, response.status_code
+    
+  else:
+    print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
+    uuident = uuid.uuid4()
+    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
+    return jsonresponse, 201
+
+# POST /requests to TERMINATE Network Service instance
+def net_serv_terminate(service_data):
+  url = get_url_sp_gtk() + "/requests"
+  data_json = json.dumps(service_data)
+  
+  #REAL or EMULATED usage of Sonata SP 
+  if use_sonata() == "True":
+    LOG.info("MAPPER: Sending Terminate request")
+    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    if (response.status_code == 200) or (response.status_code == 201):
+      jsonresponse = json.loads(response.text)
+    else:
+      jsonresponse = {'http_code': response.status_code,'message': response.json()}
+    return jsonresponse
+  else:
+    jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
+    return jsonresponse
+
+# POST to call the Gk when a slice is READY (either instantiated or terminated)
+def sliceUpdated(slice_callback, json_slice_info):
+  url = str(slice_callback)
+  data_json = json.dumps(json_slice_info)
+  
+  LOG.info("MAPPER: Sending Slice updated to GTK")
+  response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+  
+  if (response.status_code == 201):
+      return json.loads(response.text), 201
+  else:
+      error_json = {'http_code': response.status_code,'message': response.json()}
+      return error_json, response.status_code
+  
+# GET /requests to pull the information of all Network Services INSTANCES
+def get_all_nsr():
+  url = get_url_sp_gtk() + "/records/services"
+
+  #REAL or EMULATED usage of Sonata SP 
+  if use_sonata() == "True":
+    LOG.info("MAPPER: Getting all NetServicesInstances")
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
+    if (response.status_code == 200):
+        jsonresponse = json.loads(response.text)
+    else:
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+    return jsonresponse  
+  else:
+    jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
+    LOG.info(jsonresponse)
+    return jsonresponse
+
+# GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
+def get_nsr(request_uuid):
+  url = get_url_sp_gtk() + "/records/services/" + str(request_uuid)
+
+  #REAL or EMULATED usage of Sonata SP 
+  if use_sonata() == "True":
+    LOG.info("MAPPER: Getting desired NetServicesInstance")
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
+    if (response.status_code == 200):
+        jsonresponse = json.loads(response.text)
+    else:
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+    return jsonresponse
+  else:
+    print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER))
+    uuident = uuid.uuid4()
+    example_json_result='{"blacklist": "[]","callback": "","created_at": "2018-07-23T08:38:10.544Z","customer_uuid": null,"egresses": "[]","id": "1f5c8d55-651c-49cf-853d-c281dbef5639","ingresses": "[]","instance_uuid": "'+str(uuident)+'","request_type": "CREATE_SERVICE","service": {"name": "myns","uuid": "9ce92c4a-5355-47e0-9ed8-e008c201fdfc","vendor": "eu.5gtango","version": "0.1"},"sla_id": null,"status": "READY","updated_at": "2018-07-23T08:39:17.074Z"}'
+    jsonresponse = json.loads(example_json_result)
+    return jsonresponse 
+
+################################ NETWORK FUNCTION RECORDS ##################################
+def get_vnfr(vnfr_uuid):
+  LOG.info("MAPPER: Preparing the request to get the NetServices Information")
+  url = get_url_repositories() + "/vnfrs/" + str(vnfr_uuid)
+
+  response = requests.get(url, headers=JSON_CONTENT_HEADER)
+    
+  if (response.status_code == 200):
+    service_response = json.loads(response.text)
+  else:
+    service_response = json.loads(response.text)
+    service_response['http_code'] = response.status_code
+    LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(service_response))
+  return service_response
+
+#################################### NETWORK SERVICE DESCRIPTORS #####################################
 def get_nsd(nsd_uuid):
   LOG.info("MAPPER: Preparing the request to get the NetServices Information")
   url = get_url_catalogues() + "/api/v2/network-services/" + str(nsd_uuid)
@@ -385,6 +399,7 @@ def parseNetworkService(service):
                       service['updated_at'])
   return NSD
 
+#################################### NETWORK FUNCTION DESCRIPTORS ####################################
 def get_vnfd(vnfd_name, vnfd_vendor, vnfd_version):
   LOG.info("MAPPER: Preparing the request to get the Function Information")
   url = get_url_catalogues() + "/api/v2/vnfs?vendor="+str(vnfd_vendor)+"&name="+str(vnfd_name)+"&version="+str(vnfd_version)
