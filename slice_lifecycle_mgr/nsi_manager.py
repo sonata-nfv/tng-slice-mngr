@@ -208,6 +208,9 @@ class thread_ns_instantiate(Thread):
       new_dict['cp'] = splitted_str[1]
       return new_dict
 
+    # gets WIMS information list to check if the VIMs where to deploy the VNFs are registered within the WIM
+    wims_list = mapper.get_wims_info()
+
     # loops the slice-vld to find out which one is in two different VIMs
     for vldr_item in self.NSI['vldr-list']:
       # only those which are not management vld and with more than one VIM
@@ -229,29 +232,34 @@ class thread_ns_instantiate(Thread):
                   found_ns_cp = str_2_json(found_ns_cp)
                   # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
                   nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
-                  for nsd_nf_item int nsd_json['nsd']['network_functions']:
+                  for nsd_nf_item in nsd_json['nsd']['network_functions']:
                     if nsd_nf_item['vnf_id'] == found_ns_cp['id']:
+                      # the right VNF name is found
                       found_vnfd_name = nsd_nf_item['vnf_name']
                       found_vnfd = True
                       break
                 if found_vnfd:
                   break
 
+              # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
               for nsr_nf_item in nsr_json['network_functions']:
                 vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
                 if vnfr_json['name'] == found_vnfd_name:
                   for vnfr_vl_item in vnfr_json['virtual_links']:
+                    # looks for the VLD connected to the selected VNFR external CP
                     if found_ns_cp['cp'] in vnfr_vl_item['connection_points_reference']:
                       found_vnf_cp = vnfr_vl_item['connection_points_reference']
                       found_vnf_cp = found_vnf_cp.remove(found_ns_cp['cp'])
                       found_vnf_cp = str_2_json(found_vnf_cp)
                       break
                   
+                  # looks for the VDU that is connected to the CP pointing out of the slice
                   for vnfr_vdu_item in vnfr_json['virtual_deployment_units']:
                     if vnfr_vdu_item['id'] == found_vnf_cp['id']:
                       for vnfc_ins_item in vnfr_vdu_item['vnfc_instance']:
                         for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
                           if vnfc_ins_cp_item['id'] == found_vnf_cp['cp']:
+                            # VDU found, takins its information for the WIM request
                             wim_dict = {}
                             wim_dict['location'] = vnfc_ins_item['vim_id']
                             wim_dict['nap'] = vnfc_ins_cp_item['address']
@@ -267,10 +275,25 @@ class thread_ns_instantiate(Thread):
                   break
             if found_vnfr:
               break
-          
+
+      # validates if the two VIMs are registered within the same WIM
+      wim_uuid = None
+      for wim_item in wims_list:
+        found_wim = True
+        # if any of the two vim_uuids is not in the wim_attached_vims_list, check the next wim
+        for wim_cp_item in wim_conn_points_list:
+          if wim_cp_item['location'] not in wim_item['attached_vims']:
+            found_wim = False
+            break
+        
+        if found_wim:
+          wim_uuid = wim_item['uuid']
+          break
+      
+      # creates the json to request the WIM connection
       wim_dict = {}
       wim_dict['service_instance_id'] = self.NSI['name']
-      wim_dict['wim_uuid'] = 
+      wim_dict['wim_uuid'] = wim_uuid
       wim_dict['vl_id'] = vldr_item['id']
       wim_dict['ingress'] = wim_conn_points_list[0]
       wim_dict['egress'] = wim_conn_points_list[1]
@@ -278,7 +301,6 @@ class thread_ns_instantiate(Thread):
 
 
     return self.NSI, 200
-
 
   def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
