@@ -299,6 +299,10 @@ class thread_ns_instantiate(Thread):
       wim_dict['egress'] = wim_conn_points_list[1]
       wim_dict['bidirectional'] = True
 
+      LOG.info("NSI_MNGR: Json to request WIM conection:" + str(wim_dict))
+      time.sleep(0.1)
+
+      #mapper call for WIM connection
 
     return self.NSI, 200
 
@@ -450,7 +454,6 @@ class thread_ns_instantiate(Thread):
 
             LOG.info("NSI_MNGR: payload of the network termination: " + str(network_data))
             time.sleep(0.1)
-            #networks_response = self.send_networks_creation_request(network_data)
             networks_response = mapper.delete_vim_network(network_data)
             LOG.info("NSI_MNGR: response of the net termiantion request: " + str(networks_response))
             time.sleep(0.1)
