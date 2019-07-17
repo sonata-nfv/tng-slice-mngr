@@ -1256,7 +1256,7 @@ def nsi_placement(new_nsir):
                     challenger_vim_memory = vim_item['memory_total'] - vim_item['memory_used']
                     if (sel_vim_core < challenger_vim_core and sel_vim_memory < challenger_vim_memory):
                       # the current VIM has more available resources than the already selected
-                      selected_vim = vim_item
+                      selected_vim = vim_item['vim_uuid']
                 
                 # if there are no more VIMs in the list, returns error
                 if vims_list.index(x) == vims_list_len and not selected_vim:
@@ -1270,10 +1270,10 @@ def nsi_placement(new_nsir):
             # 409 = The request could not be completed due to a conflict with the current state of the resource.
             return new_nsir, 409
 
-          # assigns the VIM to the NSr and adds it ninto the list for the NSIr
+          # assigns the VIM to the NSr and adds it into the list for the NSIr
           nsd_comp_dict = {}
           nsd_comp_dict['nsd-comp-ref'] = vnfd_item['vnf_id']
-          nsd_comp_dict['vim-id'] = selected_vim['vim_uuid']
+          nsd_comp_dict['vim-id'] = selected_vim
           
           # adds the vnf_id/vim_uuid dict into the slice.nsr-list information
           nsr_placement_list.append(nsd_comp_dict)
