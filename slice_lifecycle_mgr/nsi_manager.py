@@ -458,7 +458,7 @@ class thread_ns_instantiate(Thread):
             LOG.info("NSI_MNGR: payload of the network termination: " + str(network_data))
             time.sleep(0.1)
             networks_response = mapper.delete_vim_network(network_data)
-            LOG.info("NSI_MNGR: response of the net termiantion request: " + str(networks_response))
+            LOG.info("NSI_MNGR: response of the net termination request: " + str(networks_response))
             time.sleep(0.1)
           
             if networks_response['status'] == 'COMPLETED':
@@ -466,7 +466,6 @@ class thread_ns_instantiate(Thread):
             else:
               vldr_item['vld-status'] = 'ERROR'
               self.NSI['errorLog'] = networks_response['error']
-              break
           
         for nss_item in self.NSI['nsr-list']:
           nss_item['working-status'] = 'NOT_INSTANTIATED'
@@ -1117,18 +1116,23 @@ def add_vlds(new_nsir, nst_json):
       cp_dict[cp_ref_item['subnet-ref']] = cp_ref_item['nsd-cp-ref']
       cp_refs_list.append(cp_dict)
       
-      for subn_item in nst_json["slice_ns_subnets"]:
-        if subn_item['id'] == cp_ref_item['subnet-ref']:
-          repo_item = mapper.get_nsd(subn_item['nsd-ref'])
-          nsd_item = repo_item['nsd']
-          for service_vl in nsd_item['virtual_links']:
-            for service_cp_ref_item in service_vl['connection_points_reference']:
-              if service_cp_ref_item == cp_ref_item['nsd-cp-ref']:
-                if service_vl.get('access'):
-                  vld_record['access_net'] = service_vl['access']
-                else:
-                  # To keep concordance with the old NSD, if it's not defined True
-                  vld_record['access_net'] = True
+      # if the slice defines the accessability (floating IPs) take it, else thake it from the NSs.
+      if vld_item.get('access_net'):
+          vld_record['access_net'] = vld_item['access_net']
+      else:
+        for subn_item in nst_json["slice_ns_subnets"]:
+          if subn_item['id'] == cp_ref_item['subnet-ref']:
+            repo_item = mapper.get_nsd(subn_item['nsd-ref'])
+            nsd_item = repo_item['nsd']
+            for service_vl in nsd_item['virtual_links']:
+              for service_cp_ref_item in service_vl['connection_points_reference']:
+                if service_cp_ref_item == cp_ref_item['nsd-cp-ref']:
+                  if service_vl.get('access'):
+                    vld_record['access_net'] = service_vl['access']
+                  else:
+                    # To keep concordance with the old NSD, if it's not defined True
+                    vld_record['access_net'] = True
+    
     vld_record['ns-conn-point-ref'] = cp_refs_list
     vld_record['shared-nsrs-list'] = []
     vldr_list.append(vld_record)
