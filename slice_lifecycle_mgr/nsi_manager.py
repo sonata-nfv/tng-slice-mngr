@@ -499,8 +499,8 @@ class thread_ns_instantiate(Thread):
           time.sleep(15)
           deployment_timeout -= 15
       
-      #if all NSs are well created, enters into the WIM connection step
-      if nsi_instantiated:
+      #if all NSs are well created and the slice has more than one VIM, enters into the WIM connection step
+      if (nsi_instantiated and len(jsonNSI['datacenter']) > 1):
         self.configure_wim()
 
       LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")    
@@ -1185,105 +1185,113 @@ def nsi_placement(new_nsir):
 
   # NSR placement based on the required nsr resources vs available vim resources
   for nsr_item in new_nsir['nsr-list']:
-    nsr_placement_list = []
-    nsd_obj = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
-    req_core = req_mem = req_sto = 0
-    LOG.info("NSI_MNGR: NSD information: " +str(nsd_obj))
-    time.sleep(0.1)
-    if nsd_obj:
-      for vnfd_item in nsd_obj['nsd']['network_functions']:
-        # it msut return a list of one element as the trio (name/vendor/version) makes it unique
-        vnfd_obj = mapper.get_vnfd(vnfd_item['vnf_name'], vnfd_item['vnf_vendor'], vnfd_item['vnf_version'])
-        LOG.info("NSI_MNGR: VNFD information: " +str(vnfd_obj))
-        time.sleep(0.1)
-        if vnfd_obj:
-          if vnfd_obj[0]['vnfd']['virtual_deployment_units']:
-            for vdu_item in vnfd_obj[0]['vnfd']['virtual_deployment_units']:
-              # sums up al the individual VNF resources requirements into a total NS resources required
-              req_core = vdu_item['resource_requirements']['cpu']['vcpus']
-              if vdu_item['resource_requirements']['memory']['size_unit'] == "MB":
-                req_mem = vdu_item['resource_requirements']['memory']['size']/1024
-              else:
-                req_mem = vdu_item['resource_requirements']['memory']['size']
-              
-              if vdu_item['resource_requirements']['storage']['size_unit'] == "MB":
-                req_sto = vdu_item['resource_requirements']['storage']['size']/1024
-              else:
-                req_sto = vdu_item['resource_requirements']['storage']['size']
-              
-              LOG.info("NSI_MNGR: req_core: " +str(req_core)+ ", req_mem: "+str(req_mem))
-              time.sleep(0.1)
-              for vim_item in vims_list['vim_list']:
-                #TODO: missing to use storage but this data is not coming in the VIMs information
-                if vim_item['type'] == "vm":
-                  available_core = vim_item['core_total'] - vim_item['core_used']
-                  available_memory = vim_item['memory_total'] - vim_item['memory_used']
-                  #available_storage = vim_item['storage_total'] - vim_item['storage_used']
-                  
-                  #if req_core > available_core or req_mem > available_memory or req_sto > available_storage:
-                  if req_core > available_core or req_mem > available_memory:
-                    # if there are no more VIMs in the list, returns error
-                    if vims_list.index(x) == vims_list_len:
-                      new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM resources available."
-                      new_nsir['nsi-status'] = 'ERROR'
-                      return new_nsir, 409
+    # if NOT shared placement is always done. If shared, only the first time (nsr-placement is empty)
+    if (not nsr_item['isshared'] or nsr_item['isshared'] and not nsr_item['nsr-placement']):
+      nsr_placement_list = []
+      nsd_obj = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+      req_core = req_mem = req_sto = 0
+      LOG.info("NSI_MNGR: NSD information: " +str(nsd_obj))
+      time.sleep(0.1)
+      if nsd_obj:
+        for vnfd_item in nsd_obj['nsd']['network_functions']:
+          # it msut return a list of one element as the trio (name/vendor/version) makes it unique
+          vnfd_obj = mapper.get_vnfd(vnfd_item['vnf_name'], vnfd_item['vnf_vendor'], vnfd_item['vnf_version'])
+          LOG.info("NSI_MNGR: VNFD information: " +str(vnfd_obj))
+          time.sleep(0.1)
+          if vnfd_obj:
+            if vnfd_obj[0]['vnfd']['virtual_deployment_units']:
+              for vdu_item in vnfd_obj[0]['vnfd']['virtual_deployment_units']:
+                # sums up al the individual VNF resources requirements into a total NS resources required
+                req_core = vdu_item['resource_requirements']['cpu']['vcpus']
+                if vdu_item['resource_requirements']['memory']['size_unit'] == "MB":
+                  req_mem = vdu_item['resource_requirements']['memory']['size']/1024
+                else:
+                  req_mem = vdu_item['resource_requirements']['memory']['size']
+                
+                if vdu_item['resource_requirements']['storage']['size_unit'] == "MB":
+                  req_sto = vdu_item['resource_requirements']['storage']['size']/1024
+                else:
+                  req_sto = vdu_item['resource_requirements']['storage']['size']
+                
+                LOG.info("NSI_MNGR: req_core: " +str(req_core)+ ", req_mem: "+str(req_mem))
+                time.sleep(0.1)
+                for vim_item in vims_list['vim_list']:
+                  #TODO: missing to use storage but this data is not coming in the VIMs information
+                  if vim_item['type'] == "vm":
+                    available_core = vim_item['core_total'] - vim_item['core_used']
+                    available_memory = vim_item['memory_total'] - vim_item['memory_used']
+                    #available_storage = vim_item['storage_total'] - vim_item['storage_used']
+                    
+                    #if req_core > available_core or req_mem > available_memory or req_sto > available_storage:
+                    if req_core > available_core or req_mem > available_memory:
+                      # if there are no more VIMs in the list, returns error
+                      if vims_list.index(x) == vims_list_len:
+                        new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM resources available."
+                        new_nsir['nsi-status'] = 'ERROR'
+                        return new_nsir, 409
+                      
+                      else:
+                        continue
                     
                     else:
-                      continue
-                  
-                  else:
-                    # assigns the VIM to the NSr and adds it ninto the list for the NSIr
-                    selected_vim = vim_item['vim_uuid']
-                    
-                    # updates resources info in the temp_vims_list json to have the latest info for the next assignment
-                    vim_item['core_used'] = vim_item['core_used'] + req_core    
-                    vim_item['memory_used'] = vim_item['memory_used'] + req_mem
-                    #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
-          
-          elif vnfd_obj[0]['vnfd']['cloudnative_deployment_units']:
-              # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF
-              selected_vim = {}
-              for vim_item in vims_list['vim_list']:
-                if vim_item['type'] == "container":
-                  # if no vim is still selected, take the first one
-                  if not selected_vim:
-                    selected_vim = vim_item
-                  # compare the selected vim with the next one in order to find which one has more available resources
-                  else:
-                    sel_vim_core = selected_vim['core_total'] - selected_vim['core_used']
-                    sel_vim_memory = selected_vim['memory_total'] - selected_vim['memory_used']
-                    challenger_vim_core = vim_item['core_total'] - vim_item['core_used']
-                    challenger_vim_memory = vim_item['memory_total'] - vim_item['memory_used']
-                    if (sel_vim_core < challenger_vim_core and sel_vim_memory < challenger_vim_memory):
-                      # the current VIM has more available resources than the already selected
+                      # assigns the VIM to the NSr and adds it ninto the list for the NSIr
+                      selected_vim = vim_item['vim_uuid']
+                      
+                      # updates resources info in the temp_vims_list json to have the latest info for the next assignment
+                      vim_item['core_used'] = vim_item['core_used'] + req_core    
+                      vim_item['memory_used'] = vim_item['memory_used'] + req_mem
+                      #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
+            
+            elif vnfd_obj[0]['vnfd']['cloudnative_deployment_units']:
+                # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF
+                selected_vim = {}
+                for vim_item in vims_list['vim_list']:
+                  if vim_item['type'] == "container":
+                    # if no vim is still selected, take the first one
+                    if not selected_vim:
                       selected_vim = vim_item
-                
-                # if there are no more VIMs in the list, returns error
-                if vims_list.index(x) == vims_list_len and not selected_vim:
-                  new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM for K8s available."
-                  new_nsir['nsi-status'] = 'ERROR'
-                  return new_nsir, 409
-          
+                    # compare the selected vim with the next one in order to find which one has more available resources
+                    else:
+                      sel_vim_core = selected_vim['core_total'] - selected_vim['core_used']
+                      sel_vim_memory = selected_vim['memory_total'] - selected_vim['memory_used']
+                      challenger_vim_core = vim_item['core_total'] - vim_item['core_used']
+                      challenger_vim_memory = vim_item['memory_total'] - vim_item['memory_used']
+                      if (sel_vim_core < challenger_vim_core and sel_vim_memory < challenger_vim_memory):
+                        # the current VIM has more available resources than the already selected
+                        selected_vim = vim_item['vim_uuid']
+                  
+                  # if there are no more VIMs in the list, returns error
+                  if vims_list.index(x) == vims_list_len and not selected_vim:
+                    new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM for K8s available."
+                    new_nsir['nsi-status'] = 'ERROR'
+                    return new_nsir, 409
+            
+            else:
+              new_nsir['errorLog'] = "VNF type not accepted for placement, only VNF and CNF."
+              new_nsir['nsi-status'] = 'ERROR'
+              # 409 = The request could not be completed due to a conflict with the current state of the resource.
+              return new_nsir, 409
+
+            # assigns the VIM to the NSr and adds it into the list for the NSIr
+            nsd_comp_dict = {}
+            nsd_comp_dict['nsd-comp-ref'] = vnfd_item['vnf_id']
+            nsd_comp_dict['vim-id'] = selected_vim
+            
+            # adds the vnf_id/vim_uuid dict into the slice.nsr-list information
+            nsr_placement_list.append(nsd_comp_dict)
+
           else:
-            new_nsir['errorLog'] = "VNF type not accepted for placement, only VNF and CNF."
+            new_nsir['errorLog'] = "No VNFD/CNFD available, please use a NSD with available VNFDs."
             new_nsir['nsi-status'] = 'ERROR'
             # 409 = The request could not be completed due to a conflict with the current state of the resource.
             return new_nsir, 409
 
-          # assigns the VIM to the NSr and adds it ninto the list for the NSIr
-          nsd_comp_dict = {}
-          nsd_comp_dict['nsd-comp-ref'] = vnfd_item['vnf_id']
-          nsd_comp_dict['vim-id'] = selected_vim['vim_uuid']
-          
-          # adds the vnf_id/vim_uuid dict into the slice.nsr-list information
-          nsr_placement_list.append(nsd_comp_dict)
+      else:
+        new_nsir['errorLog'] = "No " + str(nsr_item['subnet-nsdId-ref']) + " NSD FOUND."
+        new_nsir['nsi-status'] = 'ERROR'
+        # 409 = The request could not be completed due to a conflict with the current state of the resource.
+        return new_nsir, 409
 
-        else:
-          new_nsir['errorLog'] = "No VNFD/CNFD available, please use a NSD with available VNFDs."
-          new_nsir['nsi-status'] = 'ERROR'
-          # 409 = The request could not be completed due to a conflict with the current state of the resource.
-          return new_nsir, 409
-      
       # assigns the generated placement list to the NSir key
       nsr_item['nsr-placement'] = nsr_placement_list
 
@@ -1294,11 +1302,6 @@ def nsi_placement(new_nsir):
             for nsr_placement_item in nsr_item['nsr-placement']:
               if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']:
                 vldr_item['vimAccountId'].append(nsr_placement_item['vim-id'])
-    else:
-      new_nsir['errorLog'] = "No " + str(nsr_item['subnet-nsdId-ref']) + " NSD FOUND."
-      new_nsir['nsi-status'] = 'ERROR'
-      # 409 = The request could not be completed due to a conflict with the current state of the resource.
-      return new_nsir, 409
 
   #adds all the VIMs IDs into the slice record first level 'datacenter' field.
   nsi_datacenter_list = []
