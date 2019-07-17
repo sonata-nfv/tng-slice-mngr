@@ -499,8 +499,8 @@ class thread_ns_instantiate(Thread):
           time.sleep(15)
           deployment_timeout -= 15
       
-      #if all NSs are well created, enters into the WIM connection step
-      if nsi_instantiated:
+      #if all NSs are well created and the slice has more than one VIM, enters into the WIM connection step
+      if (nsi_instantiated and len(jsonNSI['datacenter']) > 1):
         self.configure_wim()
 
       LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")    
