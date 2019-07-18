@@ -787,10 +787,12 @@ class thread_ns_terminate(Thread):
           virtual_links.append(virtual_links_item)
 
           vim_list = []
-          vim_list_item = {}
-          vim_list_item['uuid'] = vldr_item['vimAccountId']
-          vim_list_item['virtual_links'] = virtual_links
-          vim_list.append(vim_list_item)
+          # to remove the net if it si placed in multiple VIMs
+          for vimAccountID_item in vldr_item['vimAccountId']:
+            vim_list_item = {}
+            vim_list_item['uuid'] = vimAccountID_item
+            vim_list_item['virtual_links'] = virtual_links
+            vim_list.append(vim_list_item)
 
           network_data = {}
           network_data['instance_id'] = vldr_item['_stack-net-ref']
