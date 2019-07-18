@@ -1118,8 +1118,12 @@ def add_vlds(new_nsir, nst_json):
       
       # if the slice defines the accessability (floating IPs) take it, else thake it from the NSs.
       if vld_item.get('access_net'):
-          vld_record['access_net'] = vld_item['access_net']
+        LOG.info("NSI_MNGR_addVLD: Slice defines access_net as: " +str(vld_item['access_net']))
+        time.sleep(0.1)
+        vld_record['access_net'] = vld_item['access_net']
       else:
+        LOG.info("NSI_MNGR_addVLD: Slice DOES NOT define access_net.")
+        time.sleep(0.1)
         for subn_item in nst_json["slice_ns_subnets"]:
           if subn_item['id'] == cp_ref_item['subnet-ref']:
             repo_item = mapper.get_nsd(subn_item['nsd-ref'])
@@ -1130,7 +1134,7 @@ def add_vlds(new_nsir, nst_json):
                   if service_vl.get('access'):
                     vld_record['access_net'] = service_vl['access']
                   else:
-                    # To keep concordance with the old NSD, if it's not defined True
+                    # If NSD has no 'access_net' parameter, apply True
                     vld_record['access_net'] = True
     
     vld_record['ns-conn-point-ref'] = cp_refs_list
