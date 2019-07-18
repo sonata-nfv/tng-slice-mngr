@@ -798,9 +798,8 @@ class thread_ns_terminate(Thread):
 
           LOG.info("NSI_MNGR: payload of the network termination: " + str(network_data))
           time.sleep(0.1)
-          #networks_response = self.send_networks_creation_request(network_data)
           networks_response = mapper.delete_vim_network(network_data)
-          LOG.info("NSI_MNGR: response of the net termiantion request: " + str(networks_response))
+          LOG.info("NSI_MNGR: response of the net termination request: " + str(networks_response))
           time.sleep(0.1)
 
           # checks that all the networks are terminated
@@ -811,50 +810,7 @@ class thread_ns_terminate(Thread):
             self.NSI['nsi-status'] = "ERROR"
             self.NSI['errorLog'] = networks_response['error']
 
-      '''
-      #creates the list of vldrs to remove (if they are not shared or shared with terminated nsrs)
-      vldrs_2_remove = []
-      for vldr_item in self.NSI['vldr-list']:
-        if vldr_item.get('shared-nsrs-list'):
-          for shared_nsrs_item in vldr_item['shared-nsrs-list']:
-            remove_vldr_item = True
-            for nsrs_item in self.NSI['nsr-list']:
-              if (shared_nsrs_item == nsrs_item['nsrId'] and nsrs_item['working-status'] in ['NEW', 'INSTANTIATING', 'INSTANTIATED', 'READY']):
-                LOG.info("NSI_MNGR: FOUND A SHARED NSR USING THIS VLD, DO NOT REMOVE IT.")
-                time.sleep(0.1)
-                remove_vldr_item = False
-                break
-        else:
-          remove_vldr_item = True
-        if remove_vldr_item:
-          vldrs_2_remove.append(vldr_item['vim-net-id'])
-
-      # requests to remove the created networks for the current slice
-      net_removal_response = self.send_networks_removal_request(vldrs_2_remove)
-
-      # acquires mutex to have unique access to the nsi (rpositories)
-      mutex_slice2db_access.acquire()
-      
-      # looks for the NSI record to update
-      temp_nsi = nsi_repo.get_saved_nsi(self.NSI['id'])
-      temp_nsi["id"] = temp_nsi["uuid"]
-      del temp_nsi["uuid"]
-
-      # checks that all the networks are terminated
-      if net_removal_response['status'] in ['COMPLETED']:
-        vld_status = "INACTIVE"
-      else:
-          vld_status = "ERROR"
-          temp_nsi['nsi-status'] = "ERROR"
-          temp_nsi['errorLog'] = net_removal_response['error']
-      for vim_list_item in net_removal_response['vim_list']:
-        for virtual_link_item in vim_list_item['virtual_links']:
-          for vldr_item in temp_nsi['vldr-list']:
-            if virtual_link_item['id'] == vldr_item['vim-net-id']:
-              vldr_item['vld-status'] = vld_status
-      '''
       # sends the updated NetSlice instance to the repositories
-      # repo_responseStatus = nsi_repo.update_nsi(temp_nsi, self.NSI['id'])
       repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
 
       # releases mutex for any other thread to acquire it
@@ -1177,7 +1133,7 @@ def add_vlds(new_nsir, nst_json):
 def nsi_placement(new_nsir):
   # get the VIMs information registered to the SP
   vims_list = mapper.get_vims_info()
-  vims_list_len = len(vims_list)-1
+  vims_list_len = len(vims_list['vim_list'])-1
   LOG.info("NSI_MNGR: VIMs list information before placement: " +str(vims_list))
   time.sleep(0.1)
 
@@ -1229,7 +1185,7 @@ def nsi_placement(new_nsir):
                     #if req_core > available_core or req_mem > available_memory or req_sto > available_storage:
                     if req_core > available_core or req_mem > available_memory:
                       # if there are no more VIMs in the list, returns error
-                      if vims_list.index(x) == vims_list_len:
+                      if vims_list['vim_list'].index(x) == vims_list_len:
                         new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM resources available."
                         new_nsir['nsi-status'] = 'ERROR'
                         return new_nsir, 409
@@ -1265,7 +1221,7 @@ def nsi_placement(new_nsir):
                         selected_vim = vim_item['vim_uuid']
                   
                   # if there are no more VIMs in the list, returns error
-                  if vims_list.index(x) == vims_list_len and not selected_vim:
+                  if vims_list['vim_list'].index(x) == vims_list_len and not selected_vim:
                     new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM for K8s available."
                     new_nsir['nsi-status'] = 'ERROR'
                     return new_nsir, 409

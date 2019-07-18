@@ -113,8 +113,6 @@ def get_vims_info():
     time.sleep(0.1)
     if (response.status_code == 200):
         jsonresponse = json.loads(response.text)
-        LOG.info("MAPPER: response vims in json" + str(jsonresponse))
-        time.sleep(0.1)
     else:
         jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
   
