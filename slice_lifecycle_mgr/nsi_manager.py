@@ -293,10 +293,9 @@ class thread_ns_instantiate(Thread):
       wim_dict['egress'] = wim_conn_points_list[1]
       wim_dict['bidirectional'] = True
 
+      #TODO: mapper call for WIM connection
       LOG.info("NSI_MNGR: Json to request WIM conection:" + str(wim_dict))
       time.sleep(0.1)
-
-      #mapper call for WIM connection
 
     return self.NSI, 200
 
@@ -394,6 +393,9 @@ class thread_ns_instantiate(Thread):
               vldr_item['vld-status'] = 'ERROR'
               self.NSI['errorLog'] = networks_response['error']
               network_ready = False
+          
+          if not network_ready:
+            break
 
       # if TRUE = instantiates the services, otherwise removes the created networks
       if network_ready:
@@ -408,12 +410,11 @@ class thread_ns_instantiate(Thread):
             else:
               nsr_item['working-status'] == 'ERROR'
               self.NSI['errorLog'] = 'ERROR when instantiating ' + str(nsr_item['nsrName'])
-
       else:
         # remove the created networks in order to avoid having unused resources
         self.NSI['nsi-status'] = 'ERROR'
         for vldr_item in self.NSI['vldr-list']:
-          if vldr_item['vld-status'] == 'ACTIVE':
+          if vldr_item['vld-status'] in ['ACTIVE', 'ERROR']:
             virtual_links = []
             virtual_links_item = {}
             virtual_links_item['id'] = vldr_item['vim-net-id']
@@ -460,26 +461,24 @@ class thread_ns_instantiate(Thread):
           # Check ns instantiation status
           nsi_instantiated = True
           jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
-          for nsr_item in jsonNSI['nsr-list']: 
-            #TODO: check shared services instantiated by other nsirs are ready (use the requestID to check and update the status)
+          for nsr_item in jsonNSI['nsr-list']:
             if nsr_item['working-status'] not in ["INSTANTIATED", "ERROR", "READY"]:
               nsi_instantiated = False
               break
           
-          # if all services are instantiated or error, break the while loop to notify the GTK
+          # if all services are instantiated...
           if nsi_instantiated:
-            LOG.info("All service instantiations requests processed!")
-            break
+            if len(jsonNSI['datacenter']) > 1:  #... and the slice has many VIMs, creates WIM connections
+              self.configure_wim()
+            else:                               #... otherwise, instantiation is done.
+              LOG.info("All service instantiations requests processed!")
+              break
       
           time.sleep(15)
           deployment_timeout -= 15
-      
-      #if all NSs are well created and the slice has more than one VIM, enters into the WIM connection step
-      if (nsi_instantiated and len(jsonNSI['datacenter']) > 1):
-        self.configure_wim()
-
-      LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")    
+    
       # Notifies the GTK about the NetSlice process is done (either completed or error).
+      LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")
       self.update_nsi_notify_instantiate()
 
 # UPDATES THE SLICE INSTANTIATION INFORMATION
