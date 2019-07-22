@@ -320,9 +320,9 @@ def get_nsr(request_uuid):
     jsonresponse = json.loads(example_json_result)
     return jsonresponse 
 
-################################ NETWORK FUNCTION RECORDS ##################################
+#################################### NETWORK FUNCTION ####################################
+# GET virtual network function RECORD
 def get_vnfr(vnfr_uuid):
-  LOG.info("MAPPER: Preparing the request to get the NetServices Information")
   url = get_url_repositories() + "/vnfrs/" + str(vnfr_uuid)
 
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
@@ -335,9 +335,22 @@ def get_vnfr(vnfr_uuid):
     LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(service_response))
   return service_response
 
-#################################### NETWORK SERVICE DESCRIPTORS #####################################
+# GET virtual network function DESCRIPTOR
+def get_vnfd(vnfd_name, vnfd_vendor, vnfd_version):
+  url = get_url_catalogues() + "/api/v2/vnfs?vendor="+str(vnfd_vendor)+"&name="+str(vnfd_name)+"&version="+str(vnfd_version)
+
+  response = requests.get(url,headers=JSON_CONTENT_HEADER)
+    
+  if (response.status_code == 200):
+    function_response = json.loads(response.text)
+  else:
+    function_response = json.loads(response.text)
+    function_response['http_code'] = response.status_code
+    LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(function_response))
+  return function_response
+
+################################# NETWORK SERVICE DESCRIPTORS #####################################
 def get_nsd(nsd_uuid):
-  LOG.info("MAPPER: Preparing the request to get the NetServices Information")
   url = get_url_catalogues() + "/api/v2/network-services/" + str(nsd_uuid)
 
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
@@ -396,18 +409,3 @@ def parseNetworkService(service):
                       service['status'], 
                       service['updated_at'])
   return NSD
-
-#################################### NETWORK FUNCTION DESCRIPTORS ####################################
-def get_vnfd(vnfd_name, vnfd_vendor, vnfd_version):
-  LOG.info("MAPPER: Preparing the request to get the Function Information")
-  url = get_url_catalogues() + "/api/v2/vnfs?vendor="+str(vnfd_vendor)+"&name="+str(vnfd_name)+"&version="+str(vnfd_version)
-
-  response = requests.get(url,headers=JSON_CONTENT_HEADER)
-    
-  if (response.status_code == 200):
-    function_response = json.loads(response.text)
-  else:
-    function_response = json.loads(response.text)
-    function_response['http_code'] = response.status_code
-    LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(function_response))
-  return function_response
