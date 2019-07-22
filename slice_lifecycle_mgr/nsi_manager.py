@@ -1135,7 +1135,7 @@ def add_vlds(new_nsir, nst_json):
 def nsi_placement(new_nsir):
   # get the VIMs information registered to the SP
   vims_list = mapper.get_vims_info()
-  vims_list_len = len(vims_list['vim_list'])-1
+  vims_list_len = len(vims_list['vim_list'])
   LOG.info("NSI_MNGR: VIMs list information before placement: " +str(vims_list))
   time.sleep(0.1)
 
@@ -1178,7 +1178,8 @@ def nsi_placement(new_nsir):
                 
                 LOG.info("NSI_MNGR: req_core: " +str(req_core)+ ", req_mem: "+str(req_mem))
                 time.sleep(0.1)
-                for vim_item in vims_list['vim_list']:
+                #for vim_item in vims_list['vim_list']:
+                for vim_index, vim_item in enumerate(vims_list['vim_list']):
                   #TODO: missing to use storage but this data is not coming in the VIMs information
                   if vim_item['type'] == "vm":
                     available_core = vim_item['core_total'] - vim_item['core_used']
@@ -1188,11 +1189,10 @@ def nsi_placement(new_nsir):
                     #if req_core > available_core or req_mem > available_memory or req_sto > available_storage:
                     if req_core > available_core or req_mem > available_memory:
                       # if there are no more VIMs in the list, returns error
-                      if vims_list['vim_list'].index(x) == vims_list_len:
+                      if vim_index == (vims_list_len-1):
                         new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM resources available."
                         new_nsir['nsi-status'] = 'ERROR'
                         return new_nsir, 409
-                      
                       else:
                         continue
                     
@@ -1208,7 +1208,10 @@ def nsi_placement(new_nsir):
             elif vnfd_info.get('cloudnative_deployment_units'):
                 # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF
                 selected_vim = {}
-                for vim_item in vims_list['vim_list']:
+                #for vim_item in vims_list['vim_list']:
+                for vim_index, vim_item in enumerate(vims_list['vim_list']):
+                  LOG.info("NSI_MNGR: VIM element: " +str(vim_item))
+                  time.sleep(0.1)
                   if vim_item['type'] == "container":
                     # if no vim is still selected, take the first one
                     if not selected_vim:
@@ -1224,7 +1227,7 @@ def nsi_placement(new_nsir):
                         selected_vim = vim_item['vim_uuid']
                   
                   # if there are no more VIMs in the list, returns error
-                  if vims_list['vim_list'].index(x) == vims_list_len and not selected_vim:
+                  if vim_index == (vims_list_len-1) and not selected_vim:
                     new_nsir['errorLog'] = str(nsr_item['nsrName'])+ " nsr placement failed, no VIM for K8s available."
                     new_nsir['nsi-status'] = 'ERROR'
                     return new_nsir, 409
