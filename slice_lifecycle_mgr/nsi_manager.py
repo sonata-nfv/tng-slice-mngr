@@ -1215,7 +1215,7 @@ def nsi_placement(new_nsir):
                   if vim_item['type'] == "container":
                     # if no vim is still selected, take the first one
                     if not selected_vim:
-                      selected_vim = vim_item
+                      selected_vim = vim_item['vim_uuid']
                     # compare the selected vim with the next one in order to find which one has more available resources
                     else:
                       sel_vim_core = selected_vim['core_total'] - selected_vim['core_used']
