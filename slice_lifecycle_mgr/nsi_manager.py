@@ -1161,8 +1161,9 @@ def nsi_placement(new_nsir):
           LOG.info("NSI_MNGR: VNFD information: " +str(vnfd_obj))
           time.sleep(0.1)
           if vnfd_obj:
-            if vnfd_obj[0].get('vnfd.virtual_deployment_units'):
-              for vdu_item in vnfd_obj[0]['vnfd']['virtual_deployment_units']:
+            vnfd_info = vnfd_obj[0]['vnfd']
+            if vnfd_info.get('virtual_deployment_units'):
+              for vdu_item in vnfd_info['virtual_deployment_units']:
                 # sums up al the individual VNF resources requirements into a total NS resources required
                 req_core = vdu_item['resource_requirements']['cpu']['vcpus']
                 if vdu_item['resource_requirements']['memory']['size_unit'] == "MB":
@@ -1204,7 +1205,7 @@ def nsi_placement(new_nsir):
                       vim_item['memory_used'] = vim_item['memory_used'] + req_mem
                       #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
             
-            elif vnfd_obj[0].get('vnfd.cloudnative_deployment_units'):
+            elif vnfd_info.get('cloudnative_deployment_units'):
                 # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF
                 selected_vim = {}
                 for vim_item in vims_list['vim_list']:
