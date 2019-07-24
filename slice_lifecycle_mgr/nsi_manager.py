@@ -1139,8 +1139,8 @@ def nsi_placement(new_nsir):
                     #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
                     vim_found = True
                 
-                  if vim_found:
-                    break
+                if vim_found:
+                  break
             
             elif vnfd_info.get('cloudnative_deployment_units'):
                 # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF
