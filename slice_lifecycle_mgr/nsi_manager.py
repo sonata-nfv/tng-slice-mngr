@@ -414,7 +414,7 @@ class thread_ns_instantiate(Thread):
         # remove the created networks in order to avoid having unused resources
         self.NSI['nsi-status'] = 'ERROR'
         for vldr_item in self.NSI['vldr-list']:
-          if vldr_item['vld-status'] in ['ACTIVE', 'ERROR']:
+          if vldr_item['vld-status'] == 'ACTIVE':
             virtual_links = []
             virtual_links_item = {}
             virtual_links_item['id'] = vldr_item['vim-net-id']

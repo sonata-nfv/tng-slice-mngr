@@ -13,7 +13,7 @@
 
 /* NST with three 2ns-2vnf NSDs */
 {
-  "name": "NST_3subnets_5links_v2",
+  "name": "NST_3subnets",
   "description": "This is the description of a NST.",
   "version": "3.0",
   "author": "CTTC",
@@ -28,8 +28,6 @@
       "nsd-name": "ns-2-vnf-2-vdu",
       "nsd-vendor": "eu.5gtango",
       "nsd-version": "0.1",
-      "sla-name": "Slice-Test",
-      "sla-ref": "d4ad557f-89a8-468e-8e3c-ea35f547eead",
       "is-shared": false
     },
     {
@@ -37,8 +35,6 @@
       "nsd-name": "ns-2-vnf-2-vdu",
       "nsd-vendor": "eu.5gtango",
       "nsd-version": "0.1",
-      "sla-name": "Slice-Test",
-      "sla-ref": "d4ad557f-89a8-468e-8e3c-ea35f547eead",
       "is-shared": true
     },
     {
@@ -55,6 +51,7 @@
       "name": "mgmt",
       "mgmt-network": true,
       "type": "E-LAN",
+      "access_net": false,
       "nsd-connection-point-ref": [
         {
           "subnet-ref": "Service_subnet_1",
@@ -74,6 +71,7 @@
       "id": "slice_input",
       "name": "slice_input",
       "type": "E-LAN",
+      "access_net": true,
       "nsd-connection-point-ref": [
         {
           "subnet-ref": "Service_subnet_1",
@@ -85,6 +83,7 @@
       "id": "subnet1_2_subnet2",
       "name": "subnet1_2_subnet2",
       "type": "E-LAN",
+      "access_net": false,
       "nsd-connection-point-ref": [
         {
           "subnet-ref": "Service_subnet_1",
@@ -100,6 +99,7 @@
       "id": "subnet2_2_subnet3",
       "name": "subnet2_2_subnet3",
       "type": "E-LAN",
+      "access_net": false,
       "nsd-connection-point-ref": [
         {
           "subnet-ref": "Service_subnet_2",
@@ -116,6 +116,7 @@
       "name": "slice_output",
       "mgmt-network": true,
       "type": "E-LAN",
+      "access_net": true,
       "nsd-connection-point-ref": [
         {
           "subnet-ref": "Service_subnet_3",
