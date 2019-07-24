@@ -5,7 +5,7 @@
 
 # tng-slice-mngr
 * Description: 5GTANGO Service Platform Slice Manager
-* Version: 1.0
+* Version: 2.0
 * Actions:
     * Network Slice Tempalte Management (create, check, update, delete).
     * Network Slice Instantiation Management (create/instantiate, check, update, terminate, delete).
@@ -23,14 +23,12 @@ Here there is the documentation about the Network Slice Manager module belonging
 <p align="center"><img src="https://github.com/rvilalta/tng-slice-mngr/blob/master/doc/images/architecture.JPG" /></p>
 
 This component is design with two main components:
-* **Slice Lifecycle Manager:** It is the responsible for the entire lifecycle management of the created network slice instance, until it is terminated. Subsequent lifecycle events are likely to have an impact on the lifecycle of the underlying NSs, but not systematically. The Slice Lifecycle Manager  function  is  responsible  for  the  definition  and  update  of  Network Slice Templates (NST).
+* **Slice Lifecycle Manager:** It is the responsible for the entire lifecycle management of the created network slice instance, until it is terminated. Subsequent lifecycle events are likely to have an impact on the lifecycle of the underlying NSs, but not systematically. The Slice Lifecycle Manager  function  is  responsible  for  the  definition  and update of Network Slice Templates (NST).
 
-* **Slice2NS Mapper:** This component has to maintain an association between NST and NSDs identifiers, as well as an association between slice identifiers and NS instance identifiers.  In next releases, it might also deal with the required combination/integration/concatenation of NSs.
-This behaviour might involve automatic generation of a new NSD, which might be explored in future releases. Slice2NS Mapper is responsible for interacting with SP MANO Framework.
+* **Slice2NS Mapper:** This component has to maintain an association between NST and NSDs identifiers, as well as an association between slice identifiers and NS instance identifiers. Slice2NS Mapper is responsible for interacting with SP MANO Framework.
 
 ### Basic API information
-Each boject has its API definition, here we present the basic information but please reffer to the wiki pages for each object for further information on how to use the API.
-Further information in the [Global SONATA API Webpage](https://sonata-nfv.github.io/tng-doc/?urls.primaryName=5GTANGO%20SDK%20Packager%20API%20v1) or in the following subsections
+Each SONATA component has its API definition, the next sub-setions present a basic **tng-slice-mngr** API information. Further information about the 5GTANGO software, click in the [Global SONATA API Webpage](https://sonata-nfv.github.io/tng-doc/?urls.primaryName=5GTANGO%20SDK%20Packager%20API%20v1).
 
 #### Network Slice Template APIs
 Available OpenAPI description: [slice-mngr_NST.json](https://github.com/sonata-nfv/tng-slice-mngr/blob/master/doc/v1_2/slice-mngr_NST.json)
@@ -55,11 +53,13 @@ Available OpenAPI description: [slice-mngr_NSI.json](https://github.com/sonata-n
 
 
 ## Development
-To contribute to the development of this 5GTANGO component, you may use the very same development workflow as for any other 5GTANGO Github project. That is, you have to fork the repository and create pull requests.
+To contribute to the development of this 5GTANGO component, you may use the very same development workflow as for any other 5GTANGO Github project:
+1) you have to fork the repository and create pull requests.
+2) you pull requests will be verified and merged once a reviewer accepts it.
 
 ## Setup a Network Slice manager
 ### Dependencies
-This component is using the following dependencies. To be sure the code works, please use the following versions:
+As the SONATA Service Platform is composed by multiple modules and all of them using Dockers, the 5GTANGO Network Slice Manager environment and its dependencies are already installed within the Docker. Just to inform about it, this component uses the following dependencies:
 * Flask (0.12.2)
 * flask-restful
 * python-dateutil
@@ -67,23 +67,19 @@ This component is using the following dependencies. To be sure the code works, p
 * requests
 * xmlrunner (1.7.7)
 
-**NOTE:** these are minimum versions, it is not tested with the newest versions probably they should be fine. If there's no specific version, the newest versions should work fine but it is not tested.
+**INFORMATION NOTE:** these are minimum versions, it is not tested with the newest versions probably they should be fine. If there's no specific version, the newest versions should work fine but it is not tested.
 
 ### Required 5GTango components
-To use this component it is necessary to install the following 5GTango components
-* tng-rep
-* tng-cat
-* tng-gtk-common
-* tng-gtk-sp (optional "Emulation Mode" is used -> reffer to the wiki for further information).
+In order to have a full functionality, it is necessary to install the whole SP modules.
 
-### Installation
-Once the previous components are installed, please execute the DockerFile of this component and eveything will be setup inside the used Docker.
+### Installation & Usage
+In order to install this component, please follow the procedure described in the official [5GTango](https://5gtango.eu/software/documentation.html) Documentation webpage.
 
-To launch the service standalone, simply go to the main folder and execute this command: _python3 main.py_
+To use the SONATA Network Slice Manager feature, there are two possible options:
+* [GUI (tng-portal)](https://github.com/sonata-nfv/tng-portal)
+* [CLI (tng-cli)](https://github.com/sonata-nfv/tng-cli)
 
-### Usage
-Please, access the wiki page of this repository for further information on how to "play" with the Network Slice Manager. 
-
+**INFORMATION NOTE**: Once installed (together with the SP modules) and before using it, if you are new on the Network Slicing "world", please check the information about the available functionalities accessing the [tng-slice-mngr wiki page](https://github.com/sonata-nfv/tng-slice-mngr/wiki).
 
 ## License
 This 5GTANGO component is published under Apache 2.0 license. Please see the [LICENSE](https://github.com/sonata-nfv/tng-slice-mngr/blob/master/LICENSE) file for more details.
