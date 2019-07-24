@@ -360,6 +360,7 @@ class thread_ns_instantiate(Thread):
         # creates each one of the vlds defined within the nsir
         for vldr_item in self.NSI['vldr-list']:
           # if there's an ACTIVE vld, it means it is shared and there's no need to create it again
+          #TODO: not do this for an ACTIVE shared vldr
           if vldr_item['vld-status'] == "INACTIVE":
             # creates the json object with the information for the request payload
             virtual_links = []
@@ -717,7 +718,7 @@ class thread_ns_terminate(Thread):
       # acquires mutex to have unique access to the nsi (rpositories)
       mutex_slice2db_access.acquire()
       
-      #creates the list of vldrs to remove (if they are not shared or shared with terminated nsrs)
+      #checks if the vldr can be removed (if they are not shared or shared with terminated nsrs)
       vldrs_2_remove = []
       for vldr_item in self.NSI['vldr-list']:
         if vldr_item.get('shared-nsrs-list'):
@@ -1110,6 +1111,9 @@ def nsi_placement(new_nsir):
                 for vim_index, vim_item in enumerate(vims_list['vim_list']):
                   #TODO: missing to use storage but this data is not coming in the VIMs information
                   if vim_item['type'] == "vm":
+                    LOG.info("NSI_MNGR: Checking VIM: " +str(vim_item))
+                    LOG.info("NSI_MNGR: req_core: " +str(req_core) + " & req_mem: " +str(req_mem))
+                    time.sleep(0.1)
                     available_core = vim_item['core_total'] - vim_item['core_used']
                     available_memory = vim_item['memory_total'] - vim_item['memory_used']
                     #available_storage = vim_item['storage_total'] - vim_item['storage_used']
