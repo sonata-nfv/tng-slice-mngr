@@ -227,6 +227,151 @@ def delete_vim_network(network_data):
     jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
     return jsonresponse
 
+##################################### WIM MANAGEMENT REQUESTS ##############################
+'''
+Objective: Request to get all registered WIMs information
+  Params: 
+  Request payload:
+  Return:
+  [
+    {
+      "uuid": "String",
+      "name": "String",
+      "attached_vims": [
+        "Strings"
+      ],
+      "attached_endpoints": [
+        "Strings"
+      ],
+      "qos": [
+        {
+          "node_1": "String",
+          "node_2": "String",
+          "latency": "int",
+          "latency_unit": "String",
+          "bandwidth": "int",
+          "bandwidth_unit": "String"
+        }
+      ]
+    }
+  ]
+'''
+def get_wims_info():
+  LOG.info("MAPPER: Requesting VIMs information.")
+  url = get_url_sp_gtk() + '/slice/wims'
+
+  #REAL or EMULATED usage of Sonata SP 
+  if use_sonata() == "True":
+    LOG.info("MAPPER: requesting vims, URL--> " + str(url))
+    time.sleep(0.1)
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
+    LOG.info("MAPPER: response vims" + str(response))
+    time.sleep(0.1)
+    if (response.status_code == 200):
+        jsonresponse = json.loads(response.text)
+    else:
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
+  
+    return jsonresponse  
+  
+  else:
+    jsonresponse = "SONATA EMULATED GET VIM INFO --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
+    LOG.info(jsonresponse)
+    return jsonresponse
+
+'''
+Objective: Request to create a wim interconnection between vims
+  Params: wim_link_data - contains the following json:
+  {
+    "service_instance_id": "String",
+    "wim_uuid": "String",
+    "vl_id": "String",
+    "ingress": {
+      "location": "String",
+      "nap": "String"
+    },
+    "egress": {
+      "location": "String",
+      "nap": "String"
+    },
+    "qos": {
+      "latency": "int",
+      "latency_unit": "String",
+      "bandwidth": "int",
+      "bandwidth_unit": "String"
+    },
+    "bidirectional": "bool"
+  }
+  Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
+'''
+def create_wim_network(wim_link_data):
+  url = get_url_sp_gtk() + '/slice/wan-networks'
+  data_json = json.dumps(network_data)
+
+  LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
+  time.sleep(0.1)
+  
+  #REAL or EMULATED usage of Sonata SP 
+  if use_sonata() == "True":
+    LOG.info("MAPPER: Sending network creation request")
+    time.sleep(0.1)
+    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    
+    if (response.status_code == 201):
+      jsonresponse = json.loads(response.text)
+    else:
+      jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+      LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
+      time.sleep(0.1)
+    
+    return jsonresponse
+  
+  else:
+    print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
+    uuident = uuid.uuid4()
+    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}') #TODO: ask José the response
+    return jsonresponse
+
+'''
+Objective: Request to delete a wim interconnection between vims
+  Params: wim_link_data - contains the following json:
+  {
+    "service_instance_id": "String",
+    "wim_uuid": "String",
+    "vl_id": "String"
+  }
+  Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
+'''
+def delete_wim_network(wim_link_data):
+  url = get_url_sp_gtk() + '/slice/wan-networks'
+  data_json = json.dumps(network_data)
+
+  LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
+  time.sleep(0.1)
+  
+  #REAL or EMULATED usage of Sonata SP 
+  if use_sonata() == "True":
+    LOG.info("MAPPER: Sending network removal request")
+    time.sleep(0.1)
+    response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
+    LOG.info("MAPPER: Networks removal response: " +str(response))
+    time.sleep(0.1)
+    
+    if (response.status_code == 201):
+      jsonresponse = json.loads(response.text)
+    else:
+      jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+      LOG.info("MAPPER: Networks removal jsonresponse: " +str(jsonresponse))
+      time.sleep(0.1)
+
+    return jsonresponse
+
+  else:
+    print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
+    uuident = uuid.uuid4()
+    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
+    return jsonresponse
+
 ################################ NETWORK SERVICES REQUESTS/RECORDS ##################################
 # POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(service_data):

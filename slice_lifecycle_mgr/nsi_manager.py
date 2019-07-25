@@ -294,6 +294,7 @@ class thread_ns_instantiate(Thread):
       wim_dict['bidirectional'] = True
 
       #TODO: mapper call for WIM connection
+      # wim_response = mapper.create_wim_network(wim_dict)
       LOG.info("NSI_MNGR: Json to request WIM conection:" + str(wim_dict))
       time.sleep(0.1)
 
@@ -467,16 +468,20 @@ class thread_ns_instantiate(Thread):
               nsi_instantiated = False
               break
           
-          # if all services are instantiated...
+          # if all services are instantiated, break the while and proceed with the last steps
           if nsi_instantiated:
-            if len(jsonNSI['datacenter']) > 1:  #... and the slice has many VIMs, creates WIM connections
-              self.configure_wim()
-            else:                               #... otherwise, instantiation is done.
-              LOG.info("All service instantiations requests processed!")
-              break
+            LOG.info("All service instantiations requests processed!")
+            break
       
           time.sleep(15)
           deployment_timeout -= 15
+        
+        #if  the slice is distributed in many VIMs, it creates the necessary WIM connections
+        if nsi_instantiated and len(jsonNSI['datacenter']) > 1:
+          wim_configured = self.configure_wim()
+          if wim_configured[1] != 200:
+            #TODO: undo everything: terminate services, remove networks, update NSI with ERROR status (re-use exsiting functions)
+            LOG.info("NSI_MNGR_wim_step: WIM connection NOT done")
     
       # Notifies the GTK about the NetSlice process is done (either completed or error).
       LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")
@@ -860,11 +865,13 @@ def create_nsi(nsi_json):
   LOG.info("NSI_MNGR:  Doing the placement of the Services and its Functions.")
   time.sleep(0.1)
   new_nsir = nsi_placement(new_nsir)
-  if new_nsir[1] != 200:
-    return (new_nsir[0], new_nsir[1])
   
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir[0])
+
+  if new_nsir[1] != 200:
+    return (new_nsir[0], new_nsir[1])
+  
   if nsirepo_jsonresponse[1] == 200:
     # starts the thread to instantiate while sending back the response
     thread_ns_instantiation = thread_ns_instantiate(new_nsir[0])
