@@ -468,16 +468,20 @@ class thread_ns_instantiate(Thread):
               nsi_instantiated = False
               break
           
-          # if all services are instantiated...
+          # if all services are instantiated, break the while and proceed with the last steps
           if nsi_instantiated:
-            if len(jsonNSI['datacenter']) > 1:  #... and the slice has many VIMs, creates WIM connections
-              self.configure_wim()
-            else:                               #... otherwise, instantiation is done.
-              LOG.info("All service instantiations requests processed!")
-              break
+            LOG.info("All service instantiations requests processed!")
+            break
       
           time.sleep(15)
           deployment_timeout -= 15
+        
+        #if  the slice is distributed in many VIMs, it creates the necessary WIM connections
+        if nsi_instantiated and len(jsonNSI['datacenter']) > 1:
+          wim_configured = self.configure_wim()
+          if wim_configured[1] != 200:
+            #TODO: undo everything: terminate services, remove networks, update NSI with ERROR status (re-use exsiting functions)
+            LOG.info("NSI_MNGR_wim_step: WIM connection NOT done")
     
       # Notifies the GTK about the NetSlice process is done (either completed or error).
       LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")
