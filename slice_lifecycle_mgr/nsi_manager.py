@@ -125,9 +125,17 @@ class thread_ns_instantiate(Thread):
                   for ns_cp_ref_item in nsd_vl_item['connection_points_reference']:
                     if ns_cp_ref_item == ns_cp_ref:
                       vl_id = nsd_vl_item['id']
-                      inner_net_found  =True
+                      inner_net_found = True
                       break
                   if inner_net_found:
+                    temp_vim_list = []
+                    # as the link is found, creates vims list where to create network depending on the vnfs placement
+                    for ns_cp_ref_item in nsd_vl_item['connection_points_reference']:
+                      if ns_cp_ref_item.find(':') != -1:
+                        vnf_id,cp_ref = ns_cp_ref_item.split(':')
+                        for nsr_place_item in nsr_item['nsr-placement']:
+                          if nsr_place_item['nsd-comp-ref'] == vnf_id and  nsr_place_item['vim-id'] not in temp_vim_list:
+                            temp_vim_list.append(nsr_place_item['vim-id'])
                     break
               if inner_net_found:
                 break
@@ -136,7 +144,8 @@ class thread_ns_instantiate(Thread):
             virt_link = {}
             virt_link['vl_id'] = vl_id
             virt_link['external_net'] = external_net
-            for vim_id_item in vldr_item['vimAccountId']:
+
+            for vim_id_item in temp_vim_list:
               virt_link['vim_id'] = vim_id_item
               virtual_links_list.append(virt_link)
       
