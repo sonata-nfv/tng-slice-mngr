@@ -294,6 +294,7 @@ class thread_ns_instantiate(Thread):
       wim_dict['bidirectional'] = True
 
       #TODO: mapper call for WIM connection
+      # wim_response = mapper.create_wim_network(wim_dict)
       LOG.info("NSI_MNGR: Json to request WIM conection:" + str(wim_dict))
       time.sleep(0.1)
 
@@ -860,11 +861,13 @@ def create_nsi(nsi_json):
   LOG.info("NSI_MNGR:  Doing the placement of the Services and its Functions.")
   time.sleep(0.1)
   new_nsir = nsi_placement(new_nsir)
-  if new_nsir[1] != 200:
-    return (new_nsir[0], new_nsir[1])
   
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir[0])
+
+  if new_nsir[1] != 200:
+    return (new_nsir[0], new_nsir[1])
+  
   if nsirepo_jsonresponse[1] == 200:
     # starts the thread to instantiate while sending back the response
     thread_ns_instantiation = thread_ns_instantiate(new_nsir[0])
