@@ -371,7 +371,7 @@ class thread_ns_instantiate(Thread):
         for vldr_item in self.NSI['vldr-list']:
           # if there's an ACTIVE vld, it means it is shared and there's no need to create it again
           #TODO: not do this for an ACTIVE shared vldr
-          if vldr_item['vld-status'] == "INACTIVE":
+          if vldr_item['vld-status'] == "INACTIVE" or len(vldr_item['vimAccountId']) > 1:
             # creates the json object with the information for the request payload
             virtual_links = []
             virtual_links_item = {}
@@ -382,13 +382,14 @@ class thread_ns_instantiate(Thread):
 
             vim_list = []
             for vim_item in vldr_item['vimAccountId']:
-              vim_list_item = {}
-              vim_list_item['uuid'] = vim_item
-              vim_list_item['virtual_links'] = virtual_links
-              vim_list.append(vim_list_item)
+              if not vim_item['net-created']:
+                vim_list_item = {}
+                vim_list_item['uuid'] = vim_item['vim-id']
+                vim_list_item['virtual_links'] = virtual_links
+                vim_list.append(vim_list_item)
 
             network_data = {}
-            network_data['instance_id'] = vldr_item['_stack-net-ref'] #take it from vimAccountId
+            network_data['instance_id'] = vldr_item['_stack-net-ref']
             network_data['vim_list'] = vim_list
 
             networks_response = mapper.create_vim_network(network_data)
@@ -398,6 +399,11 @@ class thread_ns_instantiate(Thread):
               LOG.info("NSI_MNGR: NETWORK CREATED: " + str(networks_response))
               time.sleep(0.1)
               vldr_item['vld-status'] = 'ACTIVE'
+
+              for vim_item in vldr_item['vimAccountId']:
+                if vim_item['net-created'] == False:
+                  vim_item['net-created'] = True
+
             else:
               LOG.info("NSI_MNGR: network NOT created: " + str(networks_response))
               time.sleep(0.1)
@@ -434,12 +440,12 @@ class thread_ns_instantiate(Thread):
             vim_list = []
             for vim_item in vldr_item['vimAccountId']:
               vim_list_item = {}
-              vim_list_item['uuid'] = vim_item
+              vim_list_item['uuid'] = vim_item['vim-id']
               vim_list_item['virtual_links'] = virtual_links
               vim_list.append(vim_list_item)
 
             network_data = {}
-            network_data['instance_id'] = vldr_item['_stack-net-ref'] # take it from vimAccountId
+            network_data['instance_id'] = vldr_item['_stack-net-ref']
             network_data['vim_list'] = vim_list
 
             networks_response = mapper.delete_vim_network(network_data)
@@ -448,6 +454,7 @@ class thread_ns_instantiate(Thread):
               LOG.info("NSI_MNGR: REMOVED NETWORK CREATED for ERROR Slice: " + str(networks_response))
               time.sleep(0.1)
               vldr_item['vld-status'] = 'INACTIVE'
+
             else:
               LOG.info("NSI_MNGR: Error to remove network of an error slice: " + str(networks_response))
               time.sleep(0.1)
@@ -585,7 +592,7 @@ class thread_ns_terminate(Thread):
       for vldrs_2_remove_item in vldrs_2_remove:
         if vldr_item['vim-net-id'] == vldrs_2_remove_item:
           vim_item = {}
-          vim_item['uuid'] = vldr_item['vimAccountId']
+          vim_item['uuid'] = vldr_item['vimAccountId']['vim-id']
           vim_item['virtual_links'] = []
           if not network_data['vim_list']:
             network_data['vim_list'].append(vim_item)
@@ -601,7 +608,7 @@ class thread_ns_terminate(Thread):
       for vldrs_2_remove_item in vldrs_2_remove:
         if vldr_item['vim-net-id'] == vldrs_2_remove_item:
           for vim_item in network_data['vim_list']:
-            if vldr_item['vimAccountId'] == vim_item['uuid']:
+            if vldr_item['vimAccountId']['vim-id'] == vim_item['uuid']:
               virtual_link_item = {}
               virtual_link_item['id'] = vldr_item['vim-net-id']
               if not vim_item['virtual_links']:
@@ -756,12 +763,12 @@ class thread_ns_terminate(Thread):
           # to remove the net if it si placed in multiple VIMs
           for vimAccountID_item in vldr_item['vimAccountId']:
             vim_list_item = {}
-            vim_list_item['uuid'] = vimAccountID_item
+            vim_list_item['uuid'] = vimAccountID_item['vim-id']
             vim_list_item['virtual_links'] = virtual_links
             vim_list.append(vim_list_item)
 
           network_data = {}
-          network_data['instance_id'] = vldr_item['_stack-net-ref'] # take it from vimAccountID
+          network_data['instance_id'] = vldr_item['_stack-net-ref']
           network_data['vim_list'] = vim_list
 
           networks_response = mapper.delete_vim_network(network_data)
@@ -1074,7 +1081,7 @@ def add_vlds(new_nsir, nst_json):
                   if vld_nsr_item['vld-ref'] == vldr_ref['id']:
                     for current_vldr_item in vldr_list:
                       if current_vldr_item['id'] == vldr_ref['id']:
-                        current_vldr_item['_stack-net-ref'] = vldr_ref['_stack-net-ref'] #remove copied in vimAccountID
+                        current_vldr_item['_stack-net-ref'] = vldr_ref['_stack-net-ref']
                         current_vldr_item['vim-net-id'] = vldr_ref['vim-net-id']
                         current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
                         current_vldr_item['vld-status'] = 'ACTIVE'
@@ -1222,20 +1229,54 @@ def nsi_placement(new_nsir):
       LOG.info("NSI_MNGR: nsr_item['nsr-placement']: " +str(nsr_item['nsr-placement']))
       time.sleep(0.1)
 
-      # VLDR placement: if two nsr are placed in different VIMs, the vld where they are connected must have boths VIMs
+      # VLDR placement: if two nsr link to the same vl are placed in different VIMs, the vld must have boths VIMs
+      # from each nsir.nsr-list_item.nsr-placement creates the nsir.vldr-list_item.vimAccountId list.
       for vld_ref_item in nsr_item['vld']:
         for vldr_item in new_nsir['vldr-list']:
+          vimaccountid_list = []
           if vld_ref_item['vld-ref'] == vldr_item['id']:
             for nsr_placement_item in nsr_item['nsr-placement']:
-              if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']:
-                vldr_item['vimAccountId'].append(nsr_placement_item['vim-id'])
+              # prepares the object in case it has to be added.
+              add_vl = {}
+              add_vl['vim-id'] = nsr_placement_item['vim-id']
+              add_vl['net-created'] = False
+              
+              # if empty, adds the first element
+              if not vimaccountid_list:
+                vimaccountid_list.append(add_vl)
+              else:
+                exist_vl_vimaccountid = False
+                for vimAccountId_item in vimaccountid_list:
+                  if vimAccountId_item['vim-id'] == nsr_placement_item['vim-id']:
+                    exist_vl_vimaccountid = True
+                    break
+                
+                if exist_vl_vimaccountid == False:
+                  vimaccountid_list.append(add_vl)
+          
+            vldr_item['vimAccountId'] = vimaccountid_list
+  
+  LOG.info("NSI_MNGR: Checkin nsir: " +str(new_nsir))
+  time.sleep(0.1)
 
-  #adds all the VIMs IDs into the slice record first level 'datacenter' field.
+  # adds all the VIMs IDs into the slice record first level 'datacenter' field.
+  # from each nsir.vldr-list_item.vimAccountId list creates the nsir.datacenter list.
   nsi_datacenter_list = []
   for vldr_item in new_nsir['vldr-list']:
     for vimAccountId_item in vldr_item['vimAccountId']:
-      if vimAccountId_item not in nsi_datacenter_list:
-        nsi_datacenter_list.append(vimAccountId_item)
+      #if empty, add the first VIM
+      if not nsi_datacenter_list:
+        nsi_datacenter_list.append(vimAccountId_item['vim-id'])
+      else:
+        existing_vim = False
+        for nsi_datacenter_item in nsi_datacenter_list:
+          if nsi_datacenter_item == vimAccountId_item['vim-id']:
+            existing_vim = True
+            break
+        
+        if existing_vim == False:
+          nsi_datacenter_list.append(vimAccountId_item['vim-id'])
+  
   new_nsir['datacenter'] = nsi_datacenter_list
 
   LOG.info("NSI_MNGR: PLACEMENT DONE: " +str(new_nsir))
