@@ -1224,22 +1224,47 @@ def nsi_placement(new_nsir):
       time.sleep(0.1)
 
       # VLDR placement: if two nsr link to the same vl are placed in different VIMs, the vld must have boths VIMs
+      # from each nsir.nsr-list_item.nsr-placement creates the nsir.vldr-list_item.vimAccountId list.
       for vld_ref_item in nsr_item['vld']:
         for vldr_item in new_nsir['vldr-list']:
           if vld_ref_item['vld-ref'] == vldr_item['id']:
             for nsr_placement_item in nsr_item['nsr-placement']:
-              if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']:
-                add_vl = {}
-                add_vl['vim-id'] = nsr_placement_item['vim-id']
-                add_vl['net-created'] = False
+              # prepares the object in case it has to be added.
+              add_vl = {}
+              add_vl['vim-id'] = nsr_placement_item['vim-id']
+              add_vl['net-created'] = False
+              
+              # if empty, adds the first element
+              if not vldr_item['vimAccountId']:
                 vldr_item['vimAccountId'].append(add_vl)
+              else:
+                exist_vl_vimaccountid == False
+                for vimAccountId_item in vldr_item['vimAccountId']:
+                  if vimAccountId_item['vim-id'] == nsr_placement_item['vim-id']:
+                    exist_vl_vimaccountid = True
+                    break
+                
+                if exist_vl_vimaccountid == False:
+                  vldr_item['vimAccountId'].append(add_vl)
 
-  #adds all the VIMs IDs into the slice record first level 'datacenter' field.
+  # adds all the VIMs IDs into the slice record first level 'datacenter' field.
+  # from each nsir.vldr-list_item.vimAccountId list creates the nsir.datacenter list.
   nsi_datacenter_list = []
   for vldr_item in new_nsir['vldr-list']:
     for vimAccountId_item in vldr_item['vimAccountId']:
-      if vimAccountId_item not in nsi_datacenter_list:
+      #if empty, add the first VIM
+      if not nsi_datacenter_list:
         nsi_datacenter_list.append(vimAccountId_item['vim-id'])
+      else:
+        existing_vim == False
+        for nsi_datacenter_item in nsi_datacenter_list:
+          if nsi_datacenter_item['vim-id'] == vimAccountId_item['vim-id']:
+            existing_vim = True
+            break
+        
+        if existing_vim == False:
+          nsi_datacenter_list.append(vimAccountId_item['vim-id'])
+  
   new_nsir['datacenter'] = nsi_datacenter_list
 
   LOG.info("NSI_MNGR: PLACEMENT DONE: " +str(new_nsir))
