@@ -1238,7 +1238,7 @@ def nsi_placement(new_nsir):
               if not vldr_item['vimAccountId']:
                 vldr_item['vimAccountId'].append(add_vl)
               else:
-                exist_vl_vimaccountid == False
+                exist_vl_vimaccountid = False
                 for vimAccountId_item in vldr_item['vimAccountId']:
                   if vimAccountId_item['vim-id'] == nsr_placement_item['vim-id']:
                     exist_vl_vimaccountid = True
@@ -1256,7 +1256,7 @@ def nsi_placement(new_nsir):
       if not nsi_datacenter_list:
         nsi_datacenter_list.append(vimAccountId_item['vim-id'])
       else:
-        existing_vim == False
+        existing_vim = False
         for nsi_datacenter_item in nsi_datacenter_list:
           if nsi_datacenter_item['vim-id'] == vimAccountId_item['vim-id']:
             existing_vim = True
