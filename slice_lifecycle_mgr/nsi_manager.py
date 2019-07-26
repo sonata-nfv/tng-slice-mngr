@@ -1214,17 +1214,20 @@ def nsi_placement(new_nsir):
 
       for nsr_placement_item in nsr_placement_list:
         # assigns the VIM to the NSr and adds it into the list for the NSIr
-        nsd_comp_dict['vim-id'] = selected_vim
+        nsr_placement_item['vim-id'] = selected_vim
       
       # assigns the generated placement list to the NSir key
       nsr_item['nsr-placement'] = nsr_placement_list
+
+      LOG.info("NSI_MNGR: nsr_item['nsr-placement']: " +str(nsr_item['nsr-placement']))
+      time.sleep(0.1)
 
       # VLDR placement: if two nsr are placed in different VIMs, the vld where they are connected must have boths VIMs
       for vld_ref_item in nsr_item['vld']:
         for vldr_item in new_nsir['vldr-list']:
           if vld_ref_item['vld-ref'] == vldr_item['id']:
             for nsr_placement_item in nsr_item['nsr-placement']:
-              if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']: #add the new vimAccountID structure
+              if nsr_placement_item['vim-id'] not in vldr_item['vimAccountId']:
                 vldr_item['vimAccountId'].append(nsr_placement_item['vim-id'])
 
   #adds all the VIMs IDs into the slice record first level 'datacenter' field.
