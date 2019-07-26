@@ -398,7 +398,7 @@ class thread_ns_instantiate(Thread):
             if networks_response['status'] == 'COMPLETED':
               LOG.info("NSI_MNGR: NETWORK CREATED: " + str(networks_response))
               time.sleep(0.1)
-              vldr_item['vld-status'] = 'ACTIVE
+              vldr_item['vld-status'] = 'ACTIVE'
 
               for vim_item in vldr_item['vimAccountId']:
                 if vim_item['net-created'] == False:
