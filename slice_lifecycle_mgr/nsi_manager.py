@@ -398,7 +398,12 @@ class thread_ns_instantiate(Thread):
             if networks_response['status'] == 'COMPLETED':
               LOG.info("NSI_MNGR: NETWORK CREATED: " + str(networks_response))
               time.sleep(0.1)
-              vldr_item['vld-status'] = 'ACTIVE'
+              vldr_item['vld-status'] = 'ACTIVE
+
+              for vim_item in vldr_item['vimAccountId']:
+                if vim_item['net-created'] == False:
+                  vim_item['net-created'] = True
+
             else:
               LOG.info("NSI_MNGR: network NOT created: " + str(networks_response))
               time.sleep(0.1)
@@ -449,6 +454,7 @@ class thread_ns_instantiate(Thread):
               LOG.info("NSI_MNGR: REMOVED NETWORK CREATED for ERROR Slice: " + str(networks_response))
               time.sleep(0.1)
               vldr_item['vld-status'] = 'INACTIVE'
+
             else:
               LOG.info("NSI_MNGR: Error to remove network of an error slice: " + str(networks_response))
               time.sleep(0.1)
