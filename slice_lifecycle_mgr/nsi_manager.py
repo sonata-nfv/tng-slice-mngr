@@ -1214,7 +1214,7 @@ def nsi_placement(new_nsir):
 
       for nsr_placement_item in nsr_placement_list:
         # assigns the VIM to the NSr and adds it into the list for the NSIr
-        nsd_comp_dict['vim-id'] = selected_vim
+        nsr_placement_item['vim-id'] = selected_vim
       
       # assigns the generated placement list to the NSir key
       nsr_item['nsr-placement'] = nsr_placement_list
