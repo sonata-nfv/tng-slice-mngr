@@ -80,6 +80,18 @@ def get_all_saved_nst():
         LOG.info('NSI_MNGR2CAT: nstd getAll from catalogues failed: ' + str(jsonresponse))
     
     return jsonresponse
+
+def get_all_saved_nst_count():
+    LOG.info("NST_MNGR2CAT: Requesting all NSTD count information from catalogues")
+    url = get_base_url() + '/api/catalogues/v2/nsts?count'
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
+    jsonresponse = json.loads(response.text)
+    
+    if (response.status_code != 200):
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NSI_MNGR2CAT: nstd getAll count from catalogues failed: ' + str(jsonresponse))
+    
+    return jsonresponse
     
 # PUT to update specific NST parameter in catalogues
 # The url follows this rule(.../nsts/<nstId>/?nstParameter2update) where nstParameter2update is...

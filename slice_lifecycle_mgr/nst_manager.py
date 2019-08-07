@@ -117,6 +117,17 @@ def get_all_nst():
   else:
     return ('{"msg":"There are no NSTD in the db."}', 200)
 
+def get_all_nst_counter():
+  logging.info("NST_MNGR: Retrieving all existing NSTs count")
+  nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst_count()
+  
+  if (nstcatalogue_jsonresponse):
+    return (nstcatalogue_jsonresponse, 200)
+  else:
+    message = {}
+    message['count'] = "0"
+    return (message, 200)
+
 # Returns the information of a selected NST in catalogues
 def get_nst(nstId):
   logging.info("NST_MNGR: Retrieving NST with id: " + str(nstId))

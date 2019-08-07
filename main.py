@@ -106,7 +106,11 @@ def create_slice_template():
 # GETS for all the NetSlice Templates (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
 def get_all_slice_templates():
-  listNST = nst_manager.get_all_nst()
+  args = request.args.to_dict()
+  if 'count' in args.keys():
+    listNST = nst_manager.get_all_nst_counter()
+  else:
+    listNST = nst_manager.get_all_nst()
 
   return jsonify(listNST[0]), listNST[1]
 
@@ -182,7 +186,6 @@ def update_slice_termination(nsiId):
 # GETS ALL the NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['GET'])
 def get_all_slice_instances():
-  logging.info(str(request.args))
   args = request.args.to_dict()
   if 'count' in args.keys():
     allNSI = nsi_manager.get_all_nsi_counter()
