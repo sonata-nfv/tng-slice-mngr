@@ -1443,3 +1443,13 @@ def get_all_nsi():
     return_msg = {}
     return_msg['msg'] = "There are no NSIR in the db."
     return (return_msg, 200)
+
+def get_all_nsi_counter():
+  LOG.info("NSI_MNGR: Retrieve all existing NSIs counter")
+  nsirepo_jsonresponse = nsi_repo.get_all_saved_nsi_counter()
+  if (nsirepo_jsonresponse):
+    return (nsirepo_jsonresponse, 200)
+  else:
+    return_msg = {}
+    return_msg['counter'] = "0"
+    return (return_msg, 200)    
