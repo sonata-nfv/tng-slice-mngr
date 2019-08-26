@@ -1,0 +1,22 @@
+{
+  "name": "slice_uprc",
+  "description": "NST with 1 subnets without SLA, ingresses/egresses",
+  "version": "2.0",
+  "author": "CTTC",
+  "vendor": "5GTango",
+  "SNSSAI_identifier": {
+    "slice-service-type": "eMBB"
+  },
+  "usageState": "NOT_IN_USE",
+  "slice_ns_subnets": [
+    {
+      "id": "Service_subnet_1",
+      "nsd-name": "ns-2-vnf-2-vdu",
+      "nsd-vendor": "eu.5gtango",
+      "nsd-version": "0.1",
+      "is-shared": false
+    }
+  ],
+  "slice_vld": [
+  ]
+}

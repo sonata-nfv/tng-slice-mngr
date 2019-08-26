@@ -493,11 +493,15 @@ class thread_ns_instantiate(Thread):
           deployment_timeout -= 15
         
         #if  the slice is distributed in many VIMs, it creates the necessary WIM connections
-        #if nsi_instantiated and len(jsonNSI['datacenter']) > 1:
-          #wim_configured = self.configure_wim()
-          #if wim_configured[1] != 200:
+        if nsi_instantiated and len(jsonNSI['datacenter']) > 1:
+          wim_configured = self.configure_wim()
+          LOG.info("NSI_MNGR_wim_configured: " +str(wim_configured))
+          time.sleep(0.1)
+          
+          if wim_configured[1] != 200:
             #TODO: undo everything: terminate services, remove networks, update NSI with ERROR status (re-use exsiting functions)
-            #LOG.info("NSI_MNGR_wim_step: WIM connection NOT done")
+            LOG.info("NSI_MNGR_wim_step: WIM connection NOT done")
+
     
       # Notifies the GTK about the NetSlice process is done (either completed or error).
       LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")
@@ -1226,16 +1230,11 @@ def nsi_placement(new_nsir):
       # assigns the generated placement list to the NSir key
       nsr_item['nsr-placement'] = nsr_placement_list
 
-      LOG.info("NSI_MNGR: nsr_item['nsr-placement']: " +str(nsr_item['nsr-placement']))
-      time.sleep(0.1)
-
       # VLDR placement: if two nsr link to the same vl are placed in different VIMs, the vld must have boths VIMs
       # from each nsir.nsr-list_item.nsr-placement creates the nsir.vldr-list_item.vimAccountId list.
       for vld_ref_item in nsr_item['vld']:
         for vldr_item in new_nsir['vldr-list']:
           vimaccountid_list = vldr_item['vimAccountId']
-          LOG.info("NSI_MNGR: vimaccountid_list: " +str(vimaccountid_list))
-          time.sleep(0.1)
 
           if vld_ref_item['vld-ref'] == vldr_item['id']:
             for nsr_placement_item in nsr_item['nsr-placement']:
@@ -1259,8 +1258,6 @@ def nsi_placement(new_nsir):
           
             vldr_item['vimAccountId'] = vimaccountid_list
   
-  LOG.info("NSI_MNGR: Checkin nsir: " +str(new_nsir))
-  time.sleep(0.1)
 
   # adds all the VIMs IDs into the slice record first level 'datacenter' field.
   # from each nsir.vldr-list_item.vimAccountId list creates the nsir.datacenter list.
