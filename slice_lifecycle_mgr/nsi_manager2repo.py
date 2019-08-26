@@ -76,6 +76,17 @@ def get_all_saved_nsi():
     
     return jsonresponse
 
+def get_all_saved_nsi_counter():
+    url = get_url_repositories() + '/records/nsir/ns-instances?count'
+    response = requests.get(url, headers=JSON_CONTENT_HEADER)
+    jsonresponse = json.loads(response.text)
+    
+    if(response.status_code != 200):
+        jsonresponse = {'http_code': response.status_code,'message': response.json()}
+        LOG.info('NSI_MNGR2REPO: nsir getAll counter from repo failed: ' + str(jsonresponse))
+    
+    return jsonresponse
+
 # GET specific NSI item from the repositories
 def get_saved_nsi(nsiId):
     url = get_url_repositories() + '/records/nsir/ns-instances/' + nsiId
