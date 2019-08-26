@@ -1233,7 +1233,10 @@ def nsi_placement(new_nsir):
       # from each nsir.nsr-list_item.nsr-placement creates the nsir.vldr-list_item.vimAccountId list.
       for vld_ref_item in nsr_item['vld']:
         for vldr_item in new_nsir['vldr-list']:
-          #vimaccountid_list = []
+          vimaccountid_list = vldr_item['vimAccountId']
+          LOG.info("NSI_MNGR: vimaccountid_list: " +str(vimaccountid_list))
+          time.sleep(0.1)
+
           if vld_ref_item['vld-ref'] == vldr_item['id']:
             for nsr_placement_item in nsr_item['nsr-placement']:
               # prepares the object in case it has to be added.
@@ -1242,23 +1245,19 @@ def nsi_placement(new_nsir):
               add_vl['net-created'] = False
               
               # if empty, adds the first element
-              #if not vimaccountid_list:
-              if not vldr_item['vimAccountId']:
-                #vimaccountid_list.append(add_vl)
-                vldr_item['vimAccountId'].append(add_vl)
+              if not vimaccountid_list:
+                vimaccountid_list.append(add_vl)
               else:
                 exist_vl_vimaccountid = False
-                #for vimAccountId_item in vimaccountid_list:
-                for vimAccountID_item in vldr_item['vimAccountId']:
+                for vimAccountId_item in vimaccountid_list:
                   if vimAccountId_item['vim-id'] == nsr_placement_item['vim-id']:
                     exist_vl_vimaccountid = True
                     break
                 
                 if exist_vl_vimaccountid == False:
-                  #vimaccountid_list.append(add_vl)
-                  vldr_item['vimAccountId'].append(add_vl)
+                  vimaccountid_list.append(add_vl)
           
-            #vldr_item['vimAccountId'] = vimaccountid_list
+            vldr_item['vimAccountId'] = vimaccountid_list
   
   LOG.info("NSI_MNGR: Checkin nsir: " +str(new_nsir))
   time.sleep(0.1)
