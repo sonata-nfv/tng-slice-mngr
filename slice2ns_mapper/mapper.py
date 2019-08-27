@@ -257,15 +257,15 @@ Objective: Request to get all registered WIMs information
   ]
 '''
 def get_wims_info():
-  LOG.info("MAPPER: Requesting VIMs information.")
+  LOG.info("MAPPER: Requesting WIMs information.")
   url = get_url_sp_gtk() + '/slice/wims'
 
   #REAL or EMULATED usage of Sonata SP 
   if use_sonata() == "True":
-    LOG.info("MAPPER: requesting vims, URL--> " + str(url))
+    LOG.info("MAPPER: requesting Wims, URL--> " + str(url))
     time.sleep(0.1)
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    LOG.info("MAPPER: response vims" + str(response))
+    LOG.info("MAPPER: response Wims" + str(response))
     time.sleep(0.1)
     if (response.status_code == 200):
         jsonresponse = json.loads(response.text)
