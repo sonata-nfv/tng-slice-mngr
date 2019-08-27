@@ -45,8 +45,8 @@ from database import database as db
 
 #TODO: apply logs as the rest of the project
 ####### Option 1
-from logger import TangoLogger
-LOG = TangoLogger.getLogger("slicemngr:repo", log_level=logging.INFO, log_json=True)
+#from logger import TangoLogger
+#LOG = TangoLogger.getLogger("slicemngr:repo", log_level=logging.INFO, log_json=True)
 
 app = Flask(__name__)
 
@@ -63,7 +63,8 @@ API_slices="/slices"
 @app.route('/pings', methods=['GET'])
 def getPings():
   ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC', 'current_time': str(datetime.datetime.now().isoformat())}
-  LOG.info('Returning all network services')
+  LOG.warning('THIS IS THE WARNING PINGS LOG')
+  LOG.info('THIS IS THE INFO PINGS LOG')
 
   return jsonify(ping_response), 200
 
