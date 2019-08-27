@@ -41,23 +41,16 @@ import slice_lifecycle_mgr.nst_manager as nst_manager
 import slice_lifecycle_mgr.nsi_manager as nsi_manager
 import slice_lifecycle_mgr.validate_incoming_json as json_validator
 import slice2ns_mapper.mapper as mapper
-#import slice2ns_mapper.slicer_wrapper_ia as slicer2ia
-from database import database as db                                 #TODO: check if it is still used to remove or not
+from database import database as db
 
-#TODO: apply logs as the rest of the project (2 options)
+#TODO: apply logs as the rest of the project
 ####### Option 1
-#from logger import TangoLogger
-#LOG = TangoLogger.getLogger("slicemngr:repo", log_level=logging.INFO, log_json=True)
-####### Option 2
-#logging.basicConfig(level=logging.DEBUG)
-#LOG = logging.getLogger("k8s-wrapper:main")
-#LOG.setLevel(logging.DEBUG)
+from logger import TangoLogger
+LOG = TangoLogger.getLogger("slicemngr:repo", log_level=logging.INFO, log_json=True)
 
 app = Flask(__name__)
 
-#/api/nst/v1/
-#/api/nsilcm/v1/nsi
-#/api/slices
+#Variables with the API path sections
 API_ROOT="/api"
 API_NST="/nst"
 API_VERSION="/v1"
@@ -70,6 +63,7 @@ API_slices="/slices"
 @app.route('/pings', methods=['GET'])
 def getPings():
   ping_response  = {'alive_since': '2018-07-18 10:00:00 UTC', 'current_time': str(datetime.datetime.now().isoformat())}
+  LOG.info('Returning all network services')
 
   return jsonify(ping_response), 200
 
@@ -218,9 +212,6 @@ if __name__ == '__main__':
   config = ConfigParser()
   config.read(args.conf_file)
   db.settings = config
-
-  # PREPARE IA/MQRabbit Connection Thread
-  #slicer_2_ia = slicer2ia.slicewrapper()
 
   # RUN MAIN SERVER THREAD
   app.run(debug=True, host='0.0.0.0', port=os.environ.get("SLICE_MGR_PORT"))
