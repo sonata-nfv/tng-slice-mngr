@@ -234,6 +234,7 @@ def get_wims_info():
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
   LOG.info("MAPPER: response Wims" + str(response))
   time.sleep(0.1)
+  
   if (response.status_code == 200):
       jsonresponse = json.loads(response.text)
   else:
@@ -336,6 +337,7 @@ def net_serv_terminate(service_data):
 
   LOG.info("MAPPER: Sending Terminate request")
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+  
   if (response.status_code == 200) or (response.status_code == 201):
     jsonresponse = json.loads(response.text)
   else:
@@ -362,6 +364,7 @@ def get_all_nsr():
 
   LOG.info("MAPPER: Getting all NetServicesInstances")
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
+  
   if (response.status_code == 200):
       jsonresponse = json.loads(response.text)
   else:
@@ -374,6 +377,7 @@ def get_nsr(request_uuid):
 
   LOG.info("MAPPER: Getting desired NetServicesInstance")
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
+  
   if (response.status_code == 200):
       jsonresponse = json.loads(response.text)
   else:
@@ -429,7 +433,9 @@ def get_nsd_list():
   # cleans the current nsInfo_list to have the information updated
   del db.nsInfo_list[:]
   url = get_url_catalogues() + "/api/v2/network-services"
-    
+  
+  response = requests.get(url, headers=JSON_CONTENT_HEADER)
+
   if (response.status_code == 200):
       services_array = json.loads(response.text)
       for service_item in services_array:
