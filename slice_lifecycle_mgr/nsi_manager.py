@@ -41,15 +41,16 @@ import objects.nsi_content as nsi
 import slice2ns_mapper.mapper as mapper                             # sends requests to the GTK-SP
 import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo             # sends requests to the repositories
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue   # sends requests to the catalogues
+from logger import TangoLogger
 
 # INFORMATION
 # mutex used to ensure one single access to ddbb (repositories) for the nsi records creation/update/removal
 mutex_slice2db_access = Lock()
 
 # definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("slicemngr:repo")
-LOG.setLevel(logging.INFO)
+LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
+TangoLogger.getLogger("slicemngr:nsi_manager", logging.DEBUG, log_json=True)
+LOG.setLevel(logging.DEBUG)
 
 
 ################################## THREADs to manage services/slice requests #################################
@@ -1411,7 +1412,7 @@ def update_terminating_nsi(nsiId, request_json):
   
 # Deletes a NST kept in catalogues
 def remove_nsi(nsiId):
-  logging.info("NSI_MNGR: Delete NSI with id: " + str(nsiId))
+  LOG.info("NSI_MNGR: Delete NSI with id: " + str(nsiId))
   nsi_repo_response = nsi_repo.get_saved_nsi(nsiId)
   if (nsi_repo_response["nsi-status"] in ["TERMINATED", "ERROR"]):
     nsi_repo_response = nsi_repo.delete_nsi(nsiId)

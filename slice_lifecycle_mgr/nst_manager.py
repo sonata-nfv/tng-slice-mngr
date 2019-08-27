@@ -39,17 +39,17 @@ import objects.nst_content as nst
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue
 import slice2ns_mapper.mapper as mapper
 import database.database as db
+from logger import TangoLogger
 
-#TODO: apply it
 # definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("slicemngr:repo")
-LOG.setLevel(logging.INFO)
+LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
+TangoLogger.getLogger("slicemngr:nst_manager", logging.DEBUG, log_json=True)
+LOG.setLevel(logging.DEBUG)
 
 ######################### NETWORK SLICE TEMPLATE CREATION/UPDATE/REMOVE SECTION ##############################
 # Creates a NST and sends it to catalogues
 def create_nst(jsondata):
-  logging.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
+  LOG.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
   time.sleep(0.1)
   # Validates that no existing NSTD has the same NAME-VENDOR-VERSION (avoid duplicate NSTDs)
   nst_list = nst_catalogue.get_all_saved_nst()
@@ -66,8 +66,6 @@ def create_nst(jsondata):
     for subnet_item  in jsondata["slice_ns_subnets"]:
       for service_item in current_services_list:
         # Validates if NSDs exist in DDBB by comparing name/vendor/version
-        logging.info("NST_MNGR: subnet_item: " +str(subnet_item))
-        logging.info("NST_MNGR: service_item: " +str(service_item))
         time.sleep(0.1)
         if (subnet_item["nsd-name"] == service_item["name"] and subnet_item["nsd-vendor"] == service_item["vendor"] and subnet_item["nsd-version"] == service_item["version"]):
           subnet_item["nsd-ref"] = service_item["uuid"]
@@ -91,14 +89,14 @@ def create_nst(jsondata):
 
 # Updates the information of a selected NST in catalogues
 def updateNST(nstId, NST_string):
-  logging.info("NST_MNGR: Updating NST with id: " +str(nstId))
+  LOG.info("NST_MNGR: Updating NST with id: " +str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.update_nst(update_NST, nstId)
   
   return nstcatalogue_jsonresponse
 
 # Deletes a NST kept in catalogues
 def remove_nst(nstId):
-  logging.info("NST_MNGR: Delete NST with id: " + str(nstId))
+  LOG.info("NST_MNGR: Delete NST with id: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
   if (nstcatalogue_jsonresponse['nstd']["usageState"] == "NOT_IN_USE"):
     nstcatalogue_jsonresponse = nst_catalogue.delete_nst(nstId)
@@ -109,7 +107,7 @@ def remove_nst(nstId):
 ############################################ GET NST SECTION ############################################
 # Returns the information of all the NST in catalogues
 def get_all_nst():
-  logging.info("NST_MNGR: Retrieving all existing NSTs")
+  LOG.info("NST_MNGR: Retrieving all existing NSTs")
   nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst()
   
   if (nstcatalogue_jsonresponse):
@@ -118,7 +116,7 @@ def get_all_nst():
     return ('{"msg":"There are no NSTD in the db."}', 200)
 
 def get_all_nst_counter():
-  logging.info("NST_MNGR: Retrieving all existing NSTs count")
+  LOG.info("NST_MNGR: Retrieving all existing NSTs count")
   nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst_count()
   
   if (nstcatalogue_jsonresponse):
@@ -130,7 +128,7 @@ def get_all_nst_counter():
 
 # Returns the information of a selected NST in catalogues
 def get_nst(nstId):
-  logging.info("NST_MNGR: Retrieving NST with id: " + str(nstId))
+  LOG.info("NST_MNGR: Retrieving NST with id: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
 
   if (nstcatalogue_jsonresponse):

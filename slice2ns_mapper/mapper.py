@@ -37,12 +37,15 @@
 import os, sys, requests, json, logging, uuid, time
 import database.database as db
 import objects.nsd as nsd
-
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("slicemngr:repo")
-LOG.setLevel(logging.INFO)
+from logger import TangoLogger
 
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
+
+# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
+LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
+TangoLogger.getLogger("slicemngr:mapper", logging.DEBUG, log_json=True)
+LOG.setLevel(logging.DEBUG)
+
 
 ######################################### URLs PREPARATION #########################################
 # Returns the last URL version to send reqauests to the Catalogues Docker

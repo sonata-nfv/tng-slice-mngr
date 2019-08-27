@@ -38,10 +38,12 @@ import os, sys, requests, json, logging, time
 from flask import jsonify
 
 import database.database as db
+from logger import TangoLogger
 
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("slicemngr:repo")
-LOG.setLevel(logging.INFO)
+# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
+LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
+TangoLogger.getLogger("slicemngr:nst_manager2catalogues", logging.DEBUG, log_json=True)
+LOG.setLevel(logging.DEBUG)
 
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
