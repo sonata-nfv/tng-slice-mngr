@@ -45,8 +45,8 @@ from database import database as db
 
 #TODO: apply logs as the rest of the project
 ####### Option 1
-#from logger import TangoLogger
-#LOG = TangoLogger.getLogger("slicemngr:repo", log_level=logging.INFO, log_json=True)
+from logger import TangoLogger
+LOG = TangoLogger.getLogger("slicemngr:repo", log_level=logging.INFO, log_json=True)
 
 app = Flask(__name__)
 
