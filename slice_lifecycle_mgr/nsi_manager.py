@@ -219,7 +219,7 @@ class thread_ns_instantiate(Thread):
       LOG.info("NSI_MNGR: WIMS_0: " + vldr_item['id'] + ", " + str(vldr_item.get('mgmt-network')) + ", " + str(len(vldr_item['vimAccountId'])))
       time.sleep(0.1)
       # only those which are not management vld and with more than one VIM
-      if (('mgmt-network' not in vldr_item.keys() or vldr_item['mgmt-network'] == False) and (len(vldr_item['vimAccountId']) > 1)):
+      if ('mgmt-network' not in vldr_item.keys() or vldr_item['mgmt-network'] == False and len(vldr_item['vimAccountId']) > 1):
         LOG.info("NSI_MNGR: WIMS_1")
         time.sleep(0.1)
         wim_conn_points_list = []
@@ -227,8 +227,10 @@ class thread_ns_instantiate(Thread):
         for ns_cp_item in vldr_item['ns-conn-point-ref']:
           for nsr_item in self.NSI['nsr-list']:
             # compares with the only key within the dict
-            if nsr_item['subnet-ref'] == ns_cp_item.keys():
-              LOG.info("NSI_MNGR: WIMS_2")
+            LOG.info("NSI_MNGR: WIMS_2.1: " + str(nsr_item['subnet-ref']) + ", " + str(ns_cp_item.keys()))
+            time.sleep(0.1)
+            if nsr_item['subnet-ref'] in ns_cp_item.keys():
+              LOG.info("NSI_MNGR: WIMS_2.2")
               time.sleep(0.1)
               # get the nsr information in order to go into the next level (VNFs info)
               nsr_json = mapper.get_nsr(nsr_item['nsrId'])
@@ -250,8 +252,10 @@ class thread_ns_instantiate(Thread):
                   # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
                   nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
                   for nsd_nf_item in nsd_json['nsd']['network_functions']:
+                    LOG.info("NSI_MNGR: WIMS_4.1: " + str(nsd_nf_item['vnf_id']) + ", " + str(found_ns_cp['id']))
+                    time.sleep(0.1)
                     if nsd_nf_item['vnf_id'] == found_ns_cp['id']:
-                      LOG.info("NSI_MNGR: WIMS_4")
+                      LOG.info("NSI_MNGR: WIMS_4.2")
                       time.sleep(0.1)
                       # the right VNF name is found
                       found_vnfd_name = nsd_nf_item['vnf_name']
@@ -263,13 +267,17 @@ class thread_ns_instantiate(Thread):
               # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
               for nsr_nf_item in nsr_json['network_functions']:
                 vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
+                LOG.info("NSI_MNGR: WIMS_5.1: " + str(vnfr_json['name']) + ", " + str(found_vnfd_name))
+                time.sleep(0.1)
                 if vnfr_json['name'] == found_vnfd_name:
-                  LOG.info("NSI_MNGR: WIMS_5")
+                  LOG.info("NSI_MNGR: WIMS_5.2")
                   time.sleep(0.1)
                   for vnfr_vl_item in vnfr_json['virtual_links']:
+                    LOG.info("NSI_MNGR: WIMS_6.1: " + str(found_ns_cp['cp']) + ", " + str(vnfr_vl_item['connection_points_reference']))
+                    time.sleep(0.1)
                     # looks for the VLD connected to the selected VNFR external CP
                     if found_ns_cp['cp'] in vnfr_vl_item['connection_points_reference']:
-                      LOG.info("NSI_MNGR: WIMS_6")
+                      LOG.info("NSI_MNGR: WIMS_6.2")
                       time.sleep(0.1)
                       found_vnf_cp = vnfr_vl_item['connection_points_reference']
                       found_vnf_cp = found_vnf_cp.remove(found_ns_cp['cp'])
@@ -278,13 +286,17 @@ class thread_ns_instantiate(Thread):
                   
                   # looks for the VDU that is connected to the CP pointing out of the slice
                   for vnfr_vdu_item in vnfr_json['virtual_deployment_units']:
+                    LOG.info("NSI_MNGR: WIMS_7.1: " + str(vnfr_vdu_item['id']) + ", " + str(found_vnf_cp['id']))
+                    time.sleep(0.1)
                     if vnfr_vdu_item['id'] == found_vnf_cp['id']:
-                      LOG.info("NSI_MNGR: WIMS_7")
+                      LOG.info("NSI_MNGR: WIMS_7.2")
                       time.sleep(0.1)
                       for vnfc_ins_item in vnfr_vdu_item['vnfc_instance']:
                         for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
+                          LOG.info("NSI_MNGR: WIMS_8.1: " + str(vnfc_ins_cp_item['id']) + ", " + str(found_vnf_cp['cp']))
+                          time.sleep(0.1)
                           if vnfc_ins_cp_item['id'] == found_vnf_cp['cp']:
-                            LOG.info("NSI_MNGR: WIMS_8")
+                            LOG.info("NSI_MNGR: WIMS_8.2")
                             time.sleep(0.1)
                             # VDU found, takins its information for the WIM request
                             wim_dict = {}
