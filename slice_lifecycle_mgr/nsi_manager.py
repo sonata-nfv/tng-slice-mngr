@@ -223,6 +223,7 @@ class thread_ns_instantiate(Thread):
         LOG.info("NSI_MNGR: WIMS_1")
         time.sleep(0.1)
         wim_conn_points_list = []
+        info_found = False
         # from the SLICE-CP looks for the IP associated to the VDU linked to that CP.
         for ns_cp_item in vldr_item['ns-conn-point-ref']:
           for nsr_item in self.NSI['nsr-list']:
@@ -319,12 +320,12 @@ class thread_ns_instantiate(Thread):
                   #TODO: take into account the CNF records (right now only VNFRs)
 
                 if found_vnfr:
+                  info_found = True
                   break
             
-            if found_vnfr:
+            if info_found:
               break
-          
-          if found_vnfr:
+          if info_found:
             break
 
         LOG.info("NSI_MNGR: wim_conn_points_list:" + str(wim_conn_points_list))
