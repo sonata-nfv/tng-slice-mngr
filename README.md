@@ -89,4 +89,4 @@ This 5GTANGO component is published under Apache 2.0 license. Please see the [LI
   * Pol Alemany (pol.alemany@cttc.cat)
   
 ### Feedback-Chanel
-* Please use the GitHub issues to report bugs.
+* Please use the GitHub issues and the 5GTANGO development mailing list sonata-dev@lists.atosresearch.eu for feedback.
