@@ -543,6 +543,7 @@ class thread_ns_instantiate(Thread):
         
         # WAN ENFORCEMENT for MULTI-VIM INSTANTIATION
         # if  the slice is distributed in many VIMs, it creates the necessary WIM connections
+        self.NSI = jsonNSI
         if nsi_instantiated and len(jsonNSI['datacenter']) > 1:
           wim_configured = self.configure_wim()
           LOG.info("NSI_MNGR_wim_configured: " +str(wim_configured))
