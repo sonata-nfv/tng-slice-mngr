@@ -216,10 +216,10 @@ class thread_ns_instantiate(Thread):
 
     # loops the slice-vld to find out which one is in two different VIMs
     for vldr_item in self.NSI['vldr-list']:
-      LOG.info("NSI_MNGR: WIMS_0: " + vldr_item['id'] + ", " + str(vldr_item['mgmt-network']) + ", " + str(len(vldr_item['vimAccountId'])))
+      LOG.info("NSI_MNGR: WIMS_0: " + vldr_item['id'] + ", " + str(vldr_item.get('mgmt-network')) + ", " + str(len(vldr_item['vimAccountId'])))
       time.sleep(0.1)
       # only those which are not management vld and with more than one VIM
-      if (('mgmt-network' not in vldr_item or vldr_item['mgmt-network'] == False) and (len(vldr_item['vimAccountId']) > 1)):
+      if (('mgmt-network' not in vldr_item.keys() or vldr_item['mgmt-network'] == False) and (len(vldr_item['vimAccountId']) > 1)):
         LOG.info("NSI_MNGR: WIMS_1")
         time.sleep(0.1)
         wim_conn_points_list = []
