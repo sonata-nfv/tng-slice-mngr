@@ -266,6 +266,7 @@ class thread_ns_instantiate(Thread):
                 if found_vnfd:
                   break
 
+            if found_vnfd:
               # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
               for nsr_nf_item in nsr_json['network_functions']:
                 vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
@@ -319,12 +320,15 @@ class thread_ns_instantiate(Thread):
 
                 if found_vnfr:
                   break
+            
             if found_vnfr:
               break
+          
+          if found_vnfr:
+            break
 
         LOG.info("NSI_MNGR: wim_conn_points_list:" + str(wim_conn_points_list))
         time.sleep(0.1)
-
 
         # validates if the two VIMs are registered within the same WIM
         wim_uuid = None
