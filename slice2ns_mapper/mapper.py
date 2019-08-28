@@ -37,12 +37,15 @@
 import os, sys, requests, json, logging, uuid, time
 import database.database as db
 import objects.nsd as nsd
-
-logging.basicConfig(level=logging.INFO)
-LOG = logging.getLogger("slicemngr:repo")
-LOG.setLevel(logging.INFO)
+from logger import TangoLogger
 
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
+
+#Log definition to make the slice logs idetified among the other possible 5GTango components.
+LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
+TangoLogger.getLogger("slicemngr:mapper", logging.DEBUG, log_json=True)
+LOG.setLevel(logging.DEBUG)
+
 
 ######################################### URLs PREPARATION #########################################
 # Returns the last URL version to send reqauests to the Catalogues Docker
@@ -65,10 +68,6 @@ def get_url_repositories():
     port = os.environ.get("SONATA_REP_PORT")
     base_url = 'http://'+ip_address+':'+port
     return base_url
-
-# Defines wether if we are using sthe Sonata SP Emulator or not.
-def use_sonata():
-  return os.environ.get("USE_SONATA")
 
 ##################################### VIM NETWORKS MANAGEMENT REQUESTS ##############################
 '''
@@ -104,24 +103,16 @@ def get_vims_info():
   LOG.info("MAPPER: Requesting VIMs information.")
   url = get_url_sp_gtk() + '/slices/vims'
 
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: requesting vims, URL--> " + str(url))
-    time.sleep(0.1)
-    response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    LOG.info("MAPPER: response vims" + str(response))
-    time.sleep(0.1)
-    if (response.status_code == 200):
-        jsonresponse = json.loads(response.text)
-    else:
-        jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
+  response = requests.get(url, headers=JSON_CONTENT_HEADER)
+  LOG.info("MAPPER: response vims" + str(response))
+  time.sleep(0.1)
   
-    return jsonresponse  
-  
+  if (response.status_code == 200):
+      jsonresponse = json.loads(response.text)
   else:
-    jsonresponse = "SONATA EMULATED GET VIM INFO --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
-    LOG.info(jsonresponse)
-    return jsonresponse
+      jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
+
+  return jsonresponse
 
 '''
 Objective: Request to create the networks for a slice deployment 
@@ -153,30 +144,20 @@ Objective: Request to create the networks for a slice deployment
 def create_vim_network(network_data):
   url = get_url_sp_gtk() + '/slices/networks'
   data_json = json.dumps(network_data)
-
+  
+  LOG.info("MAPPER: Sending network creation request")
   LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
   time.sleep(0.1)
+  response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Sending network creation request")
-    time.sleep(0.1)
-    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    
-    if (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
-    else:
-      jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-      LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
-      time.sleep(0.1)
-    
-    return jsonresponse
-  
+  if (response.status_code == 201):
+    jsonresponse = json.loads(response.text)
   else:
-    print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
-    uuident = uuid.uuid4()
-    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}') #TODO: ask José the response
-    return jsonresponse
+    jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+    LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
+    time.sleep(0.1)
+  
+  return jsonresponse
 
 '''
 Objective: Request to delete the networks for a slice deployment
@@ -201,31 +182,20 @@ def delete_vim_network(network_data):
   url = get_url_sp_gtk() + '/slices/networks'
   data_json = json.dumps(network_data)
 
+  LOG.info("MAPPER: Sending network removal request")
   LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
+  response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
+  LOG.info("MAPPER: Networks removal response: " +str(response))
   time.sleep(0.1)
   
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Sending network removal request")
-    time.sleep(0.1)
-    response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    LOG.info("MAPPER: Networks removal response: " +str(response))
-    time.sleep(0.1)
-    
-    if (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
-    else:
-      jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-      LOG.info("MAPPER: Networks removal jsonresponse: " +str(jsonresponse))
-      time.sleep(0.1)
-
-    return jsonresponse
-
+  if (response.status_code == 201):
+    jsonresponse = json.loads(response.text)
   else:
-    print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
-    uuident = uuid.uuid4()
-    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
-    return jsonresponse
+    jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+    LOG.info("MAPPER: Networks removal jsonresponse: " +str(jsonresponse))
+    time.sleep(0.1)
+
+  return jsonresponse
 
 ##################################### WIM MANAGEMENT REQUESTS ##############################
 '''
@@ -258,26 +228,19 @@ Objective: Request to get all registered WIMs information
 '''
 def get_wims_info():
   LOG.info("MAPPER: Requesting WIMs information.")
-  url = get_url_sp_gtk() + '/slice/wims'
+  url = get_url_sp_gtk() + '/slices/wims'
 
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: requesting Wims, URL--> " + str(url))
-    time.sleep(0.1)
-    response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    LOG.info("MAPPER: response Wims" + str(response))
-    time.sleep(0.1)
-    if (response.status_code == 200):
-        jsonresponse = json.loads(response.text)
-    else:
-        jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
+  LOG.info("MAPPER: requesting Wims, URL--> " + str(url))
+  response = requests.get(url, headers=JSON_CONTENT_HEADER)
+  LOG.info("MAPPER: response Wims" + str(response))
+  time.sleep(0.1)
   
-    return jsonresponse  
-  
+  if (response.status_code == 200):
+      jsonresponse = json.loads(response.text)
   else:
-    jsonresponse = "SONATA EMULATED GET VIM INFO --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
-    LOG.info(jsonresponse)
-    return jsonresponse
+      jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
+
+  return jsonresponse
 
 '''
 Objective: Request to create a wim interconnection between vims
@@ -307,30 +270,20 @@ Objective: Request to create a wim interconnection between vims
 def create_wim_network(wim_link_data):
   url = get_url_sp_gtk() + '/slice/wan-networks'
   data_json = json.dumps(network_data)
-
+  
+  LOG.info("MAPPER: Sending network creation request")
   LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
   time.sleep(0.1)
+  response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Sending network creation request")
-    time.sleep(0.1)
-    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    
-    if (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
-    else:
-      jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-      LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
-      time.sleep(0.1)
-    
-    return jsonresponse
-  
+  if (response.status_code == 201):
+    jsonresponse = json.loads(response.text)
   else:
-    print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
-    uuident = uuid.uuid4()
-    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}') #TODO: ask José the response
-    return jsonresponse
+    jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+    LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
+    time.sleep(0.1)
+  
+  return jsonresponse
 
 '''
 Objective: Request to delete a wim interconnection between vims
@@ -345,32 +298,22 @@ Objective: Request to delete a wim interconnection between vims
 def delete_wim_network(wim_link_data):
   url = get_url_sp_gtk() + '/slice/wan-networks'
   data_json = json.dumps(network_data)
-
+  
+  LOG.info("MAPPER: Sending network removal request")
   LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
   time.sleep(0.1)
+  response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
+  LOG.info("MAPPER: Networks removal response: " +str(response))
+  time.sleep(0.1)
   
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Sending network removal request")
-    time.sleep(0.1)
-    response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    LOG.info("MAPPER: Networks removal response: " +str(response))
-    time.sleep(0.1)
-    
-    if (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
-    else:
-      jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-      LOG.info("MAPPER: Networks removal jsonresponse: " +str(jsonresponse))
-      time.sleep(0.1)
-
-    return jsonresponse
-
+  if (response.status_code == 201):
+    jsonresponse = json.loads(response.text)
   else:
-    print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
-    uuident = uuid.uuid4()
-    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
-    return jsonresponse
+    jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+    LOG.info("MAPPER: Networks removal jsonresponse: " +str(jsonresponse))
+    time.sleep(0.1)
+
+  return jsonresponse
 
 ################################ NETWORK SERVICES REQUESTS/RECORDS ##################################
 # POST /requests to INSTANTIATE Network Service instance
@@ -379,39 +322,27 @@ def net_serv_instantiate(service_data):
   url = get_url_sp_gtk() + '/requests'
   data_json = json.dumps(service_data)
   
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Sending instanitation request for the following network slice subnet: " +str(service_data['name']))
-    time.sleep(0.1)
-    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
+  LOG.info("MAPPER: Sending instanitation request for the following network slice subnet: " +str(service_data['name']))
+  time.sleep(0.1)
+  response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
 
-    jsonresponse = json.loads(response.text)
-    
-    return jsonresponse, response.status_code
-    
-  else:
-    print ("SONATA EMULATED INSTANTIATION NSI --> URL: " +url+ ", HEADERS: " +str(JSON_CONTENT_HEADER)+ ", DATA: " +str(data_json))
-    uuident = uuid.uuid4()
-    jsonresponse = json.loads('{"id":"'+str(uuident)+'"}')
-    return jsonresponse, 201
+  jsonresponse = json.loads(response.text)
+  
+  return jsonresponse, response.status_code
 
 # POST /requests to TERMINATE Network Service instance
 def net_serv_terminate(service_data):
   url = get_url_sp_gtk() + "/requests"
   data_json = json.dumps(service_data)
+
+  LOG.info("MAPPER: Sending Terminate request")
+  response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Sending Terminate request")
-    response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-    if (response.status_code == 200) or (response.status_code == 201):
-      jsonresponse = json.loads(response.text)
-    else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}
-    return jsonresponse
+  if (response.status_code == 200) or (response.status_code == 201):
+    jsonresponse = json.loads(response.text)
   else:
-    jsonresponse = "SONATA EMULATED TERMINATE NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)+ ",DATA: " +str(data)
-    return jsonresponse
+    jsonresponse = {'http_code': response.status_code,'message': response.json()}
+  return jsonresponse
 
 # POST to call the Gk when a slice is READY (either instantiated or terminated)
 def sliceUpdated(slice_callback, json_slice_info):
@@ -431,39 +362,27 @@ def sliceUpdated(slice_callback, json_slice_info):
 def get_all_nsr():
   url = get_url_sp_gtk() + "/records/services"
 
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Getting all NetServicesInstances")
-    response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    if (response.status_code == 200):
-        jsonresponse = json.loads(response.text)
-    else:
-        jsonresponse = {'http_code': response.status_code,'message': response.json()}
-    return jsonresponse  
+  LOG.info("MAPPER: Getting all NetServicesInstances")
+  response = requests.get(url, headers=JSON_CONTENT_HEADER)
+  
+  if (response.status_code == 200):
+      jsonresponse = json.loads(response.text)
   else:
-    jsonresponse = "SONATA EMULATED GET ALL NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
-    LOG.info(jsonresponse)
-    return jsonresponse
+      jsonresponse = {'http_code': response.status_code,'message': response.json()}
+  return jsonresponse
 
 # GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
 def get_nsr(request_uuid):
   url = get_url_sp_gtk() + "/records/services/" + str(request_uuid)
 
-  #REAL or EMULATED usage of Sonata SP 
-  if use_sonata() == "True":
-    LOG.info("MAPPER: Getting desired NetServicesInstance")
-    response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    if (response.status_code == 200):
-        jsonresponse = json.loads(response.text)
-    else:
-        jsonresponse = {'http_code': response.status_code,'message': response.json()}
-    return jsonresponse
+  LOG.info("MAPPER: Getting desired NetServicesInstance")
+  response = requests.get(url, headers=JSON_CONTENT_HEADER)
+  
+  if (response.status_code == 200):
+      jsonresponse = json.loads(response.text)
   else:
-    print ("SONATA EMULATED GET NSI --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER))
-    uuident = uuid.uuid4()
-    example_json_result='{"blacklist": "[]","callback": "","created_at": "2018-07-23T08:38:10.544Z","customer_uuid": null,"egresses": "[]","id": "1f5c8d55-651c-49cf-853d-c281dbef5639","ingresses": "[]","instance_uuid": "'+str(uuident)+'","request_type": "CREATE_SERVICE","service": {"name": "myns","uuid": "9ce92c4a-5355-47e0-9ed8-e008c201fdfc","vendor": "eu.5gtango","version": "0.1"},"sla_id": null,"status": "READY","updated_at": "2018-07-23T08:39:17.074Z"}'
-    jsonresponse = json.loads(example_json_result)
-    return jsonresponse 
+      jsonresponse = {'http_code': response.status_code,'message': response.json()}
+  return jsonresponse
 
 #################################### NETWORK FUNCTION ####################################
 # GET virtual network function RECORD
@@ -514,33 +433,27 @@ def get_nsd_list():
   # cleans the current nsInfo_list to have the information updated
   del db.nsInfo_list[:]
   url = get_url_catalogues() + "/api/v2/network-services"
+  
+  response = requests.get(url, headers=JSON_CONTENT_HEADER)
 
-  #SONATA SP or EMULATED Mode 
-  if use_sonata() == "True":
-    response = requests.get(url, headers=JSON_CONTENT_HEADER)
-    
-    if (response.status_code == 200):
-        services_array = json.loads(response.text)
-        for service_item in services_array:
-          if service_item['nsd'].keys() & {'name', 'vendor', 'version'}:
-          #if 'name' not in service_item['nsd']:   # to avoid possible problems with other MANO NSD structures
-            # each element of the list is a dictionary
-            nsd=parseNetworkService(service_item)
-            nsd_string = vars(nsd)
-            # adds the dictionary element into the list
-            db.nsInfo_list.append(nsd_string)
-        
-        service_response = db.nsInfo_list
-    else:
-        service_response = {'http_code': response.status_code,'message': response.json()}
-    
-    LOG.info("MAPPER: Retrieving all available NSDs: "+str(service_response))
-    time.sleep(0.1)
-    return service_response
+  if (response.status_code == 200):
+      services_array = json.loads(response.text)
+      for service_item in services_array:
+        if service_item['nsd'].keys() & {'name', 'vendor', 'version'}:
+        #if 'name' not in service_item['nsd']:   # to avoid possible problems with other MANO NSD structures
+          # each element of the list is a dictionary
+          nsd=parseNetworkService(service_item)
+          nsd_string = vars(nsd)
+          # adds the dictionary element into the list
+          db.nsInfo_list.append(nsd_string)
+      
+      service_response = db.nsInfo_list
   else:
-    URL_response = "SONATA EMULATED GET SERVICES --> URL: " +url+ ",HEADERS: " +str(JSON_CONTENT_HEADER)
-    print (URL_response)
-    return URL_response
+      service_response = {'http_code': response.status_code,'message': response.json()}
+  
+  LOG.info("MAPPER: Retrieving all available NSDs: "+str(service_response))
+  time.sleep(0.1)
+  return service_response
       
 def parseNetworkService(service):
   NSD=nsd.nsd_content(service['uuid'],
