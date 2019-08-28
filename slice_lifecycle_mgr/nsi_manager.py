@@ -237,13 +237,13 @@ class thread_ns_instantiate(Thread):
                   LOG.info("NSI_MNGR: WIMS_3")
                   time.sleep(0.1)
                   found_ns_cp = nsr_vl_item['connection_points_reference']
-                  LOG.info("NSI_MNGR: found_ns_cp:" str(found_ns_cp))
+                  LOG.info("NSI_MNGR: found_ns_cp:" + str(found_ns_cp))
                   time.sleep(0.1)
                   found_ns_cp = found_ns_cp.remove(ns_cp_item.values())
-                  LOG.info("NSI_MNGR: found_ns_cp BEFORE conversion:" str(found_ns_cp))
+                  LOG.info("NSI_MNGR: found_ns_cp BEFORE conversion:" + str(found_ns_cp))
                   time.sleep(0.1)
                   found_ns_cp = str_2_json(found_ns_cp)
-                  LOG.info("NSI_MNGR: found_ns_cp AFTER conversion:" str(found_ns_cp))
+                  LOG.info("NSI_MNGR: found_ns_cp AFTER conversion:" + str(found_ns_cp))
                   time.sleep(0.1)
                   # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
                   nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
