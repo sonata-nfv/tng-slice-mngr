@@ -216,8 +216,10 @@ class thread_ns_instantiate(Thread):
 
     # loops the slice-vld to find out which one is in two different VIMs
     for vldr_item in self.NSI['vldr-list']:
+      LOG.info("NSI_MNGR: WIMS_0: " + vldr_item['id'])
+      time.sleep(0.1)
       # only those which are not management vld and with more than one VIM
-      if (not vldr_item['mgmt-network'] and len(vldr_item['vimAccountId']) > 1):
+      if (vldr_item['mgmt-network'] == False and len(vldr_item['vimAccountId']) > 1):
         LOG.info("NSI_MNGR: WIMS_1")
         time.sleep(0.1)
         wim_conn_points_list = []
@@ -521,7 +523,8 @@ class thread_ns_instantiate(Thread):
           time.sleep(15)
           deployment_timeout -= 15
         
-        #if  the slice is distributed in many VIMs, it creates the necessary WIM connections
+        # WAN ENFORCEMENT for MULTI-VIM INSTANTIATION
+        # if  the slice is distributed in many VIMs, it creates the necessary WIM connections
         if nsi_instantiated and len(jsonNSI['datacenter']) > 1:
           wim_configured = self.configure_wim()
           LOG.info("NSI_MNGR_wim_configured: " +str(wim_configured))
@@ -531,7 +534,6 @@ class thread_ns_instantiate(Thread):
             #TODO: undo everything: terminate services, remove networks, update NSI with ERROR status (re-use exsiting functions)
             LOG.info("NSI_MNGR_wim_step: WIM connection NOT done")
 
-    
       # Notifies the GTK about the NetSlice process is done (either completed or error).
       LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")
       self.update_nsi_notify_instantiate()
@@ -1196,10 +1198,7 @@ def nsi_placement(new_nsir):
       for vim_index, vim_item in enumerate(vims_list['vim_list']):
         #if (req_core != 0 and req_mem != 0 and req_sto != 0 and vim_item['type'] == "vm"): #current nsr only has VNFs
         if (req_core != 0 and req_mem != 0 and vim_item['type'] == "vm"):
-          #TODO: missing to use storage but this data is not coming in the VIMs information
-          LOG.info("NSI_MNGR: Checking VIM: " +str(vim_item))
-          LOG.info("NSI_MNGR: req_core: " +str(req_core) + " & req_mem: " +str(req_mem))
-          time.sleep(0.1)
+          #TODO: missing to use storage but this data is not comming in the VIMs information
           available_core = vim_item['core_total'] - vim_item['core_used']
           available_memory = vim_item['memory_total'] - vim_item['memory_used']
           #available_storage = vim_item['storage_total'] - vim_item['storage_used']
