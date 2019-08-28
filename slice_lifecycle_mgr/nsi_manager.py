@@ -234,11 +234,13 @@ class thread_ns_instantiate(Thread):
               time.sleep(0.1)
               # get the nsr information in order to go into the next level (VNFs info)
               nsr_json = mapper.get_nsr(nsr_item['nsrId'])
+              LOG.info("NSI_MNGR: WIMS_3.1: " + str(nsr_json))
+              time.sleep(0.1)
               found_vnfd = False
               for nsr_vl_item in nsr_json['virtual_links']:
                 # checks if the only value exists within the nsr cp-referencences
                 if ns_cp_item.values() in nsr_vl_item['connection_points_reference']:
-                  LOG.info("NSI_MNGR: WIMS_3")
+                  LOG.info("NSI_MNGR: WIMS_3.2")
                   time.sleep(0.1)
                   found_ns_cp = nsr_vl_item['connection_points_reference']
                   LOG.info("NSI_MNGR: found_ns_cp:" + str(found_ns_cp))
@@ -267,6 +269,7 @@ class thread_ns_instantiate(Thread):
               # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
               for nsr_nf_item in nsr_json['network_functions']:
                 vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
+                LOG.info("NSI_MNGR: WIMS_5.0: " + str(vnfr_json))
                 LOG.info("NSI_MNGR: WIMS_5.1: " + str(vnfr_json['name']) + ", " + str(found_vnfd_name))
                 time.sleep(0.1)
                 if vnfr_json['name'] == found_vnfd_name:
