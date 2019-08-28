@@ -295,6 +295,7 @@ class thread_ns_instantiate(Thread):
                         for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
                           LOG.info("NSI_MNGR: WIMS_8.1: " + str(vnfc_ins_cp_item['id']) + ", " + str(found_vnf_cp['cp']))
                           time.sleep(0.1)
+                          found_vnfr = False
                           if vnfc_ins_cp_item['id'] == found_vnf_cp['cp']:
                             LOG.info("NSI_MNGR: WIMS_8.2")
                             time.sleep(0.1)
