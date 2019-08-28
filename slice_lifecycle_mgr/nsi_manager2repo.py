@@ -41,7 +41,7 @@ from logger import TangoLogger
 
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
-# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
+#Log definition to make the slice logs idetified among the other possible 5GTango components.
 LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
 TangoLogger.getLogger("slicemngr:nsi_manager2repo", logging.DEBUG, log_json=True)
 LOG.setLevel(logging.DEBUG)
@@ -78,6 +78,7 @@ def get_all_saved_nsi():
     
     return jsonresponse
 
+# GET the number of isntances to forward it to the SP Dashboard
 def get_all_saved_nsi_counter():
     url = get_url_repositories() + '/records/nsir/ns-instances?count'
     response = requests.get(url, headers=JSON_CONTENT_HEADER)

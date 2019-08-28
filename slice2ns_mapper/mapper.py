@@ -41,7 +41,7 @@ from logger import TangoLogger
 
 JSON_CONTENT_HEADER = {'Content-Type':'application/json'}
 
-# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
+#Log definition to make the slice logs idetified among the other possible 5GTango components.
 LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
 TangoLogger.getLogger("slicemngr:mapper", logging.DEBUG, log_json=True)
 LOG.setLevel(logging.DEBUG)
@@ -228,7 +228,7 @@ Objective: Request to get all registered WIMs information
 '''
 def get_wims_info():
   LOG.info("MAPPER: Requesting WIMs information.")
-  url = get_url_sp_gtk() + '/slice/wims'
+  url = get_url_sp_gtk() + '/slices/wims'
 
   LOG.info("MAPPER: requesting Wims, URL--> " + str(url))
   response = requests.get(url, headers=JSON_CONTENT_HEADER)

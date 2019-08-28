@@ -44,13 +44,7 @@ import slice2ns_mapper.mapper as mapper
 from database import database as db
 from logger import TangoLogger
 
-#Log definition
-####### Option 1 (not used)
-#logging.basicConfig(level=logging.INFO)
-#LOG = logging.getLogger("slicemngr:repo")
-#LOG.setLevel(logging.INFO)
-####### Option 2
-# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
+#Log definition to make the slice logs idetified among the other possible 5GTango components.
 LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
 TangoLogger.getLogger("slicemngr:main", logging.DEBUG, log_json=True)
 LOG.setLevel(logging.DEBUG)

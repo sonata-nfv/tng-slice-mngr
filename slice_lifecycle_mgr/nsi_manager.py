@@ -47,7 +47,7 @@ from logger import TangoLogger
 # mutex used to ensure one single access to ddbb (repositories) for the nsi records creation/update/removal
 mutex_slice2db_access = Lock()
 
-# definition of LOG variable to make the slice logs idetified among the other possible 5GTango components.
+#Log definition to make the slice logs idetified among the other possible 5GTango components.
 LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
 TangoLogger.getLogger("slicemngr:nsi_manager", logging.DEBUG, log_json=True)
 LOG.setLevel(logging.DEBUG)
@@ -211,6 +211,8 @@ class thread_ns_instantiate(Thread):
 
     # gets WIMS information list to check if the VIMs where to deploy the VNFs are registered within the WIM
     wims_list = mapper.get_wims_info()
+    LOG.info("NSI_MNGR: wims_list:" + str(wims_list))
+    time.sleep(0.1)
 
     # loops the slice-vld to find out which one is in two different VIMs
     for vldr_item in self.NSI['vldr-list']:
@@ -280,9 +282,13 @@ class thread_ns_instantiate(Thread):
             if found_vnfr:
               break
 
+      LOG.info("NSI_MNGR: wim_conn_points_list:" + str(wim_conn_points_list))
+      time.sleep(0.1)
+
+
       # validates if the two VIMs are registered within the same WIM
       wim_uuid = None
-      for wim_item in wims_list:
+      for wim_item in wims_list['wim_list']:
         found_wim = True
         # if any of the two vim_uuids is not in the wim_attached_vims_list, check the next wim
         for wim_cp_item in wim_conn_points_list:
