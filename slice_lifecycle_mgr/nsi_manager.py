@@ -262,23 +262,23 @@ class thread_ns_instantiate(Thread):
                   found_ns_cp = str_2_json(found_ns_cp)
                   LOG.info("NSI_MNGR: found_ns_cp AFTER conversion:" + str(found_ns_cp))
                   time.sleep(0.1)
-    '''              
+              
                   # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
                   nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
                   for nsd_nf_item in nsd_json['nsd']['network_functions']:
                     LOG.info("NSI_MNGR: WIMS_4.1: " + str(nsd_nf_item['vnf_id']) + ", " + str(found_ns_cp['id']))
                     time.sleep(0.1)
                     if nsd_nf_item['vnf_id'] == found_ns_cp['id']:
-                      LOG.info("NSI_MNGR: WIMS_4.2")
+                      LOG.info("NSI_MNGR: WIMS_4.2: " + str(nsd_nf_item['vnf_name']))
                       time.sleep(0.1)
                       # the right VNF name is found
                       found_vnfd_name = nsd_nf_item['vnf_name']
                       found_vnfd = True
                       break
-                
                 if found_vnfd:
                   break
 
+    '''
             if found_vnfd:
               # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
               for nsr_nf_item in nsr_json['network_functions']:
