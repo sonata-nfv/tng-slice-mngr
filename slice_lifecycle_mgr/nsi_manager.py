@@ -218,14 +218,13 @@ class thread_ns_instantiate(Thread):
     for vldr_item in self.NSI['vldr-list']:
       LOG.info("NSI_MNGR: WIMS_0: " + vldr_item['id'] + ", " + str(vldr_item.get('mgmt-network')) + ", " + str(len(vldr_item['vimAccountId'])))
       time.sleep(0.1)
-      
       # only those which are not management vld and with more than one VIM
       if ('mgmt-network' not in vldr_item.keys() or vldr_item['mgmt-network'] == False and len(vldr_item['vimAccountId']) > 1):
         LOG.info("NSI_MNGR: WIMS_1")
         time.sleep(0.1)
         wim_conn_points_list = []
         info_found = False
-        
+    '''
         # from the SLICE-CP looks for the IP associated to the VDU linked to that CP.
         for ns_cp_item in vldr_item['ns-conn-point-ref']:
           for nsr_item in self.NSI['nsr-list']:
@@ -278,6 +277,7 @@ class thread_ns_instantiate(Thread):
               for nsr_nf_item in nsr_json['network_functions']:
                 vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
                 LOG.info("NSI_MNGR: WIMS_5.0: " + str(vnfr_json))
+                time.sleep(0.1)
                 LOG.info("NSI_MNGR: WIMS_5.1: " + str(vnfr_json['name']) + ", " + str(found_vnfd_name))
                 time.sleep(0.1)
                 if vnfr_json['name'] == found_vnfd_name:
@@ -367,6 +367,7 @@ class thread_ns_instantiate(Thread):
           time.sleep(0.1)
           #if wim_response[1] != 201:
           #  return self.NSI, wim_response[1]
+    '''
 
     return self.NSI, 200
 
