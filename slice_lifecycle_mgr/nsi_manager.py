@@ -238,7 +238,7 @@ class thread_ns_instantiate(Thread):
             if nsr_item['subnet-ref'] in ns_cp_item.keys():
               LOG.info("NSI_MNGR: WIMS_2.2")
               time.sleep(0.1)
-    '''          
+         
               # get the nsr information in order to go into the next level (VNFs info)
               nsr_json = mapper.get_nsr(nsr_item['nsrId'])
               LOG.info("NSI_MNGR: WIMS_3.1: " + str(nsr_json))
@@ -259,7 +259,7 @@ class thread_ns_instantiate(Thread):
                   found_ns_cp = str_2_json(found_ns_cp)
                   LOG.info("NSI_MNGR: found_ns_cp AFTER conversion:" + str(found_ns_cp))
                   time.sleep(0.1)
-                  
+    '''              
                   # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
                   nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
                   for nsd_nf_item in nsd_json['nsd']['network_functions']:
