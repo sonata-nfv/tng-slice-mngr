@@ -342,7 +342,7 @@ class thread_ns_instantiate(Thread):
         LOG.info("NSI_MNGR: wim_conn_points_list:" + str(wim_conn_points_list))
         time.sleep(0.1)
 
-        if not wim_conn_points_list:
+        if wim_conn_points_list:
           # validates if the two VIMs are registered within the same WIM
           wim_uuid = None
           for wim_item in wims_list['wim_list']:
