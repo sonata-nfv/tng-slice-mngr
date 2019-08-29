@@ -218,18 +218,21 @@ class thread_ns_instantiate(Thread):
     for vldr_item in self.NSI['vldr-list']:
       LOG.info("NSI_MNGR: WIMS_0: " + vldr_item['id'] + ", " + str(vldr_item.get('mgmt-network')) + ", " + str(len(vldr_item['vimAccountId'])))
       time.sleep(0.1)
+      
       # only those which are not management vld and with more than one VIM
       if ('mgmt-network' not in vldr_item.keys() or vldr_item['mgmt-network'] == False and len(vldr_item['vimAccountId']) > 1):
         LOG.info("NSI_MNGR: WIMS_1")
         time.sleep(0.1)
         wim_conn_points_list = []
         info_found = False
+        
         # from the SLICE-CP looks for the IP associated to the VDU linked to that CP.
         for ns_cp_item in vldr_item['ns-conn-point-ref']:
           for nsr_item in self.NSI['nsr-list']:
             # compares with the only key within the dict
             LOG.info("NSI_MNGR: WIMS_2.1: " + str(nsr_item['subnet-ref']) + ", " + str(ns_cp_item.keys()))
             time.sleep(0.1)
+            
             if nsr_item['subnet-ref'] in ns_cp_item.keys():
               LOG.info("NSI_MNGR: WIMS_2.2")
               time.sleep(0.1)
@@ -238,6 +241,7 @@ class thread_ns_instantiate(Thread):
               LOG.info("NSI_MNGR: WIMS_3.1: " + str(nsr_json))
               time.sleep(0.1)
               found_vnfd = False
+              
               for nsr_vl_item in nsr_json['virtual_links']:
                 # checks if the only value exists within the nsr cp-referencences
                 if ns_cp_item.values() in nsr_vl_item['connection_points_reference']:
@@ -252,6 +256,7 @@ class thread_ns_instantiate(Thread):
                   found_ns_cp = str_2_json(found_ns_cp)
                   LOG.info("NSI_MNGR: found_ns_cp AFTER conversion:" + str(found_ns_cp))
                   time.sleep(0.1)
+                  
                   # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
                   nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
                   for nsd_nf_item in nsd_json['nsd']['network_functions']:
@@ -264,6 +269,7 @@ class thread_ns_instantiate(Thread):
                       found_vnfd_name = nsd_nf_item['vnf_name']
                       found_vnfd = True
                       break
+                
                 if found_vnfd:
                   break
 
@@ -331,35 +337,36 @@ class thread_ns_instantiate(Thread):
         LOG.info("NSI_MNGR: wim_conn_points_list:" + str(wim_conn_points_list))
         time.sleep(0.1)
 
-        # validates if the two VIMs are registered within the same WIM
-        wim_uuid = None
-        for wim_item in wims_list['wim_list']:
-          found_wim = True
-          # if any of the two vim_uuids is not in the wim_attached_vims_list, check the next wim
-          for wim_cp_item in wim_conn_points_list:
-            if wim_cp_item['location'] not in wim_item['attached_vims']:
-              found_wim = False
+        if not wim_conn_points_list:
+          # validates if the two VIMs are registered within the same WIM
+          wim_uuid = None
+          for wim_item in wims_list['wim_list']:
+            found_wim = True
+            # if any of the two vim_uuids is not in the wim_attached_vims_list, check the next wim
+            for wim_cp_item in wim_conn_points_list:
+              if wim_cp_item['location'] not in wim_item['attached_vims']:
+                found_wim = False
+                break
+            
+            if found_wim:
+              wim_uuid = wim_item['uuid']
               break
-          
-          if found_wim:
-            wim_uuid = wim_item['uuid']
-            break
         
-        # creates the json to request the WIM connection
-        wim_dict = {}
-        wim_dict['service_instance_id'] = self.NSI['name']
-        wim_dict['wim_uuid'] = wim_uuid
-        wim_dict['vl_id'] = vldr_item['id']
-        wim_dict['ingress'] = wim_conn_points_list[0]
-        wim_dict['egress'] = wim_conn_points_list[1]
-        wim_dict['bidirectional'] = True
+          # creates the json to request the WIM connection
+          wim_dict = {}
+          wim_dict['service_instance_id'] = self.NSI['name']
+          wim_dict['wim_uuid'] = wim_uuid
+          wim_dict['vl_id'] = vldr_item['id']
+          wim_dict['ingress'] = wim_conn_points_list[0]
+          wim_dict['egress'] = wim_conn_points_list[1]
+          wim_dict['bidirectional'] = True
 
-        #TODO: mapper call for WIM connection
-        # wim_response = mapper.create_wim_network(wim_dict)
-        LOG.info("NSI_MNGR: Json to request WIM conection:" + str(wim_dict))
-        time.sleep(0.1)
-        #if wim_response[1] != 201:
-        #  return self.NSI, wim_response[1]
+          #TODO: mapper call for WIM connection
+          # wim_response = mapper.create_wim_network(wim_dict)
+          LOG.info("NSI_MNGR: Json to request WIM conection:" + str(wim_dict))
+          time.sleep(0.1)
+          #if wim_response[1] != 201:
+          #  return self.NSI, wim_response[1]
 
     return self.NSI, 200
 
