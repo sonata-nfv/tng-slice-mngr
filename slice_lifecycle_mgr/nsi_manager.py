@@ -317,6 +317,8 @@ class thread_ns_instantiate(Thread):
                       LOG.info("NSI_MNGR: WIMS_7.2")
                       time.sleep(0.1)
                       for vnfc_ins_item in vnfr_vdu_item['vnfc_instance']:
+                        LOG.info("NSI_MNGR: WIMS_vnfc_ins_cp_item" + str(vnfc_ins_cp_item))
+                        time.sleep(0.1)
                         for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
                           LOG.info("NSI_MNGR: WIMS_8.1: " + str(vnfc_ins_cp_item['id']) + ", " + str(found_vnf_cp['cp']))
                           time.sleep(0.1)
@@ -326,7 +328,7 @@ class thread_ns_instantiate(Thread):
                             # VDU found, takins its information for the WIM request
                             wim_dict = {}
                             wim_dict['location'] = vnfc_ins_item['vim_id']
-                            wim_dict['nap'] = vnfc_ins_cp_item['address']
+                            wim_dict['nap'] = vnfc_ins_cp_item['interface']['address']
                             wim_conn_points_list.append(wim_dict)
                             found_vnfr = True
                             break
