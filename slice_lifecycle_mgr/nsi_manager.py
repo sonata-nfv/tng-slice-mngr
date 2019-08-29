@@ -281,6 +281,7 @@ class thread_ns_instantiate(Thread):
             if found_vnfd:
               # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
               for nsr_nf_item in nsr_json['network_functions']:
+                found_vnfr = False
                 vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
                 LOG.info("NSI_MNGR: WIMS_5.0: " + str(vnfr_json))
                 time.sleep(0.1)
@@ -306,7 +307,8 @@ class thread_ns_instantiate(Thread):
                       LOG.info("NSI_MNGR: found_vnf_cp AFTER conversion:" + str(found_vnf_cp))
                       time.sleep(0.1)
                       break
-    '''
+
+                  #TODO: take into account the CNF records (right now only VNFs)
                   # looks for the VDU that is connected to the CP pointing out of the slice
                   for vnfr_vdu_item in vnfr_json['virtual_deployment_units']:
                     LOG.info("NSI_MNGR: WIMS_7.1: " + str(vnfr_vdu_item['id']) + ", " + str(found_vnf_cp['id']))
@@ -318,7 +320,6 @@ class thread_ns_instantiate(Thread):
                         for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
                           LOG.info("NSI_MNGR: WIMS_8.1: " + str(vnfc_ins_cp_item['id']) + ", " + str(found_vnf_cp['cp']))
                           time.sleep(0.1)
-                          found_vnfr = False
                           if vnfc_ins_cp_item['id'] == found_vnf_cp['cp']:
                             LOG.info("NSI_MNGR: WIMS_8.2")
                             time.sleep(0.1)
@@ -327,28 +328,18 @@ class thread_ns_instantiate(Thread):
                             wim_dict['location'] = vnfc_ins_item['vim_id']
                             wim_dict['nap'] = vnfc_ins_cp_item['address']
                             wim_conn_points_list.append(wim_dict)
-
                             found_vnfr = True
                             break
                         if found_vnfr:
                           break
                     if found_vnfr:
                       break
-
-                  #TODO: take into account the CNF records (right now only VNFRs)
-
                 if found_vnfr:
-                  info_found = True
                   break
-            
-            if info_found:
-              break
-          if info_found:
-            break
 
         LOG.info("NSI_MNGR: wim_conn_points_list:" + str(wim_conn_points_list))
         time.sleep(0.1)
-
+    '''
         if not wim_conn_points_list:
           # validates if the two VIMs are registered within the same WIM
           wim_uuid = None
