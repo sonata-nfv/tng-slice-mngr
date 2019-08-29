@@ -206,7 +206,7 @@ class thread_ns_instantiate(Thread):
  
     # internal function to convert a string with format -> "key:value" into a dict -> "key":"value"
     def str_2_json(split_str):
-      splitted_str = split_str[0].split(": ")
+      splitted_str = split_str[0].split(":")
       new_dict = {}
       new_dict['id'] = splitted_str[0]
       new_dict['cp'] = splitted_str[1]
