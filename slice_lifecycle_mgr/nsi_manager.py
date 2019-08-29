@@ -277,7 +277,7 @@ class thread_ns_instantiate(Thread):
           LOG.info("NSI_MNGR: Json to request WIM conection:" + str(wim_dict))
           time.sleep(0.1)
           wim_response = mapper.create_wim_network(wim_dict)
-          if wim_response[1] == 201:
+          if wim_response[1] in [200,201]:
             return self.NSI, 200
         else:
           return self.NSI, 501

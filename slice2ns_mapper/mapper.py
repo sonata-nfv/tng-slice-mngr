@@ -269,7 +269,7 @@ Objective: Request to create a wim interconnection between vims
 '''
 def create_wim_network(wim_link_data):
   url = get_url_sp_gtk() + '/slice/wan-networks'
-  data_json = json.dumps(network_data)
+  data_json = json.dumps(wim_link_data)
   
   LOG.info("MAPPER: Sending network creation request")
   LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
