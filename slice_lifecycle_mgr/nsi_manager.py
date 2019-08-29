@@ -246,14 +246,17 @@ class thread_ns_instantiate(Thread):
               found_vnfd = False
               
               for nsr_vl_item in nsr_json['virtual_links']:
-                # checks if the only value exists within the nsr cp-referencences
-                if ns_cp_item.values() in nsr_vl_item['connection_points_reference']:
+                # checks if the value exists within the nsr cp-reference
+                LOG.info("NSI_MNGR: ns_cp_item[nsr_item['subnet-ref']]:" + str(ns_cp_item[nsr_item['subnet-ref']]))
+                LOG.info("NSI_MNGR: nsr_vl_item['connection_points_reference']:" + str(nsr_vl_item['connection_points_reference']))
+                time.sleep(0.1)
+                if ns_cp_item[nsr_item['subnet-ref']] in nsr_vl_item['connection_points_reference']:
                   LOG.info("NSI_MNGR: WIMS_3.2")
                   time.sleep(0.1)
                   found_ns_cp = nsr_vl_item['connection_points_reference']
                   LOG.info("NSI_MNGR: found_ns_cp:" + str(found_ns_cp))
                   time.sleep(0.1)
-                  found_ns_cp = found_ns_cp.remove(ns_cp_item.values())
+                  found_ns_cp = found_ns_cp.remove(ns_cp_item[nsr_item['subnet-ref']])
                   LOG.info("NSI_MNGR: found_ns_cp BEFORE conversion:" + str(found_ns_cp))
                   time.sleep(0.1)
                   found_ns_cp = str_2_json(found_ns_cp)
