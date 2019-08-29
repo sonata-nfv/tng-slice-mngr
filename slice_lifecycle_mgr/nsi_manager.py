@@ -48,9 +48,12 @@ from logger import TangoLogger
 mutex_slice2db_access = Lock()
 
 #Log definition to make the slice logs idetified among the other possible 5GTango components.
-LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
-TangoLogger.getLogger("slicemngr:nsi_manager", logging.DEBUG, log_json=True)
-LOG.setLevel(logging.DEBUG)
+#LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
+#TangoLogger.getLogger("slicemngr:nsi_manager", logging.DEBUG, log_json=True)
+#LOG.setLevel(logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+LOG = logging.getLogger("slicemngr:nsi_manager")
+LOG.setLevel(logging.INFO)
 
 
 ################################## THREADs to manage services/slice requests #################################
@@ -224,17 +227,18 @@ class thread_ns_instantiate(Thread):
         time.sleep(0.1)
         wim_conn_points_list = []
         info_found = False
-    '''
+
         # from the SLICE-CP looks for the IP associated to the VDU linked to that CP.
         for ns_cp_item in vldr_item['ns-conn-point-ref']:
           for nsr_item in self.NSI['nsr-list']:
             # compares with the only key within the dict
             LOG.info("NSI_MNGR: WIMS_2.1: " + str(nsr_item['subnet-ref']) + ", " + str(ns_cp_item.keys()))
             time.sleep(0.1)
-            
+      
             if nsr_item['subnet-ref'] in ns_cp_item.keys():
               LOG.info("NSI_MNGR: WIMS_2.2")
               time.sleep(0.1)
+    '''          
               # get the nsr information in order to go into the next level (VNFs info)
               nsr_json = mapper.get_nsr(nsr_item['nsrId'])
               LOG.info("NSI_MNGR: WIMS_3.1: " + str(nsr_json))
