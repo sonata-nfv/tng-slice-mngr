@@ -234,6 +234,7 @@ class thread_ns_instantiate(Thread):
             # compares with the only key within the dict
             LOG.info("NSI_MNGR: WIMS_2.1: " + str(nsr_item['subnet-ref']) + ", " + str(ns_cp_item.keys()))
             time.sleep(0.1)
+            found_vnfd = False
       
             if nsr_item['subnet-ref'] in ns_cp_item.keys():
               LOG.info("NSI_MNGR: WIMS_2.2")
@@ -243,7 +244,6 @@ class thread_ns_instantiate(Thread):
               nsr_json = mapper.get_nsr(nsr_item['nsrId'])
               LOG.info("NSI_MNGR: WIMS_3.1: " + str(nsr_json))
               time.sleep(0.1)
-              found_vnfd = False
               
               for nsr_vl_item in nsr_json['virtual_links']:
                 # checks if the value exists within the nsr cp-reference
