@@ -278,7 +278,6 @@ class thread_ns_instantiate(Thread):
                 if found_vnfd:
                   break
 
-    '''
             if found_vnfd:
               # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
               for nsr_nf_item in nsr_json['network_functions']:
@@ -298,10 +297,16 @@ class thread_ns_instantiate(Thread):
                       LOG.info("NSI_MNGR: WIMS_6.2")
                       time.sleep(0.1)
                       found_vnf_cp = vnfr_vl_item['connection_points_reference']
-                      found_vnf_cp = found_vnf_cp.remove(found_ns_cp['cp'])
+                      LOG.info("NSI_MNGR: found_vnf_cp AFTER conversion:" + str(found_vnf_cp))
+                      time.sleep(0.1)
+                      found_vnf_cp.remove(found_ns_cp['cp'])
+                      LOG.info("NSI_MNGR: found_vnf_cp BEFORE conversion:" + str(found_vnf_cp))
+                      time.sleep(0.1)
                       found_vnf_cp = str_2_json(found_vnf_cp)
+                      LOG.info("NSI_MNGR: found_vnf_cp AFTER conversion:" + str(found_vnf_cp))
+                      time.sleep(0.1)
                       break
-                  
+    '''
                   # looks for the VDU that is connected to the CP pointing out of the slice
                   for vnfr_vdu_item in vnfr_json['virtual_deployment_units']:
                     LOG.info("NSI_MNGR: WIMS_7.1: " + str(vnfr_vdu_item['id']) + ", " + str(found_vnf_cp['id']))
