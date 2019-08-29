@@ -256,7 +256,7 @@ class thread_ns_instantiate(Thread):
                   found_ns_cp = nsr_vl_item['connection_points_reference']
                   LOG.info("NSI_MNGR: found_ns_cp:" + str(found_ns_cp))
                   time.sleep(0.1)
-                  found_ns_cp = found_ns_cp.remove(ns_cp_item[nsr_item['subnet-ref']])
+                  found_ns_cp.remove(ns_cp_item[nsr_item['subnet-ref']])
                   LOG.info("NSI_MNGR: found_ns_cp BEFORE conversion:" + str(found_ns_cp))
                   time.sleep(0.1)
                   found_ns_cp = str_2_json(found_ns_cp)
