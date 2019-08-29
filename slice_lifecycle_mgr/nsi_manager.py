@@ -222,7 +222,7 @@ class thread_ns_instantiate(Thread):
       LOG.info("NSI_MNGR: WIMS_0: " + vldr_item['id'] + ", " + str(vldr_item.get('mgmt-network')) + ", " + str(len(vldr_item['vimAccountId'])))
       time.sleep(0.1)
       # only those which are not management vld and with more than one VIM
-      if ('mgmt-network' not in vldr_item.keys() or vldr_item['mgmt-network'] == False and len(vldr_item['vimAccountId']) > 1):
+      if ((vldr_item.get('mgmt-network') == None or vldr_item['mgmt-network'] == False) and len(vldr_item['vimAccountId']) > 1):
         LOG.info("NSI_MNGR: WIMS_1")
         time.sleep(0.1)
         wim_conn_points_list = []
@@ -378,7 +378,8 @@ class thread_ns_instantiate(Thread):
   def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
     try:
-      jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
+      jsonNSI = self.NSI
+      #jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
       jsonNSI["id"] = jsonNSI["uuid"]
       del jsonNSI["uuid"]
 
