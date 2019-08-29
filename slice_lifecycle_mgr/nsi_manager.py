@@ -65,22 +65,7 @@ class thread_ns_instantiate(Thread):
     Thread.__init__(self)
     self.NSI = NSI
   
-  #TODO: (not used) extract the code from run into this function
-  def send_networks_creation_request(self, network_data):
-    
-    # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
-    nets_creation_response = mapper.create_vim_network(network_data)
-
-    return nets_creation_response
-
-  def undo_created_networks(self, network_data):
-    # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
-    nets_removal_response = mapper.delete_vim_network(network_data)
-    LOG.info("NSI_MNGR_Instantiate: remove networks response: " + str(nets_removal_response))
-    time.sleep(0.1)
-
-    return nets_removal_response
-
+  # Creates the json strcucture to request a NS instantiation.
   def send_instantiation_requests(self, nsr_item):
     LOG.info("NSI_MNGR_Instantiate: Instantiating Service: " + str(nsr_item['nsrName']))
     time.sleep(0.1)
@@ -180,28 +165,7 @@ class thread_ns_instantiate(Thread):
     time.sleep(0.1)
     return instantiation_response
 
-  ''' "configure_wim" function aims to create the following dict to create WIM conenctions
-    {
-      "service_instance_id": "String",        //slice instance_uuid
-      "wim_uuid": "String",                   //wim uuid que contiene los dos vims
-      "vl_id": "String",                      //uuid del slice-vld entre servicios
-      "ingress": {                            //información del vim de entrada
-        "location": "String",
-        "nap": "String"
-      },
-      "egress": {                             //información del vim de salida
-        "location": "String",
-        "nap": "String"
-      },
-      "qos": {                                //??????????????
-        "latency": "int",
-        "latency_unit": "String",
-        "bandwidth": "int",
-        "bandwidth_unit": "String"
-      },
-      "bidirectional": true
-    }
-  '''
+  # creates the json structure to request a WAN connection
   def configure_wim(self):
  
     # internal function to convert a string with format -> "key:value" into a dict -> "key":"value"
@@ -212,19 +176,14 @@ class thread_ns_instantiate(Thread):
       new_dict['cp'] = splitted_str[1]
       return new_dict
 
+    LOG.info("NSI_MNGR: Configuring WAN Connection for Multi-VIM instantiation.")
     # gets WIMS information list to check if the VIMs where to deploy the VNFs are registered within the WIM
     wims_list = mapper.get_wims_info()
-    LOG.info("NSI_MNGR: wims_list:" + str(wims_list))
-    time.sleep(0.1)
 
     # loops the slice-vld to find out which one is in two different VIMs
     for vldr_item in self.NSI['vldr-list']:
-      LOG.info("NSI_MNGR: WIMS_0: " + vldr_item['id'] + ", " + str(vldr_item.get('mgmt-network')) + ", " + str(len(vldr_item['vimAccountId'])))
-      time.sleep(0.1)
       # only those which are not management vld and with more than one VIM
       if ((vldr_item.get('mgmt-network') == None or vldr_item['mgmt-network'] == False) and len(vldr_item['vimAccountId']) > 1):
-        LOG.info("NSI_MNGR: WIMS_1")
-        time.sleep(0.1)
         wim_conn_points_list = []
         info_found = False
 
@@ -232,45 +191,23 @@ class thread_ns_instantiate(Thread):
         for ns_cp_item in vldr_item['ns-conn-point-ref']:
           for nsr_item in self.NSI['nsr-list']:
             # compares with the only key within the dict
-            LOG.info("NSI_MNGR: WIMS_2.1: " + str(nsr_item['subnet-ref']) + ", " + str(ns_cp_item.keys()))
-            time.sleep(0.1)
             found_vnfd = False
       
             if nsr_item['subnet-ref'] in ns_cp_item.keys():
-              LOG.info("NSI_MNGR: WIMS_2.2")
-              time.sleep(0.1)
-         
               # get the nsr information in order to go into the next level (VNFs info)
               nsr_json = mapper.get_nsr(nsr_item['nsrId'])
-              LOG.info("NSI_MNGR: WIMS_3.1: " + str(nsr_json))
-              time.sleep(0.1)
               
               for nsr_vl_item in nsr_json['virtual_links']:
                 # checks if the value exists within the nsr cp-reference
-                LOG.info("NSI_MNGR: ns_cp_item[nsr_item['subnet-ref']]:" + str(ns_cp_item[nsr_item['subnet-ref']]))
-                LOG.info("NSI_MNGR: nsr_vl_item['connection_points_reference']:" + str(nsr_vl_item['connection_points_reference']))
-                time.sleep(0.1)
                 if ns_cp_item[nsr_item['subnet-ref']] in nsr_vl_item['connection_points_reference']:
-                  LOG.info("NSI_MNGR: WIMS_3.2")
-                  time.sleep(0.1)
                   found_ns_cp = nsr_vl_item['connection_points_reference']
-                  LOG.info("NSI_MNGR: found_ns_cp:" + str(found_ns_cp))
-                  time.sleep(0.1)
                   found_ns_cp.remove(ns_cp_item[nsr_item['subnet-ref']])
-                  LOG.info("NSI_MNGR: found_ns_cp BEFORE conversion:" + str(found_ns_cp))
-                  time.sleep(0.1)
                   found_ns_cp = str_2_json(found_ns_cp)
-                  LOG.info("NSI_MNGR: found_ns_cp AFTER conversion:" + str(found_ns_cp))
-                  time.sleep(0.1)
               
                   # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
                   nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
                   for nsd_nf_item in nsd_json['nsd']['network_functions']:
-                    LOG.info("NSI_MNGR: WIMS_4.1: " + str(nsd_nf_item['vnf_id']) + ", " + str(found_ns_cp['id']))
-                    time.sleep(0.1)
                     if nsd_nf_item['vnf_id'] == found_ns_cp['id']:
-                      LOG.info("NSI_MNGR: WIMS_4.2: " + str(nsd_nf_item['vnf_name']))
-                      time.sleep(0.1)
                       # the right VNF name is found
                       found_vnfd_name = nsd_nf_item['vnf_name']
                       found_vnfd = True
@@ -283,48 +220,22 @@ class thread_ns_instantiate(Thread):
               for nsr_nf_item in nsr_json['network_functions']:
                 found_vnfr = False
                 vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
-                LOG.info("NSI_MNGR: WIMS_5.0: " + str(vnfr_json))
-                time.sleep(0.1)
-                LOG.info("NSI_MNGR: WIMS_5.1: " + str(vnfr_json['name']) + ", " + str(found_vnfd_name))
-                time.sleep(0.1)
                 if vnfr_json['name'] == found_vnfd_name:
-                  LOG.info("NSI_MNGR: WIMS_5.2")
-                  time.sleep(0.1)
                   for vnfr_vl_item in vnfr_json['virtual_links']:
-                    LOG.info("NSI_MNGR: WIMS_6.1: " + str(found_ns_cp['cp']) + ", " + str(vnfr_vl_item['connection_points_reference']))
-                    time.sleep(0.1)
                     # looks for the VLD connected to the selected VNFR external CP
                     if found_ns_cp['cp'] in vnfr_vl_item['connection_points_reference']:
-                      LOG.info("NSI_MNGR: WIMS_6.2")
-                      time.sleep(0.1)
                       found_vnf_cp = vnfr_vl_item['connection_points_reference']
-                      LOG.info("NSI_MNGR: found_vnf_cp AFTER conversion:" + str(found_vnf_cp))
-                      time.sleep(0.1)
                       found_vnf_cp.remove(found_ns_cp['cp'])
-                      LOG.info("NSI_MNGR: found_vnf_cp BEFORE conversion:" + str(found_vnf_cp))
-                      time.sleep(0.1)
                       found_vnf_cp = str_2_json(found_vnf_cp)
-                      LOG.info("NSI_MNGR: found_vnf_cp AFTER conversion:" + str(found_vnf_cp))
-                      time.sleep(0.1)
                       break
 
                   #TODO: take into account the CNF records (right now only VNFs)
                   # looks for the VDU that is connected to the CP pointing out of the slice
                   for vnfr_vdu_item in vnfr_json['virtual_deployment_units']:
-                    LOG.info("NSI_MNGR: WIMS_7.1: " + str(vnfr_vdu_item['id']) + ", " + str(found_vnf_cp['id']))
-                    time.sleep(0.1)
                     if vnfr_vdu_item['id'] == found_vnf_cp['id']:
-                      LOG.info("NSI_MNGR: WIMS_7.2")
-                      time.sleep(0.1)
                       for vnfc_ins_item in vnfr_vdu_item['vnfc_instance']:
                         for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
-                          LOG.info("NSI_MNGR: WIMS_vnfc_ins_cp_item" + str(vnfc_ins_cp_item))
-                          time.sleep(0.1)
-                          LOG.info("NSI_MNGR: WIMS_8.1: " + str(vnfc_ins_cp_item['id']) + ", " + str(found_vnf_cp['cp']))
-                          time.sleep(0.1)
                           if vnfc_ins_cp_item['id'] == found_vnf_cp['cp']:
-                            LOG.info("NSI_MNGR: WIMS_8.2")
-                            time.sleep(0.1)
                             # VDU found, takins its information for the WIM request
                             wim_dict = {}
                             wim_dict['location'] = vnfc_ins_item['vim_id']
@@ -338,9 +249,6 @@ class thread_ns_instantiate(Thread):
                       break
                 if found_vnfr:
                   break
-
-        LOG.info("NSI_MNGR: wim_conn_points_list:" + str(wim_conn_points_list))
-        time.sleep(0.1)
 
         if wim_conn_points_list:
           # validates if the two VIMs are registered within the same WIM
@@ -366,15 +274,17 @@ class thread_ns_instantiate(Thread):
           wim_dict['egress'] = wim_conn_points_list[1]
           wim_dict['bidirectional'] = True
 
-          #TODO: mapper call for WIM connection
-          # wim_response = mapper.create_wim_network(wim_dict)
           LOG.info("NSI_MNGR: Json to request WIM conection:" + str(wim_dict))
           time.sleep(0.1)
-          #if wim_response[1] != 201:
-          #  return self.NSI, wim_response[1]
+          wim_response = mapper.create_wim_network(wim_dict)
+          if wim_response[1] == 201:
+            return self.NSI, 200
+        else:
+          return self.NSI, 501
 
-    return self.NSI, 200
+    return self.NSI, 501
 
+  # once all the instantiation is done, calls back the GTK to notify the final result.
   def update_nsi_notify_instantiate(self):
     mutex_slice2db_access.acquire()
     try:
@@ -401,8 +311,9 @@ class thread_ns_instantiate(Thread):
             updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
       else:
         # it only happens if networks are not created, all NSs status becomes "NOT_INSTANTIATED"
-        for service_item in jsonNSI['nsr-list']:
-          service_item['working-status'] == "NOT_INSTANTIATED"
+        #for service_item in jsonNSI['nsr-list']:
+        #  service_item['working-status'] == "NOT_INSTANTIATED"
+        pass
       
       # sends the updated NetSlice instance to the repositories
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
@@ -423,6 +334,45 @@ class thread_ns_instantiate(Thread):
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
       LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GTK notified with status: " +str(thread_response[1]))
 
+  # generate json structures to undo networks if instatiation failed.
+  def undo_slice_vlds(self):
+    # remove the created networks in order to avoid having unused resources
+    self.NSI['nsi-status'] = 'ERROR'
+    for vldr_item in self.NSI['vldr-list']:
+      if vldr_item['vld-status'] == 'ACTIVE':
+        virtual_links = []
+        virtual_links_item = {}
+        virtual_links_item['id'] = vldr_item['vim-net-id']
+        virtual_links.append(virtual_links_item)
+
+        vim_list = []
+        for vim_item in vldr_item['vimAccountId']:
+          vim_list_item = {}
+          vim_list_item['uuid'] = vim_item['vim-id']
+          vim_list_item['virtual_links'] = virtual_links
+          vim_list.append(vim_list_item)
+
+        network_data = {}
+        network_data['instance_id'] = vldr_item['_stack-net-ref']
+        network_data['vim_list'] = vim_list
+
+        networks_response = mapper.delete_vim_network(network_data)
+      
+        if networks_response['status'] == 'COMPLETED':
+          LOG.info("NSI_MNGR: REMOVED NETWORK CREATED for ERROR Slice: " + str(networks_response))
+          time.sleep(0.1)
+          vldr_item['vld-status'] = 'INACTIVE'
+
+        else:
+          LOG.info("NSI_MNGR: Error to remove network of an error slice: " + str(networks_response))
+          time.sleep(0.1)
+          vldr_item['vld-status'] = 'ERROR'
+          self.NSI['errorLog'] = networks_response['error']
+      
+    for nss_item in self.NSI['nsr-list']:
+      nss_item['working-status'] = 'NOT_INSTANTIATED'
+
+  # basic function that manages the whole instantiation.
   def run(self):
     # set to true in order to instantiates NSs in case there are no slice_vld to create
     network_ready = True
@@ -481,7 +431,7 @@ class thread_ns_instantiate(Thread):
           if not network_ready:
             break
 
-      # if TRUE = instantiates the services, otherwise removes the created networks
+      # if TRUE = instantiates the services, otherwise REMOVES created networks
       if network_ready:
         LOG.info("NSI_MNGR: Instantiating Network Services...")
         time.sleep(0.1)
@@ -495,41 +445,7 @@ class thread_ns_instantiate(Thread):
               nsr_item['working-status'] == 'ERROR'
               self.NSI['errorLog'] = 'ERROR when instantiating ' + str(nsr_item['nsrName'])
       else:
-        # remove the created networks in order to avoid having unused resources
-        self.NSI['nsi-status'] = 'ERROR'
-        for vldr_item in self.NSI['vldr-list']:
-          if vldr_item['vld-status'] == 'ACTIVE':
-            virtual_links = []
-            virtual_links_item = {}
-            virtual_links_item['id'] = vldr_item['vim-net-id']
-            virtual_links.append(virtual_links_item)
-
-            vim_list = []
-            for vim_item in vldr_item['vimAccountId']:
-              vim_list_item = {}
-              vim_list_item['uuid'] = vim_item['vim-id']
-              vim_list_item['virtual_links'] = virtual_links
-              vim_list.append(vim_list_item)
-
-            network_data = {}
-            network_data['instance_id'] = vldr_item['_stack-net-ref']
-            network_data['vim_list'] = vim_list
-
-            networks_response = mapper.delete_vim_network(network_data)
-          
-            if networks_response['status'] == 'COMPLETED':
-              LOG.info("NSI_MNGR: REMOVED NETWORK CREATED for ERROR Slice: " + str(networks_response))
-              time.sleep(0.1)
-              vldr_item['vld-status'] = 'INACTIVE'
-
-            else:
-              LOG.info("NSI_MNGR: Error to remove network of an error slice: " + str(networks_response))
-              time.sleep(0.1)
-              vldr_item['vld-status'] = 'ERROR'
-              self.NSI['errorLog'] = networks_response['error']
-          
-        for nss_item in self.NSI['nsr-list']:
-          nss_item['working-status'] = 'NOT_INSTANTIATED'
+        undo_slice_vlds()
         
       # sends the updated NetSlice instance to the repositories
       repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
@@ -562,14 +478,32 @@ class thread_ns_instantiate(Thread):
         # WAN ENFORCEMENT for MULTI-VIM INSTANTIATION
         # if  the slice is distributed in many VIMs, it creates the necessary WIM connections
         self.NSI = jsonNSI
-        if nsi_instantiated and len(jsonNSI['datacenter']) > 1:
+        service_error = False
+        # check if there's any NSR with error, in that case, it has to undo all the work done (nsr and nets).
+        for nsr_item in self.NSI['nsr-list']:
+          if nsr_item['working-status'] == "ERROR":
+            service_error = True
+            break
+
+        if service_error == False and len(jsonNSI['datacenter']) > 1:
           wim_configured = self.configure_wim()
           LOG.info("NSI_MNGR_wim_configured: " +str(wim_configured))
           time.sleep(0.1)
           
           if wim_configured[1] != 200:
-            #TODO: undo everything: terminate services, remove networks, update NSI with ERROR status (re-use exsiting functions)
+            #TODO: call terminate services and networks
+            # undo_slice_vlds()
+            #terminate_services
+
+            self.NSI['errorLog'] = "WAN Connection for multi-VIM instantiation NOT DONE."
+            self.NSI['nsi-status'] = 'ERROR'
             LOG.info("NSI_MNGR_wim_step: WIM connection NOT done")
+            
+            # sends the updated NetSlice instance to the repositories
+            repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
+        else:
+          # undo_slice_vlds()
+          pass
 
       # Notifies the GTK about the NetSlice process is done (either completed or error).
       LOG.info("NSI_MNGR_Notify: Updating and notifying GTK")
