@@ -268,7 +268,7 @@ Objective: Request to create a wim interconnection between vims
   Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def create_wim_network(wim_link_data):
-  url = get_url_sp_gtk() + '/slice/wan-networks'
+  url = get_url_sp_gtk() + '/slices/wan-networks'
   data_json = json.dumps(wim_link_data)
   
   LOG.info("MAPPER: Sending network creation request")
@@ -296,7 +296,7 @@ Objective: Request to delete a wim interconnection between vims
   Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def delete_wim_network(wim_link_data):
-  url = get_url_sp_gtk() + '/slice/wan-networks'
+  url = get_url_sp_gtk() + '/slices/wan-networks'
   data_json = json.dumps(network_data)
   
   LOG.info("MAPPER: Sending network removal request")
