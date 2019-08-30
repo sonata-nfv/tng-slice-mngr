@@ -102,10 +102,7 @@ Objective: Request to get all registered VIMs information
 def get_vims_info():
   LOG.info("MAPPER: Requesting VIMs information.")
   url = get_url_sp_gtk() + '/slices/vims'
-
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
-  LOG.info("MAPPER: response vims" + str(response))
-  time.sleep(0.1)
   
   if (response.status_code == 200):
       jsonresponse = json.loads(response.text)
@@ -144,10 +141,6 @@ Objective: Request to create the networks for a slice deployment
 def create_vim_network(network_data):
   url = get_url_sp_gtk() + '/slices/networks'
   data_json = json.dumps(network_data)
-  
-  LOG.info("MAPPER: Sending network creation request")
-  LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
-  time.sleep(0.1)
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 201):
@@ -181,12 +174,7 @@ Objective: Request to delete the networks for a slice deployment
 def delete_vim_network(network_data):
   url = get_url_sp_gtk() + '/slices/networks'
   data_json = json.dumps(network_data)
-
-  LOG.info("MAPPER: Sending network removal request")
-  LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
   response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
-  LOG.info("MAPPER: Networks removal response: " +str(response))
-  time.sleep(0.1)
   
   if (response.status_code == 201):
     jsonresponse = json.loads(response.text)
@@ -229,11 +217,7 @@ Objective: Request to get all registered WIMs information
 def get_wims_info():
   LOG.info("MAPPER: Requesting WIMs information.")
   url = get_url_sp_gtk() + '/slices/wims'
-
-  LOG.info("MAPPER: requesting Wims, URL--> " + str(url))
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
-  LOG.info("MAPPER: response Wims" + str(response))
-  time.sleep(0.1)
   
   if (response.status_code == 200):
       jsonresponse = json.loads(response.text)
@@ -271,7 +255,7 @@ def create_wim_network(wim_link_data):
   url = get_url_sp_gtk() + '/slices/wan-networks'
   data_json = json.dumps(wim_link_data)
   
-  LOG.info("MAPPER: Sending network creation request")
+  LOG.info("MAPPER: Sending WAN network creation request")
   LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
   time.sleep(0.1)
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
@@ -280,7 +264,7 @@ def create_wim_network(wim_link_data):
     jsonresponse = json.loads(response.text)
   else:
     jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-    LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
+    LOG.info("MAPPER: WAN Network creation jsonresponse: " +str(jsonresponse))
     time.sleep(0.1)
   
   return jsonresponse, 201
@@ -299,7 +283,7 @@ def delete_wim_network(wim_link_data):
   url = get_url_sp_gtk() + '/slices/wan-networks'
   data_json = json.dumps(network_data)
   
-  LOG.info("MAPPER: Sending network removal request")
+  LOG.info("MAPPER: Sending WAN network removal request")
   LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
   time.sleep(0.1)
   response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
@@ -310,7 +294,7 @@ def delete_wim_network(wim_link_data):
     jsonresponse = json.loads(response.text)
   else:
     jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-    LOG.info("MAPPER: Networks removal jsonresponse: " +str(jsonresponse))
+    LOG.info("MAPPER: WAN Network removal jsonresponse: " +str(jsonresponse))
     time.sleep(0.1)
 
   return jsonresponse
@@ -321,11 +305,7 @@ def net_serv_instantiate(service_data):
   #url = get_url_repositories() + '/nsrs' #TODO change from gtk to rep once it works everything
   url = get_url_sp_gtk() + '/requests'
   data_json = json.dumps(service_data)
-  
-  LOG.info("MAPPER: Sending instanitation request for the following network slice subnet: " +str(service_data['name']))
-  time.sleep(0.1)
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
-
   jsonresponse = json.loads(response.text)
   
   return jsonresponse, response.status_code
@@ -334,8 +314,6 @@ def net_serv_instantiate(service_data):
 def net_serv_terminate(service_data):
   url = get_url_sp_gtk() + "/requests"
   data_json = json.dumps(service_data)
-
-  LOG.info("MAPPER: Sending Terminate request")
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 200) or (response.status_code == 201):
@@ -348,8 +326,6 @@ def net_serv_terminate(service_data):
 def sliceUpdated(slice_callback, json_slice_info):
   url = str(slice_callback)
   data_json = json.dumps(json_slice_info)
-  
-  LOG.info("MAPPER: Sending Slice updated to GTK")
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 201):
@@ -361,8 +337,6 @@ def sliceUpdated(slice_callback, json_slice_info):
 # GET /requests to pull the information of all Network Services INSTANCES
 def get_all_nsr():
   url = get_url_sp_gtk() + "/records/services"
-
-  LOG.info("MAPPER: Getting all NetServicesInstances")
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 200):
@@ -374,8 +348,6 @@ def get_all_nsr():
 # GET /requests/<request_uuid> to pull the information of a single Network Service INSTANCE
 def get_nsr(request_uuid):
   url = get_url_sp_gtk() + "/records/services/" + str(request_uuid)
-
-  LOG.info("MAPPER: Getting desired NetServicesInstance")
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 200):
@@ -388,7 +360,6 @@ def get_nsr(request_uuid):
 # GET virtual network function RECORD
 def get_vnfr(vnfr_uuid):
   url = get_url_repositories() + "/vnfrs/" + str(vnfr_uuid)
-
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
     
   if (response.status_code == 200):
@@ -402,7 +373,6 @@ def get_vnfr(vnfr_uuid):
 # GET virtual network function DESCRIPTOR
 def get_vnfd(vnfd_name, vnfd_vendor, vnfd_version):
   url = get_url_catalogues() + "/api/v2/vnfs?vendor="+str(vnfd_vendor)+"&name="+str(vnfd_name)+"&version="+str(vnfd_version)
-
   response = requests.get(url,headers=JSON_CONTENT_HEADER)
     
   if (response.status_code == 200):
@@ -416,7 +386,6 @@ def get_vnfd(vnfd_name, vnfd_vendor, vnfd_version):
 ################################# NETWORK SERVICE DESCRIPTORS #####################################
 def get_nsd(nsd_uuid):
   url = get_url_catalogues() + "/api/v2/network-services/" + str(nsd_uuid)
-
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
     
   if (response.status_code == 200):
@@ -428,12 +397,9 @@ def get_nsd(nsd_uuid):
   return service_response
 
 def get_nsd_list():
-  LOG.info("MAPPER: GET the Network Services Information")
-  time.sleep(0.1)
   # cleans the current nsInfo_list to have the information updated
   del db.nsInfo_list[:]
   url = get_url_catalogues() + "/api/v2/network-services"
-  
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
 
   if (response.status_code == 200):
