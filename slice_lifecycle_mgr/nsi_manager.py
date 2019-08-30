@@ -173,7 +173,6 @@ class thread_ns_instantiate(Thread):
       new_dict['cp'] = splitted_str[1]
       return new_dict
 
-    LOG.info("NSI_MNGR: Configuring WAN Connection for Multi-VIM instantiation.")
     # gets WIMS information list to check if the VIMs where to deploy the VNFs are registered within the WIM
     wims_list = mapper.get_wims_info()
 
@@ -920,6 +919,7 @@ def add_basic_nsi_info(nst_json, nsi_json):
   nsir_dict['sliceCallback'] = nsi_json['callback']  #URL used to call back the GK when the slice instance is READY/ERROR
   nsir_dict['nsr-list'] = []
   nsir_dict['vldr-list'] = []
+  nsir_dict['_wim-connections']=[]
 
   return nsir_dict
 
