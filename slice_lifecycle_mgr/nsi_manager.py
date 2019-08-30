@@ -263,7 +263,7 @@ class thread_ns_instantiate(Thread):
         
           # creates the json to request the WIM connection
           wim_dict = {}
-          wim_dict['service_instance_id'] = self.NSI['id']
+          wim_dict['instance_uuid'] = self.NSI['id']   #GTK translates instance_uuid to service_instance_id for the IA.
           wim_dict['wim_uuid'] = wim_uuid
           wim_dict['vl_id'] = vldr_item['id']
           wim_dict['ingress'] = wim_conn_points_list[0]
@@ -675,7 +675,7 @@ class thread_ns_terminate(Thread):
       for wan_item in self.NSI['_wim-connections']:
         # creates the json to request the WIM connection
         wim_dict = {}
-        wim_dict['service_instance_id'] = wan_item['service_instance_id']
+        wim_dict['instance_uuid'] = wan_item['instance_uuid'] #GTK translates instance_uuid to service_instance_id for the IA.
         wim_dict['wim_uuid'] = wan_item['wim_uuid']
         wim_dict['vl_id'] = wan_item['vl_id']
 
