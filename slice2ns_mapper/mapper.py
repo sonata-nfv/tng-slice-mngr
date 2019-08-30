@@ -281,7 +281,7 @@ Objective: Request to delete a wim interconnection between vims
 '''
 def delete_wim_network(wim_link_data):
   url = get_url_sp_gtk() + '/slices/wan-networks'
-  data_json = json.dumps(network_data)
+  data_json = json.dumps(wim_link_data)
   
   LOG.info("MAPPER: Sending WAN network removal request")
   LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
@@ -302,7 +302,6 @@ def delete_wim_network(wim_link_data):
 ################################ NETWORK SERVICES REQUESTS/RECORDS ##################################
 # POST /requests to INSTANTIATE Network Service instance
 def net_serv_instantiate(service_data):
-  #url = get_url_repositories() + '/nsrs' #TODO change from gtk to rep once it works everything
   url = get_url_sp_gtk() + '/requests'
   data_json = json.dumps(service_data)
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
