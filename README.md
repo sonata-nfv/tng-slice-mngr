@@ -7,12 +7,8 @@
 * Description: 5GTANGO Service Platform Slice Manager
 * Version: 2.0
 * Actions:
-    * Network Slice Tempalte Management (create, check, update, delete).
+    * Network Slice Template Management (create, check, update, delete).
     * Network Slice Instantiation Management (create/instantiate, check, update, terminate, delete).
-* Features:
-    * Network Services Composition within the Network Slice.
-    * Network Service Sharing
-    * Single and Multi-VIM deployments
 
 ### Network Slice Theory
 A Network Slice Instance (NSI) is defined in by Mschner K. et all Hedmar, P. in _Description of network slicing concept._ (NGMN  Alliance  document, January 2016) as a set of network functions and the resources for these network functions which are arranged and configured, forming a complete logical network, which meets certain characteristics in terms of available bandwidth, latency, or QoS, among others described in 5QI (5G QoS Indicator). Our component follows ETSI EVE 012 approach to combine 3GPP Network Slices and ETSI NFV network services. More information is provided at the wiki.
@@ -70,17 +66,8 @@ As the SONATA Service Platform is composed by multiple modules and all of them u
 
 **INFORMATION NOTE:** these are minimum versions, it is not tested with the newest versions probably they should be fine. If there's no specific version, the newest versions should work fine but it is not tested.
 
-### Prerequisits
-In order to have a full functionality, it is necessary to install the all the SONATA SP modules.
-
-### Setting up Dev
-Please read the installation guide in order to know any environment requirement.
-
-### Building
-Done when installing the whole SONATA SP.
-
-### Deploying / Publishing
-To deploy and publish new code, please follow the procedure as any other SONATA SP component;create you rown fork, develope and request a Pull Request to the leaders (see section below) and speak with the leaders in order in order to make them accept your contribution.
+### Prerequisits, Setting up Dev, Building and Deploying / Publishing
+In order to have a full functionality, it is necessary to install the all the SONATA SP modules, further information in the [5GTango](https://5gtango.eu/software/documentation.html) Documentation webpage.
 
 ## Versioning
 This is the V2.0 of this component, which is part of SONATA SP 5.0 (developed by the EU 5GTango project)
