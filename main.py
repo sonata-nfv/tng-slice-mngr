@@ -92,8 +92,6 @@ def optionsOneNST(nstId):
 def create_slice_template():
   LOG.info("SLICE_MAIN: received json from portal: " + str(request.json))
   new_nst = nst_manager.create_nst(request.json)
-  
-  LOG.info("SLICE_MAIN: HTTP.TEXT: " + str(new_nst[0]) + " HTTP.VALUE: " + str(new_nst[1]))
   return jsonify(new_nst[0]), new_nst[1]
 
 # GETS for all the NetSlice Templates (NST) information
@@ -131,7 +129,7 @@ def delete_slice_template(nstId):
 # CREATES/INSTANTIATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def create_slice_instance():
-  LOG.info("SLICE_MAIN: received json with NST_uuid from portal to instantiate: " + str(request.json))
+  LOG.info("SLICE_MAIN: Request tfor a Network Slice Instance: " + str(request.json))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
   instantiating_nsi = json_validator.validate_create_instantiation(request.json)
@@ -139,14 +137,12 @@ def create_slice_instance():
   if (instantiating_nsi[1] == 200):
     instantiating_nsi = nsi_manager.create_nsi(request.json)
   
-  LOG.info("SLICE_MAIN: HTTP.TEXT: " + str(instantiating_nsi[0]) + " HTTP.VALUE: " + str(instantiating_nsi[1]))
   return jsonify(instantiating_nsi[0]), instantiating_nsi[1]
 
 # INSTANTIATION UPDATE (internal endpoint to complete the previous, not public in the API page)
 # INFORMATION: if changed, a line in nsi_manager.py within its function "createNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
 def update_slice_instantiation(nsiId):
-  LOG.info("SLICE_MAIN: received json tu update nsi: " + str(request.json))
   sliceUpdated = nsi_manager.update_instantiating_nsi(nsiId, request.json)
 
   #[0] error_message or valid_json, [1] status code
@@ -163,14 +159,12 @@ def create_slice_terminate(nsiId):
   if (terminating_nsi[1] == 200):
     terminating_nsi = nsi_manager.terminate_nsi(nsiId, request.json)  
   
-  LOG.info("SLICE_MAIN: HTTP.TEXT: " + str(terminating_nsi[0]) + " HTTP.VALUE: " + str(terminating_nsi[1]))
   return jsonify(terminating_nsi[0]), terminating_nsi[1]
 
 # TERMINATE UPDATE (internal endpoint to complete the previous, not public in the API page)
 # INFORMATION: if changed, a line in nsi_manager.py within its function "terminateNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
 def update_slice_termination(nsiId):
-  LOG.info("SLICE_MAIN: received json to update a TERMINATING NSI: " + str(request.json))
   sliceUpdated = nsi_manager.update_terminating_nsi(nsiId, request.json)
 
   #[0] error_message or valid_json, [1] status code
