@@ -83,6 +83,7 @@ def get_all_saved_nst():
     
     return jsonresponse
 
+# GET the number of NST objects within the catalogues
 def get_all_saved_nst_count():
     LOG.info("NST_MNGR2CAT: Requesting all NSTD count information from catalogues")
     url = get_base_url() + '/api/catalogues/v2/nsts?count'

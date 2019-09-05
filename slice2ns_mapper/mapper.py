@@ -252,12 +252,10 @@ Objective: Request to create a wim interconnection between vims
   Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def create_wim_network(wim_link_data):
+  LOG.info("MAPPER: Sending WAN network creation request")
   url = get_url_sp_gtk() + '/slices/wan-networks'
   data_json = json.dumps(wim_link_data)
-  
-  LOG.info("MAPPER: Sending WAN network creation request")
-  LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
-  time.sleep(0.1)
+  # Timeout = None becasue this requests needs more time as the IA/WTAPI take long to finish their actions.
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 201):
