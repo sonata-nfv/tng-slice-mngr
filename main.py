@@ -129,7 +129,7 @@ def delete_slice_template(nstId):
 # CREATES/INSTANTIATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def create_slice_instance():
-  LOG.info("SLICE_MAIN: Request tfor a Network Slice Instance: " + str(request.json))
+  LOG.info("SLICE_MAIN: Request for a Network Slice Instance: " + str(request.json))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
   instantiating_nsi = json_validator.validate_create_instantiation(request.json)
