@@ -255,7 +255,6 @@ def create_wim_network(wim_link_data):
   LOG.info("MAPPER: Sending WAN network creation request")
   url = get_url_sp_gtk() + '/slices/wan-networks'
   data_json = json.dumps(wim_link_data)
-  # Timeout = None becasue this requests needs more time as the IA/WTAPI take long to finish their actions.
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 201):
