@@ -268,6 +268,7 @@ class thread_ns_instantiate(Thread):
           wim_dict['egress'] = wim_conn_points_list[1]
           wim_dict['bidirectional'] = True
 
+          LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_response))
           wim_response = mapper.create_wim_network(wim_dict)
           if wim_response[1] in [200,201]:
             self.NSI['_wim-connections'].append(wim_dict)
