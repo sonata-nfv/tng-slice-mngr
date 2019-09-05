@@ -85,7 +85,7 @@ pipeline {
       }
     }
     stage('Deploying in integration') {
-      when{
+      when {
         branch 'master'
       }      
       steps {
@@ -99,19 +99,20 @@ pipeline {
       }
     }
     stage('Promoting release v5.0') {
-      when{
+      when {
         branch 'v5.0'
       }
       stages {
         stage('Generating release') {
-          steps{
+          steps {
             sh 'docker tag registry.sonata-nfv.eu:5000/tng-slice-mngr:latest registry.sonata-nfv.eu:5000/tng-slice-mngr:v5.0'
             sh 'docker tag registry.sonata-nfv.eu:5000/tng-slice-mngr:latest sonatanfv/tng-slice-mngr:v5.0'
             sh 'docker push registry.sonata-nfv.eu:5000/tng-slice-mngr:v5.0'
             sh 'docker push sonatanfv/tng-slice-mngr:v5.0'
           }
-        }stage('Deploying in v5.0 servers'){
-          steps{
+        }
+        stage('Deploying in v5.0 servers') {
+          steps {
             sh 'rm -rf tng-devops || true'
             sh 'git clone https://github.com/sonata-nfv/tng-devops.git'
             dir(path: 'tng-devops') {
