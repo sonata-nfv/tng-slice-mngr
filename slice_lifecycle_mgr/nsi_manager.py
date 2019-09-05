@@ -310,6 +310,9 @@ class thread_ns_instantiate(Thread):
           wim_dict['instance_uuid'] = self.NSI['id']   # GTK translates it to service_instance_id for the IA.
           wim_dict['wim_uuid'] = wim_uuid
           wim_dict['vl_id'] = vldr_item['id']
+          LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_conn_points_list[0]) + " / type: " + str(type(wim_conn_points_list[0])))
+          LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_conn_points_list[1]) + " / type: " + str(type(wim_conn_points_list[1])))
+          
           wim_dict['ingress'] = wim_conn_points_list[0]
           wim_dict['egress'] = wim_conn_points_list[1]
           wim_dict['bidirectional'] = True
