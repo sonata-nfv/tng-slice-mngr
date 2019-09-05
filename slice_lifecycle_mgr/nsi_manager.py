@@ -554,7 +554,9 @@ class thread_ns_instantiate(Thread):
           else:
             # releases mutex for any other thread to acquire it
             mutex_slice2db_access.release()
-
+      else:
+        self.NSI['nsi-status'] = 'ERROR'
+      
       # Notifies the GTK about the NetSlice process is done (either completed or error).
       LOG.info("NSI_MNGR: Updating network slice record and notifying instantiation to GTK")
       self.update_nsi_notify_instantiate()
