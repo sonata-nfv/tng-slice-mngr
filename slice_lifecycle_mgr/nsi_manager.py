@@ -56,52 +56,6 @@ LOG = logging.getLogger("slicemngr:nsi_manager")
 LOG.setLevel(logging.INFO)
 
 
-############################################ GENERAL SECTIOn ############################################
-# Looks for any "INSTANTIATING/INSTANTIATED" nsi sharing a nsr with the current terminating nsi
-def find_shared_nsr(terminate_slice):
-  ## CREATES A LIST OF NSRs TO TERMINATE CHECKING IF EACH NSR IS SHARED WITH OTHER NSIRs
-  # creates a nsirs list without the current one
-  nsirs_ref_list = nsi_repo.get_all_saved_nsi()
-  nsirs_list_no_current = []
-  for nsir_item in nsirs_ref_list:
-    if nsir_item['uuid'] != terminate_slice['id']:
-      nsirs_list_no_current.append(nsir_item)
-  
-  # checks if each NSR of the current nsir can be terminated depending if it is shared by other nsirs
-  termin_nsrids_list = []
-  for termin_nsr_item in terminate_slice['nsr-list']:
-    # if there are other nsirs follow, if not terminate nsr
-    if nsirs_list_no_current:
-      # creates a list of nsirs with only those having the current nsr
-      nsirs_list_with_nsr = []
-      for nsir_ref_item in nsirs_list_no_current:
-        for nsr_ref_item in nsir_ref_item['nsr-list']:
-          if nsr_ref_item['nsrId'] == termin_nsr_item['nsrId']:
-            nsirs_list_with_nsr.append(nsir_ref_item)
-
-      if nsirs_list_with_nsr:
-        # from the previous reduced list, creates a list of nsirs with status [INSTANTIATED, INSTANTIATING, READY]
-        instantiated_nsirs_list_with_nsr = []
-        for nsir_ref_item in nsirs_list_with_nsr:
-          if nsir_ref_item['nsi-status'] in ['INSTANTIATED', 'INSTANTIATING', 'READY']:
-            instantiated_nsirs_list_with_nsr.append(nsir_ref_item)
-
-        if instantiated_nsirs_list_with_nsr:
-          nsr_to_terminate = False
-        else:
-          nsr_to_terminate = True
-      else:
-        nsr_to_terminate = True
-    else:
-      nsr_to_terminate = True
-    
-    # if true, there's not other nsirs sharing the current nsr and so, it can be terminated.
-    if nsr_to_terminate:
-      termin_nsr_item['working-status'] == 'TERMINATING'
-      termin_nsrids_list.append(termin_nsr_item['nsrId'])
-  
-  return termin_nsrids_list, 200
-
 ################################## THREADs to manage services/slice requests #################################
 # SENDS NETWORK SERVICE (NS) INSTANTIATION REQUESTS
 ## Objctive: reads subnets list in Network Slice Instance (NSI) and sends requests2GTK to instantiate them 
@@ -549,6 +503,7 @@ class thread_ns_instantiate(Thread):
         del jsonNSI["uuid"]
         self.NSI = jsonNSI
         nsr_error = False
+        wim_ready = True
         
         # check if there's any NSR with error or still instantiating due to deployment time out.
         for nsr_item in self.NSI['nsr-list']:
@@ -563,9 +518,12 @@ class thread_ns_instantiate(Thread):
             LOG.info("NSI_MNGR: Configuring WAN Connection for multi-vim instantiation.")
             # wan enforcement for multi-vim instantiation
             wim_configured = self.configure_wim()
-                    
+            if wim_configured[1] != 200:
+              wim_ready = False
+
+        # FUTURE TODO: ensure this "undo" process is well done.         
         # undoes everything done until this moment (nsrs, and vlds)
-        if nsr_error == True or wim_configured[1] != 200:
+        if nsr_error == True or wim_ready == False:
           LOG.info("NSI_MNGR: Undoing all the created objects (nsrs and vlds")
           # acquires mutex to have unique access to the nsi (repositories)
           mutex_slice2db_access.acquire()
@@ -797,11 +755,16 @@ class thread_ns_terminate(Thread):
         LOG.info("NSI_MNGR: JSON to remove WIM conection:" + str(wim_dict))
         time.sleep(0.1)
         wim_response = mapper.delete_wim_network(wim_dict)
+        if wim_response['status'] != 'COMPLETED':
+          LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT removed.")
+          self.NSI['errorLog'] = "WAN Enforcement Removal: " + wim_response['error']
+          self.NSI['nsi-status'] = 'ERROR'
+          return self.NSI, 501
 
     # sends each of the termination requests
     LOG.info("NSI_MNGR: Terminating Network Service Instantiations.")
 
-    #TODO: missing to take into account the option of an empty list, then just update the general nsirs info.
+    #TODO: missing to take into account the option of an empty list (all nsrs are shared and used), then just update the general nsirs info.
     for nsrid_item in self.termin_nsrids_list:
       # requests to terminate a NSr
       termination_resp = self.send_termination_requests(nsrid_item)
@@ -834,11 +797,9 @@ class thread_ns_terminate(Thread):
       
       for nsr_item in self.NSI['nsr-list']:
         if nsr_item['isshared']:
-          #if nsr_item['working-status'] == "TERMINATING":
           if nsr_item['working-status'] not in ["TERMINATED", "INSTANTIATED", "ERROR", "READY"]:
             nsi_terminated = False
         else:
-          #if nsr_item['working-status'] is ["TERMINATING", "NEW", "INSTANTIATED", "INSTANTIATING"]:
           if nsr_item['working-status'] not in ["TERMINATED", "ERROR", "READY"]:
             nsi_terminated = False
         if not nsi_terminated:
@@ -1414,6 +1375,7 @@ def terminate_nsi(nsiId, TerminOrder):
         terminate_nsi['id'] = terminate_nsi['uuid']
         del terminate_nsi['uuid']
 
+        #FUTURE TODO: allow to programm termination
         # prepares time values to check if termination is done in the future
         if (TerminOrder['terminateTime'] == "0" or TerminOrder['terminateTime'] == 0):
           termin_time = 0
@@ -1556,3 +1518,49 @@ def get_all_nsi_counter():
     return_msg = {}
     return_msg['counter'] = "0"
     return (return_msg, 200)
+
+############################################ GENERAL SECTION ############################################
+# Looks for any "INSTANTIATING/INSTANTIATED" nsi sharing a nsr with the current terminating nsi
+def find_shared_nsr(terminate_slice):
+  ## CREATES A LIST OF NSRs TO TERMINATE CHECKING IF EACH NSR IS SHARED WITH OTHER NSIRs
+  # creates a nsirs list without the current one
+  nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+  nsirs_list_no_current = []
+  for nsir_item in nsirs_ref_list:
+    if nsir_item['uuid'] != terminate_slice['id']:
+      nsirs_list_no_current.append(nsir_item)
+  
+  # checks if each NSR of the current nsir can be terminated depending if it is shared by other nsirs
+  termin_nsrids_list = []
+  for termin_nsr_item in terminate_slice['nsr-list']:
+    # if there are other nsirs follow, if not terminate nsr
+    if nsirs_list_no_current:
+      # creates a list of nsirs with only those having the current nsr
+      nsirs_list_with_nsr = []
+      for nsir_ref_item in nsirs_list_no_current:
+        for nsr_ref_item in nsir_ref_item['nsr-list']:
+          if nsr_ref_item['nsrId'] == termin_nsr_item['nsrId']:
+            nsirs_list_with_nsr.append(nsir_ref_item)
+
+      if nsirs_list_with_nsr:
+        # from the previous reduced list, creates a list of nsirs with status [INSTANTIATED, INSTANTIATING, READY]
+        instantiated_nsirs_list_with_nsr = []
+        for nsir_ref_item in nsirs_list_with_nsr:
+          if nsir_ref_item['nsi-status'] in ['INSTANTIATED', 'INSTANTIATING', 'READY']:
+            instantiated_nsirs_list_with_nsr.append(nsir_ref_item)
+
+        if instantiated_nsirs_list_with_nsr:
+          nsr_to_terminate = False
+        else:
+          nsr_to_terminate = True
+      else:
+        nsr_to_terminate = True
+    else:
+      nsr_to_terminate = True
+    
+    # if true, there's not other nsirs sharing the current nsr and so, it can be terminated.
+    if nsr_to_terminate:
+      termin_nsr_item['working-status'] == 'TERMINATING'
+      termin_nsrids_list.append(termin_nsr_item['nsrId'])
+  
+  return termin_nsrids_list, 200
