@@ -503,6 +503,7 @@ class thread_ns_instantiate(Thread):
         del jsonNSI["uuid"]
         self.NSI = jsonNSI
         nsr_error = False
+        wim_ready = True
         
         # check if there's any NSR with error or still instantiating due to deployment time out.
         for nsr_item in self.NSI['nsr-list']:
@@ -517,10 +518,12 @@ class thread_ns_instantiate(Thread):
             LOG.info("NSI_MNGR: Configuring WAN Connection for multi-vim instantiation.")
             # wan enforcement for multi-vim instantiation
             wim_configured = self.configure_wim()
+            if wim_configured[1] != 200:
+              wim_ready = False
 
         # FUTURE TODO: ensure this "undo" process is well done.         
         # undoes everything done until this moment (nsrs, and vlds)
-        if nsr_error == True or wim_configured[1] != 200:
+        if nsr_error == True or wim_ready == False:
           LOG.info("NSI_MNGR: Undoing all the created objects (nsrs and vlds")
           # acquires mutex to have unique access to the nsi (repositories)
           mutex_slice2db_access.acquire()
