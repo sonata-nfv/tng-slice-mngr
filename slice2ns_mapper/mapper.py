@@ -286,11 +286,11 @@ def delete_wim_network(wim_link_data):
   response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
   LOG.info("MAPPER: Networks removal response: " +str(response))
   time.sleep(0.1)
+
+  jsonresponse = json.loads(response.text)
   
-  if (response.status_code == 201):
-    jsonresponse = json.loads(response.text)
-  else:
-    jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
+  if (response.status_code != 201):
+    jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': jsonresponse['error']}
     LOG.info("MAPPER: WAN Network removal jsonresponse: " +str(jsonresponse))
     time.sleep(0.1)
 

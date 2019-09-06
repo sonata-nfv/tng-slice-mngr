@@ -757,7 +757,7 @@ class thread_ns_terminate(Thread):
         wim_response = mapper.delete_wim_network(wim_dict)
         if wim_response['status'] != 'COMPLETED':
           LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT removed.")
-          self.NSI['errorLog'] = "WAN Enforcement Removal: " + wim_response['error']
+          self.NSI['errorLog'] = "WAN Enforcement Removal: " + wim_response['message']
           self.NSI['nsi-status'] = 'ERROR'
           return self.NSI, 501
 
