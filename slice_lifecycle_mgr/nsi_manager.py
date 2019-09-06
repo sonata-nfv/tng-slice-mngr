@@ -319,9 +319,14 @@ class thread_ns_instantiate(Thread):
 
           LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
           wim_response = mapper.create_wim_network(wim_dict)
-          if wim_response[1] in [200,201]:
+          if wim_response['status'] == 'COMPLETED':
             self.NSI['_wim-connections'].append(wim_dict)
             return self.NSI, 200
+          else:
+            LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT created.")
+            self.NSI['errorLog'] = "WAN Enforcement: " + wim_response['error']
+            self.NSI['nsi-status'] = 'ERROR'
+            return self.NSI, 501
         else:
           return self.NSI, 501
 
@@ -558,18 +563,10 @@ class thread_ns_instantiate(Thread):
             LOG.info("NSI_MNGR: Configuring WAN Connection for multi-vim instantiation.")
             # wan enforcement for multi-vim instantiation
             wim_configured = self.configure_wim()
-            
-            if wim_configured[1] != 200:
-              #TODO: call terminate services and networks
-              # terminate_services
-              # self.undo_slice_vlds()
-
-              self.NSI['errorLog'] = "WAN Connection for multi-VIM instantiation NOT DONE."
-              self.NSI['nsi-status'] = 'ERROR'
-              LOG.info("NSI_MNGR: WIM connection NOT done")
-            else:
-              LOG.info("NSI_MNGR: WAN Connection for multi-vim instantiation OK.")
-        else:
+                    
+        # undoes everything done until this moment (nsrs, and vlds)
+        if nsr_error == True or wim_configured[1] != 200:
+          LOG.info("NSI_MNGR: Undoing all the created objects (nsrs and vlds")
           # acquires mutex to have unique access to the nsi (repositories)
           mutex_slice2db_access.acquire()
           
@@ -603,7 +600,9 @@ class thread_ns_instantiate(Thread):
           else:
             # releases mutex for any other thread to acquire it
             mutex_slice2db_access.release()
+      
       else:
+        #TODO: undo the created vlds...
         self.NSI['nsi-status'] = 'ERROR'
       
       # Notifies the GTK about the NetSlice process is done (either completed or error).

@@ -264,7 +264,7 @@ def create_wim_network(wim_link_data):
     LOG.info("MAPPER: WAN Network creation jsonresponse: " +str(jsonresponse))
     time.sleep(0.1)
   
-  return jsonresponse, 201
+  return jsonresponse
 
 '''
 Objective: Request to delete a wim interconnection between vims
