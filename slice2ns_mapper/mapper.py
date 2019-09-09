@@ -290,7 +290,7 @@ def delete_wim_network(wim_link_data):
   if (response.status_code == 201):
     jsonresponse = json.loads(response.text)
   else:
-    jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': jsonresponse['error']}
+    jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
     LOG.info("MAPPER: WAN Network removal jsonresponse: " +str(jsonresponse))
     time.sleep(0.1)
 
