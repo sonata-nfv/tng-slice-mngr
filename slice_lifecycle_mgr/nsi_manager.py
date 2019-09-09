@@ -1215,7 +1215,7 @@ def nsi_placement(new_nsir):
                   req_sto = req_sto + vdu_item['resource_requirements']['storage']['size']
             
             elif vnfd_info.get('cloudnative_deployment_units'):
-              #TODO: add breaks as CNF does not need to look for resources to select VIM.
+              # CNF does not need to look for resources to select VIM.
               pass
             
             else:
@@ -1229,7 +1229,7 @@ def nsi_placement(new_nsir):
             new_nsir['nsi-status'] = 'ERROR'
             # 409 = The request could not be completed due to a conflict with the current state of the resource.
             return new_nsir, 409
-      
+
       else:
         new_nsir['errorLog'] = "No " + str(nsr_item['subnet-nsdId-ref']) + " NSD FOUND."
         new_nsir['nsi-status'] = 'ERROR'
@@ -1237,9 +1237,9 @@ def nsi_placement(new_nsir):
         return new_nsir, 409
 
       for vim_index, vim_item in enumerate(vims_list['vim_list']):
+        #TODO: missing to use storage but this data is not comming in the VIMs information
         #if (req_core != 0 and req_mem != 0 and req_sto != 0 and vim_item['type'] == "vm"): #current nsr only has VNFs
         if (req_core != 0 and req_mem != 0 and vim_item['type'] == "vm"):
-          #TODO: missing to use storage but this data is not comming in the VIMs information
           available_core = vim_item['core_total'] - vim_item['core_used']
           available_memory = vim_item['memory_total'] - vim_item['memory_used']
           #available_storage = vim_item['storage_total'] - vim_item['storage_used']
@@ -1262,9 +1262,9 @@ def nsi_placement(new_nsir):
             vim_item['core_used'] = vim_item['core_used'] + req_core    
             vim_item['memory_used'] = vim_item['memory_used'] + req_mem
             #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
-            
+        
+        # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF   
         elif (req_core == 0 and req_mem == 0 and vim_item['type'] == "container"):
-          # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF
           selected_vim = {}
           # if no vim is still selected, take the first one
           if not selected_vim:
