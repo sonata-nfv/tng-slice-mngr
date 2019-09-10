@@ -757,7 +757,7 @@ class thread_ns_terminate(Thread):
         wim_response = mapper.delete_wim_network(wim_dict)
         if wim_response['status'] != 'COMPLETED':
           LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT removed.")
-          self.NSI['errorLog'] = "WAN Enforcement Removal: " + wim_response['message']
+          self.NSI['errorLog'] = "WAN Enforcement Removal Error."
           self.NSI['nsi-status'] = 'ERROR'
           return self.NSI, 501
 
@@ -1102,8 +1102,9 @@ def add_vlds(new_nsir, nst_json):
     if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True
     vld_record['type'] = vld_item['type']
+    #TODO: FUTUR WORK: use this parameters to define characterisitics (currently not necessary)
     #vld_record['root-bandwidth']
-    #vld_record['leaf-bandwidth']                   #TODO: check how to use this 4 parameters
+    #vld_record['leaf-bandwidth']
     #vld_record['physical-network']
     #vld_record['segmentation_id']
     vld_record['vld-status'] = 'INACTIVE'
@@ -1115,7 +1116,7 @@ def add_vlds(new_nsir, nst_json):
       cp_dict[cp_ref_item['subnet-ref']] = cp_ref_item['nsd-cp-ref']
       cp_refs_list.append(cp_dict)
       
-      # if the slice defines the accessability (floating IPs) take it, else thake it from the NSs.
+      # if the slice defines the accessability (floating IPs) take it, else take it from the NSs.
       if vld_item.get('access_net'):
         vld_record['access_net'] = vld_item['access_net']
       else:
@@ -1166,6 +1167,7 @@ def add_vlds(new_nsir, nst_json):
                         break
               break
   new_nsir['vldr-list'] = vldr_list
+  
   return new_nsir
 
 # does the NSs placement based on the available VIMs resources & the required of each NS.
