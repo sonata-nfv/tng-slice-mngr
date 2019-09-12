@@ -162,6 +162,7 @@ class thread_ns_instantiate(Thread):
     return instantiation_response
 
   # creates the json structure to request a WAN connection
+  #INFORMATION: the multi-vim deployment is limited to share the vld within only 2 VIMs (improvement to be done)
   def configure_wim(self):
  
     # internal function to convert a string with format -> "key:value" into a dict -> "key":"value"
@@ -177,112 +178,123 @@ class thread_ns_instantiate(Thread):
 
     # loops the slice-vld to find out which one is in two different VIMs
     for vldr_item in self.NSI['vldr-list']:
-      # only those which are not management vld and with more than one VIM
-      if ((vldr_item.get('mgmt-network') == None or vldr_item['mgmt-network'] == False) and len(vldr_item['vimAccountId']) > 1):
-        wim_conn_points_list = []
-        info_found = False
+      # only those not management vld
+      if (vldr_item.get('mgmt-network') == None or vldr_item['mgmt-network'] == False):
+        # FUTURE WORK: multi-vim options to interconnect a vld with more than two VIMs, programm it here
+        # multi-vim requested when a slice instantiated in VIM B, shares a nsr with an already created slice in VIM A.
+        if len(vldr_item['vim-net-stack']) = 2:
+          #TODO: work here for a shared vld among two VIMs requested on two different slice instances
+          pass
+        else:
+          # there's only one element in vim-net-stack with the two endpoints to create the WAN-link
+          vim_net_item = vldr_item['vim-net-stack'][0]
+          
+          # multi-vim requested with a single slice instance placed in differen VIMs
+          if len(vim_net_item['vimAccountId']) > 1:
+            wim_conn_points_list = []
+            info_found = False
 
-        # from the SLICE-CP looks for the IP associated to the VDU linked to that CP.
-        for ns_cp_item in vldr_item['ns-conn-point-ref']:
-          for nsr_item in self.NSI['nsr-list']:
-            # compares with the only key within the dict
-            found_vnfd = False
-      
-            if nsr_item['subnet-ref'] in ns_cp_item.keys():
-              # get the nsr information in order to go into the next level (VNFs info)
-              nsr_json = mapper.get_nsr(nsr_item['nsrId'])
-              
-              for nsr_vl_item in nsr_json['virtual_links']:
-                # checks if the value exists within the nsr cp-reference
-                if ns_cp_item[nsr_item['subnet-ref']] in nsr_vl_item['connection_points_reference']:
-                  found_ns_cp = nsr_vl_item['connection_points_reference']
-                  found_ns_cp.remove(ns_cp_item[nsr_item['subnet-ref']])
-                  found_ns_cp = str_2_json(found_ns_cp)
-              
-                  # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
-                  nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
-                  for nsd_nf_item in nsd_json['nsd']['network_functions']:
-                    if nsd_nf_item['vnf_id'] == found_ns_cp['id']:
-                      # the right VNF name is found
-                      found_vnfd_name = nsd_nf_item['vnf_name']
-                      found_vnfd = True
+            # from the SLICE-CP looks for the IP associated to the VDU linked to that CP.
+            for ns_cp_item in vldr_item['ns-conn-point-ref']:
+              for nsr_item in self.NSI['nsr-list']:
+                # compares with the only key within the dict
+                found_vnfd = False
+          
+                if nsr_item['subnet-ref'] in ns_cp_item.keys():
+                  # get the nsr information in order to go into the next level (VNFs info)
+                  nsr_json = mapper.get_nsr(nsr_item['nsrId'])
+                  
+                  for nsr_vl_item in nsr_json['virtual_links']:
+                    # checks if the value exists within the nsr cp-reference
+                    if ns_cp_item[nsr_item['subnet-ref']] in nsr_vl_item['connection_points_reference']:
+                      found_ns_cp = nsr_vl_item['connection_points_reference']
+                      found_ns_cp.remove(ns_cp_item[nsr_item['subnet-ref']])
+                      found_ns_cp = str_2_json(found_ns_cp)
+                  
+                      # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
+                      nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
+                      for nsd_nf_item in nsd_json['nsd']['network_functions']:
+                        if nsd_nf_item['vnf_id'] == found_ns_cp['id']:
+                          # the right VNF name is found
+                          found_vnfd_name = nsd_nf_item['vnf_name']
+                          found_vnfd = True
+                          break
+                    if found_vnfd:
                       break
+
                 if found_vnfd:
-                  break
+                  # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
+                  for nsr_nf_item in nsr_json['network_functions']:
+                    found_vnfr = False
+                    vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
+                    if vnfr_json['name'] == found_vnfd_name:
+                      for vnfr_vl_item in vnfr_json['virtual_links']:
+                        # looks for the VLD connected to the selected VNFR external CP
+                        if found_ns_cp['cp'] in vnfr_vl_item['connection_points_reference']:
+                          found_vnf_cp = vnfr_vl_item['connection_points_reference']
+                          found_vnf_cp.remove(found_ns_cp['cp'])
+                          found_vnf_cp = str_2_json(found_vnf_cp)
+                          break
 
-            if found_vnfd:
-              # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
-              for nsr_nf_item in nsr_json['network_functions']:
-                found_vnfr = False
-                vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
-                if vnfr_json['name'] == found_vnfd_name:
-                  for vnfr_vl_item in vnfr_json['virtual_links']:
-                    # looks for the VLD connected to the selected VNFR external CP
-                    if found_ns_cp['cp'] in vnfr_vl_item['connection_points_reference']:
-                      found_vnf_cp = vnfr_vl_item['connection_points_reference']
-                      found_vnf_cp.remove(found_ns_cp['cp'])
-                      found_vnf_cp = str_2_json(found_vnf_cp)
-                      break
-
-                  # looks for the VDU that is connected to the CP pointing out of the slice
-                  for vnfr_vdu_item in vnfr_json['virtual_deployment_units']:
-                    if vnfr_vdu_item['id'] == found_vnf_cp['id']:
-                      for vnfc_ins_item in vnfr_vdu_item['vnfc_instance']:
-                        for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
-                          if vnfc_ins_cp_item['id'] == found_vnf_cp['cp']:
-                            # VDU found, takins its information for the WIM request
-                            wim_dict = {}
-                            wim_dict['location'] = vnfc_ins_item['vim_id']
-                            wim_dict['nap'] = vnfc_ins_cp_item['interface']['address']
-                            wim_conn_points_list.append(wim_dict)
-                            found_vnfr = True
-                            break
+                      # looks for the VDU that is connected to the CP pointing out of the slice
+                      for vnfr_vdu_item in vnfr_json['virtual_deployment_units']:
+                        if vnfr_vdu_item['id'] == found_vnf_cp['id']:
+                          for vnfc_ins_item in vnfr_vdu_item['vnfc_instance']:
+                            for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
+                              if vnfc_ins_cp_item['id'] == found_vnf_cp['cp']:
+                                # VDU found, takins its information for the WIM request
+                                wim_dict = {}
+                                wim_dict['location'] = vnfc_ins_item['vim_id']
+                                wim_dict['nap'] = vnfc_ins_cp_item['interface']['address']
+                                wim_conn_points_list.append(wim_dict)
+                                found_vnfr = True
+                                break
+                            if found_vnfr:
+                              break
                         if found_vnfr:
                           break
                     if found_vnfr:
                       break
-                if found_vnfr:
+
+            if wim_conn_points_list:
+              # validates if the two VIMs are registered within the same WIM
+              wim_uuid = None
+              for wim_item in wims_list['wim_list']:
+                found_wim = True
+                # if any of the two vim_uuids is not in the wim_attached_vims_list, check the next wim
+                for wim_cp_item in wim_conn_points_list:
+                  if wim_cp_item['location'] not in wim_item['attached_vims']:
+                    found_wim = False
+                    break
+                
+                if found_wim:
+                  wim_uuid = wim_item['uuid']
                   break
-
-        if wim_conn_points_list:
-          # validates if the two VIMs are registered within the same WIM
-          wim_uuid = None
-          for wim_item in wims_list['wim_list']:
-            found_wim = True
-            # if any of the two vim_uuids is not in the wim_attached_vims_list, check the next wim
-            for wim_cp_item in wim_conn_points_list:
-              if wim_cp_item['location'] not in wim_item['attached_vims']:
-                found_wim = False
-                break
             
-            if found_wim:
-              wim_uuid = wim_item['uuid']
-              break
-        
-          # creates the json to request the WIM connection
-          wim_dict = {}
-          wim_dict['instance_uuid'] = self.NSI['id']   # GTK translates it to service_instance_id for the IA.
-          wim_dict['wim_uuid'] = wim_uuid
-          wim_dict['vl_id'] = vldr_item['id']
-          LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_conn_points_list[0]) + " / type: " + str(type(wim_conn_points_list[0])))
-          LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_conn_points_list[1]) + " / type: " + str(type(wim_conn_points_list[1])))
-          
-          wim_dict['ingress'] = wim_conn_points_list[0]
-          wim_dict['egress'] = wim_conn_points_list[1]
-          wim_dict['bidirectional'] = True
+              # creates the json to request the WIM connection
+              wim_dict = {}
+              wim_dict['instance_uuid'] = self.NSI['id']   # GTK translates it to service_instance_id for the IA.
+              wim_dict['wim_uuid'] = wim_uuid
+              wim_dict['vl_id'] = vldr_item['id']
+              LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_conn_points_list[0]) + " / type: " + str(type(wim_conn_points_list[0])))
+              LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_conn_points_list[1]) + " / type: " + str(type(wim_conn_points_list[1])))
+              
+              wim_dict['ingress'] = wim_conn_points_list[0]
+              wim_dict['egress'] = wim_conn_points_list[1]
+              wim_dict['bidirectional'] = True
 
-          LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
-          wim_response = mapper.create_wim_network(wim_dict)
-          if wim_response['status'] == 'COMPLETED':
-            self.NSI['_wim-connections'].append(wim_dict)
-            return self.NSI, 200
-          else:
-            LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT created.")
-            self.NSI['errorLog'] = "WAN Enforcement: " + wim_response['error']
-            self.NSI['nsi-status'] = 'ERROR'
-            return self.NSI, 501
-        else:
-          return self.NSI, 501
+              LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
+              wim_response = mapper.create_wim_network(wim_dict)
+              if wim_response['status'] == 'COMPLETED':
+                self.NSI['_wim-connections'].append(wim_dict)
+                return self.NSI, 200
+              else:
+                LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT created.")
+                self.NSI['errorLog'] = "WAN Enforcement: " + wim_response['error']
+                self.NSI['nsi-status'] = 'ERROR'
+                return self.NSI, 501
+            else:
+              return self.NSI, 501
 
     return self.NSI, 501
 
@@ -313,23 +325,26 @@ class thread_ns_instantiate(Thread):
             virtual_links.append(virtual_links_item)
 
             vim_list = []
-            for vim_item in vldr_item['vimAccountId']:
-              vim_list_item = {}
-              vim_list_item['uuid'] = vim_item['vim-id']
-              vim_list_item['virtual_links'] = virtual_links
-              vim_list.append(vim_list_item)
-
             network_data = {}
-            network_data['instance_id'] = vldr_item['_stack-net-ref']
-            network_data['vim_list'] = vim_list
+            for vim_net_stack_item in vldr_item['vim-net-stack']
+              network_data['instance_id'] = vldr_item['id']
+              for vim_item in vim_net_stack_item['vimAccountId']:
+                vim_list_item = {}
+                vim_list_item['uuid'] = vim_item['vim-id']
+                vim_list_item['virtual_links'] = virtual_links
+                vim_list.append(vim_list_item)
 
-            networks_response = mapper.delete_vim_network(network_data)
-          
-            if networks_response['status'] == 'COMPLETED':
-              vldr_item['vld-status'] = 'INACTIVE'
-            else:
-              vldr_item['vld-status'] = 'ERROR'
-              self.NSI['errorLog'] = networks_response['error']
+              #network_data = {}
+              #network_data['instance_id'] = vldr_item['_stack-net-ref']
+              network_data['vim_list'] = vim_list
+
+              networks_response = mapper.delete_vim_network(network_data)
+            
+              if networks_response['status'] == 'COMPLETED':
+                vldr_item['vld-status'] = 'INACTIVE'
+              else:
+                vldr_item['vld-status'] = 'ERROR'
+                self.NSI['errorLog'] = networks_response['error']
 
   # requests to terminate those instantiated nsr of a failed nsi
   def undo_nsrs(self, nsrs_2_terminate):
@@ -350,6 +365,54 @@ class thread_ns_instantiate(Thread):
           break
 
     return 200
+
+  # TODO: Improve the code in order to avoid duplicated code:
+  # .... The code within the next funcion is also inside the terminate_nsi(nsiId, TerminOrder) function, this should 
+  # .... be avoid and only have one time the code.
+  # Looks for any "INSTANTIATING/INSTANTIATED" nsi sharing a nsr with the current terminating nsi
+  def find_shared_nsr(error_slice):
+    ## CREATES A LIST OF NSRs TO TERMINATE CHECKING IF EACH NSR IS SHARED WITH OTHER NSIRs
+    # creates a nsirs list without the current one
+    nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+    nsirs_list_no_current = []
+    for nsir_item in nsirs_ref_list:
+      if nsir_item['uuid'] != error_slice['id']:
+        nsirs_list_no_current.append(nsir_item)
+    
+    # checks if each NSR of the current nsir can be terminated depending if it is shared by other nsirs
+    termin_nsrids_list = []
+    for termin_nsr_item in error_slice['nsr-list']:
+      # if there are other nsirs follow, if not terminate nsr
+      if nsirs_list_no_current:
+        # creates a list of nsirs with only those having the current nsr
+        nsirs_list_with_nsr = []
+        for nsir_ref_item in nsirs_list_no_current:
+          for nsr_ref_item in nsir_ref_item['nsr-list']:
+            if nsr_ref_item['nsrId'] == termin_nsr_item['nsrId']:
+              nsirs_list_with_nsr.append(nsir_ref_item)
+
+        if nsirs_list_with_nsr:
+          # from the previous reduced list, creates a list of nsirs with status [INSTANTIATED, INSTANTIATING, READY]
+          instantiated_nsirs_list_with_nsr = []
+          for nsir_ref_item in nsirs_list_with_nsr:
+            if nsir_ref_item['nsi-status'] in ['INSTANTIATED', 'INSTANTIATING', 'READY']:
+              instantiated_nsirs_list_with_nsr.append(nsir_ref_item)
+
+          if instantiated_nsirs_list_with_nsr:
+            nsr_to_terminate = False
+          else:
+            nsr_to_terminate = True
+        else:
+          nsr_to_terminate = True
+      else:
+        nsr_to_terminate = True
+      
+      # if true, there's not other nsirs sharing the current nsr and so, it can be terminated.
+      if nsr_to_terminate:
+        termin_nsr_item['working-status'] == 'TERMINATING'
+        termin_nsrids_list.append(termin_nsr_item['nsrId'])
+    
+    return termin_nsrids_list, 200
 
   # once all the instantiation is done, calls back the GTK to notify the final result.
   def update_nsi_notify_instantiate(self):
@@ -410,7 +473,7 @@ class thread_ns_instantiate(Thread):
         # creates each one of the vlds defined within the nsir
         for vldr_item in self.NSI['vldr-list']:
           # if ACTIVE, the vld is shared and there's no need to create it again
-          if vldr_item['vld-status'] == "INACTIVE" or len(vldr_item['vimAccountId']) > 1:
+          if vldr_item['vld-status'] == "INACTIVE" or len(vldr_item['vim-net-stack']) > 1:
             # creates the json object with the information for the request payload
             virtual_links = []
             virtual_links_item = {}
@@ -420,35 +483,39 @@ class thread_ns_instantiate(Thread):
             #TODO FUTURE: there are other parameters that could be added (i.e. minimum_BW, qos_requirements...)
 
             vim_list = []
-            for vim_item in vldr_item['vimAccountId']:
-              if not vim_item['net-created']:
-                vim_list_item = {}
-                vim_list_item['uuid'] = vim_item['vim-id']
-                vim_list_item['virtual_links'] = virtual_links
-                vim_list.append(vim_list_item)
+            for vim_net_stack_item in vldr_item['vim-net-stack']:
+              for vim_item in vim_net_stack_item['vimAccountId']:
+                if not vim_item['net-created']:
+                  vim_list_item = {}
+                  vim_list_item['uuid'] = vim_item['vim-id']
+                  vim_list_item['virtual_links'] = virtual_links
+                  vim_list.append(vim_list_item)
+              
+              if vim_list:
+                network_data = {}
+                network_data['instance_id'] = vim_net_stack_item['id']
+                network_data['vim_list'] = vim_list
 
-            network_data = {}
-            network_data['instance_id'] = vldr_item['_stack-net-ref']
-            network_data['vim_list'] = vim_list
+                # calls the function towards the GTK
+                networks_response = mapper.create_vim_network(network_data)
 
-            # calls the function towards the GTK
-            networks_response = mapper.create_vim_network(network_data)
+                # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
+                if networks_response['status'] == 'COMPLETED':
+                  LOG.info("NSI_MNGR: Network Slice VLD: " + str(networks_response) + " created.")
+                  vldr_item['vld-status'] = 'ACTIVE'
 
-            # checks that all the networks are created. otherwise, (network_ready = False) services are not requested
-            if networks_response['status'] == 'COMPLETED':
-              LOG.info("NSI_MNGR: Network Slice VLD: " + str(networks_response) + " created.")
-              vldr_item['vld-status'] = 'ACTIVE'
+                  for vim_item in vim_net_stack_item['vimAccountId']:
+                    if vim_item['net-created'] == False:
+                      vim_item['net-created'] = True
 
-              for vim_item in vldr_item['vimAccountId']:
-                if vim_item['net-created'] == False:
-                  vim_item['net-created'] = True
-
-            else:
-              LOG.info("NSI_MNGR: Network Slice VLD: " + str(networks_response) + " NOT created.")
-              vldr_item['vld-status'] = 'ERROR'
-              self.NSI['errorLog'] = networks_response['error']
-              network_ready = False
-          
+                else:
+                  LOG.info("NSI_MNGR: Network Slice VLD: " + str(networks_response) + " NOT created.")
+                  vldr_item['vld-status'] = 'ERROR'
+                  self.NSI['errorLog'] = networks_response['error']
+                  network_ready = False
+              
+              if not network_ready:
+                break
           if not network_ready:
             break
 
@@ -530,10 +597,10 @@ class thread_ns_instantiate(Thread):
           
           # TODO: improve this section as it only sends the terminate request and considers...
           # ... the nsr already as terminate withouth waiting the confirmation from GTK.
-          check_shared = find_shared_nsr(terminate_nsi)
+          check_shared = self.find_shared_nsr(terminate_nsi)
           
           if check_shared[0]:
-            # terminates all the nsrs within the given list.
+            # TERMINATES NSRS within the given list.
             self.undo_nsrs(check_shared[0])
             
             # sends the updated NetSlice instance to the repositories
@@ -553,7 +620,7 @@ class thread_ns_instantiate(Thread):
                   time.sleep(15)
                   break
             
-            # terminates the vlds (vim nets) (if they are not shared)
+            # TERMINATES VLDRS, if they are not shared
             self.undo_slice_vlds()
           else:
             # releases mutex for any other thread to acquire it
@@ -643,6 +710,7 @@ class thread_ns_terminate(Thread):
 
     return termination_response, 201
 
+  '''
   def send_networks_removal_request(self, vldrs_2_remove):
     LOG.info("NSI_MNGR: Removing Network Slice VLDs (VIM Networks).")
     # creates the 1st json level structure {instance_id: ___, vim_list: []}
@@ -685,7 +753,8 @@ class thread_ns_terminate(Thread):
     # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
     nets_removal_response = mapper.delete_vim_network(network_data)
     return nets_removal_response
-
+  '''
+  
   def update_nsi_notify_terminate(self):
     mutex_slice2db_access.acquire()
     try:
@@ -843,26 +912,28 @@ class thread_ns_terminate(Thread):
 
           vim_list = []
           # to remove the net if it si placed in multiple VIMs
-          for vimAccountID_item in vldr_item['vimAccountId']:
-            vim_list_item = {}
-            vim_list_item['uuid'] = vimAccountID_item['vim-id']
-            vim_list_item['virtual_links'] = virtual_links
-            vim_list.append(vim_list_item)
+          
+          for vim_net_stack_item in vldr_item['vim-net-stack']:
+            for vimAccountID_item in vim_net_stack_item['vimAccountId']:
+              vim_list_item = {}
+              vim_list_item['uuid'] = vimAccountID_item['vim-id']
+              vim_list_item['virtual_links'] = virtual_links
+              vim_list.append(vim_list_item)
 
-          network_data = {}
-          network_data['instance_id'] = vldr_item['_stack-net-ref']
-          network_data['vim_list'] = vim_list
+            network_data = {}
+            network_data['instance_id'] = vldr_item['_stack-net-ref']
+            network_data['vim_list'] = vim_list
 
-          # calls the function towards the GTK
-          networks_response = mapper.delete_vim_network(network_data)
+            # calls the function towards the GTK
+            networks_response = mapper.delete_vim_network(network_data)
 
-          # checks that all the networks are terminated
-          if networks_response['status'] in ['COMPLETED']:
-            vldr_item['vld-status'] = "INACTIVE"
-          else:
-            vldr_item['vld-status'] = "ERROR"
-            self.NSI['nsi-status'] = "ERROR"
-            self.NSI['errorLog'] = networks_response['error']
+            # checks that all the networks are terminated
+            if networks_response['status'] in ['COMPLETED']:
+              vldr_item['vld-status'] = "INACTIVE"
+            else:
+              vldr_item['vld-status'] = "ERROR"
+              self.NSI['nsi-status'] = "ERROR"
+              self.NSI['errorLog'] = networks_response['error']
 
       # sends the updated NetSlice instance to the repositories
       repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
@@ -1096,9 +1167,12 @@ def add_vlds(new_nsir, nst_json):
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
-    vld_record['vimAccountId'] = []
+    #vld_record['vimAccountId'] = []
     vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
-    vld_record['_stack-net-ref']  = str(uuid.uuid4()) # move to the moment the vimAccoutnID is done
+    #vld_record['_stack-net-ref']  = str(uuid.uuid4()) # move to the moment the vimAccoutnID is done
+    vld_record['vim-net-stack'] = []
+
+
     if 'mgmt-network' in vld_item.keys():
       vld_record['mgmt-network'] = True
     vld_record['type'] = vld_item['type']
@@ -1158,9 +1232,10 @@ def add_vlds(new_nsir, nst_json):
                   if vld_nsr_item['vld-ref'] == vldr_ref['id']:
                     for current_vldr_item in vldr_list:
                       if current_vldr_item['id'] == vldr_ref['id']:
-                        current_vldr_item['_stack-net-ref'] = vldr_ref['_stack-net-ref']
                         current_vldr_item['vim-net-id'] = vldr_ref['vim-net-id']
-                        current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
+                        #current_vldr_item['_stack-net-ref'] = vldr_ref['_stack-net-ref']
+                        #current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
+                        current_vldr_item['vim-net-stack'] = vldr_ref['vim-net-stack']
                         current_vldr_item['vld-status'] = 'ACTIVE'
                         current_vldr_item['type'] = vldr_ref['type']
                         current_vldr_item['shared-nsrs-list'] = vldr_ref['shared-nsrs-list']
@@ -1301,11 +1376,11 @@ def nsi_placement(new_nsir):
       # assigns the generated placement list to the NSir key
       nsr_item['nsr-placement'] = nsr_placement_list
 
-      # VLDR placement: if two nsr link to the same vl are placed in different VIMs, the vld must have boths VIMs
-      # from each nsir.nsr-list_item.nsr-placement creates the nsir.vldr-list_item.vimAccountId list.
+      # VLDR placement: if two nsr linked to the same vld are placed in different VIMs, the vld must have boths VIMs
+      # from each nsir.nsr-list_item.nsr-placement creates the nsir.vldr-list_item.vim-net-stack list.
       for vld_ref_item in nsr_item['vld']:
         for vldr_item in new_nsir['vldr-list']:
-          vimaccountid_list = vldr_item['vimAccountId']
+          vimaccountid_list = vldr_item['vim-net-stack']
 
           if vld_ref_item['vld-ref'] == vldr_item['id']:
             for nsr_placement_item in nsr_item['nsr-placement']:
@@ -1326,27 +1401,32 @@ def nsi_placement(new_nsir):
                 
                 if exist_vl_vimaccountid == False:
                   vimaccountid_list.append(add_vl)
-          
-            vldr_item['vimAccountId'] = vimaccountid_list
+
+            vim_net_stack_item = {}
+            vim_net_stack_item['id']  = str(uuid.uuid4())
+            vim_net_stack_item['vimAccountId'] = vimaccountid_list
+
+            vldr_item['vim-net-stack'].append(vim_net_stack_item)
   
 
   # adds all the VIMs IDs into the slice record first level 'datacenter' field.
   # from each nsir.vldr-list_item.vimAccountId list creates the nsir.datacenter list.
   nsi_datacenter_list = []
   for vldr_item in new_nsir['vldr-list']:
-    for vimAccountId_item in vldr_item['vimAccountId']:
-      #if empty, add the first VIM
-      if not nsi_datacenter_list:
-        nsi_datacenter_list.append(vimAccountId_item['vim-id'])
-      else:
-        existing_vim = False
-        for nsi_datacenter_item in nsi_datacenter_list:
-          if nsi_datacenter_item == vimAccountId_item['vim-id']:
-            existing_vim = True
-            break
-        
-        if existing_vim == False:
+    for vim_net_stack_item in vldr_item['vim-net-stack']:
+      for vimAccountId_item in vim_net_stack_item['vimAccountId']:
+        #if empty, add the first VIM
+        if not nsi_datacenter_list:
           nsi_datacenter_list.append(vimAccountId_item['vim-id'])
+        else:
+          existing_vim = False
+          for nsi_datacenter_item in nsi_datacenter_list:
+            if nsi_datacenter_item == vimAccountId_item['vim-id']:
+              existing_vim = True
+              break
+          
+          if existing_vim == False:
+            nsi_datacenter_list.append(vimAccountId_item['vim-id'])
   
   new_nsir['datacenter'] = nsi_datacenter_list
   return new_nsir, 200
@@ -1390,50 +1470,48 @@ def terminate_nsi(nsiId, TerminOrder):
           terminate_nsi['terminateTime'] = str(datetime.datetime.now().isoformat())
           terminate_nsi['sliceCallback'] = TerminOrder['callback']
           terminate_nsi['nsi-status'] = "TERMINATING"
+
+          ## CREATES A LIST OF NSRs TO TERMINATE CHECKING IF EACH NSR IS SHARED WITH OTHER NSIRs
+          # creates a nsirs list without the current one
+          nsirs_ref_list = nsi_repo.get_all_saved_nsi()
+          nsirs_list_no_current = []
+          for nsir_item in nsirs_ref_list:
+            if nsir_item['uuid'] != terminate_nsi['id']:
+              nsirs_list_no_current.append(nsir_item)
           
-          termin_nsrids_list = find_shared_nsr(terminate_nsi)
-          '''
-            ## CREATES A LIST OF NSRs TO TERMINATE CHECKING IF EACH NSR IS SHARED WITH OTHER NSIRs
-            # creates a nsirs list without the current one
-            nsirs_ref_list = nsi_repo.get_all_saved_nsi()
-            nsirs_list_no_current = []
-            for nsir_item in nsirs_ref_list:
-              if nsir_item['uuid'] != terminate_nsi['id']:
-                nsirs_list_no_current.append(nsir_item)
-            
-            # checks if each NSR of the current nsir can be terminated depending if it is shared by other nsirs
-            termin_nsrids_list = []
-            for termin_nsr_item in terminate_nsi['nsr-list']:
-              # if there are other nsirs follow, if not terminate nsr
-              if nsirs_list_no_current:
-                # creates a list of nsirs with only those having the current nsr
-                nsirs_list_with_nsr = []
-                for nsir_ref_item in nsirs_list_no_current:
-                  for nsr_ref_item in nsir_ref_item['nsr-list']:
-                    if nsr_ref_item['nsrId'] == termin_nsr_item['nsrId']:
-                      nsirs_list_with_nsr.append(nsir_ref_item)
+          # checks if each NSR of the current nsir can be terminated depending if it is shared by other nsirs
+          termin_nsrids_list = []
+          for termin_nsr_item in terminate_nsi['nsr-list']:
+            # if there are other nsirs follow, if not terminate nsr
+            if nsirs_list_no_current:
+              # creates a list of nsirs with only those having the current nsr
+              nsirs_list_with_nsr = []
+              for nsir_ref_item in nsirs_list_no_current:
+                for nsr_ref_item in nsir_ref_item['nsr-list']:
+                  if nsr_ref_item['nsrId'] == termin_nsr_item['nsrId']:
+                    nsirs_list_with_nsr.append(nsir_ref_item)
 
-                if nsirs_list_with_nsr:
-                  # from the previous reduced list, creates a list of nsirs with status [INSTANTIATED, INSTANTIATING, READY]
-                  instantiated_nsirs_list_with_nsr = []
-                  for nsir_ref_item in nsirs_list_with_nsr:
-                    if nsir_ref_item['nsi-status'] in ['INSTANTIATED', 'INSTANTIATING', 'READY']:
-                      instantiated_nsirs_list_with_nsr.append(nsir_ref_item)
+              if nsirs_list_with_nsr:
+                # from the previous reduced list, creates a list of nsirs with status [INSTANTIATED, INSTANTIATING, READY]
+                instantiated_nsirs_list_with_nsr = []
+                for nsir_ref_item in nsirs_list_with_nsr:
+                  if nsir_ref_item['nsi-status'] in ['INSTANTIATED', 'INSTANTIATING', 'READY']:
+                    instantiated_nsirs_list_with_nsr.append(nsir_ref_item)
 
-                  if instantiated_nsirs_list_with_nsr:
-                    nsr_to_terminate = False
-                  else:
-                    nsr_to_terminate = True
+                if instantiated_nsirs_list_with_nsr:
+                  nsr_to_terminate = False
                 else:
                   nsr_to_terminate = True
               else:
                 nsr_to_terminate = True
-              
-              # if true, there's not other nsirs sharing the current nsr and so, it can be terminated.
-              if nsr_to_terminate:
-                termin_nsr_item['working-status'] == 'TERMINATING'
-                termin_nsrids_list.append(termin_nsr_item['nsrId'])
-          '''
+            else:
+              nsr_to_terminate = True
+            
+            # if true, there's not other nsirs sharing the current nsr and so, it can be terminated.
+            if nsr_to_terminate:
+              termin_nsr_item['working-status'] == 'TERMINATING'
+              termin_nsrids_list.append(termin_nsr_item['nsrId'])
+
           # updates the terminating nsi with the latest information
           updated_nsi = nsi_repo.update_nsi(terminate_nsi, nsiId)
 
@@ -1520,49 +1598,3 @@ def get_all_nsi_counter():
     return_msg = {}
     return_msg['counter'] = "0"
     return (return_msg, 200)
-
-############################################ GENERAL SECTION ############################################
-# Looks for any "INSTANTIATING/INSTANTIATED" nsi sharing a nsr with the current terminating nsi
-def find_shared_nsr(terminate_slice):
-  ## CREATES A LIST OF NSRs TO TERMINATE CHECKING IF EACH NSR IS SHARED WITH OTHER NSIRs
-  # creates a nsirs list without the current one
-  nsirs_ref_list = nsi_repo.get_all_saved_nsi()
-  nsirs_list_no_current = []
-  for nsir_item in nsirs_ref_list:
-    if nsir_item['uuid'] != terminate_slice['id']:
-      nsirs_list_no_current.append(nsir_item)
-  
-  # checks if each NSR of the current nsir can be terminated depending if it is shared by other nsirs
-  termin_nsrids_list = []
-  for termin_nsr_item in terminate_slice['nsr-list']:
-    # if there are other nsirs follow, if not terminate nsr
-    if nsirs_list_no_current:
-      # creates a list of nsirs with only those having the current nsr
-      nsirs_list_with_nsr = []
-      for nsir_ref_item in nsirs_list_no_current:
-        for nsr_ref_item in nsir_ref_item['nsr-list']:
-          if nsr_ref_item['nsrId'] == termin_nsr_item['nsrId']:
-            nsirs_list_with_nsr.append(nsir_ref_item)
-
-      if nsirs_list_with_nsr:
-        # from the previous reduced list, creates a list of nsirs with status [INSTANTIATED, INSTANTIATING, READY]
-        instantiated_nsirs_list_with_nsr = []
-        for nsir_ref_item in nsirs_list_with_nsr:
-          if nsir_ref_item['nsi-status'] in ['INSTANTIATED', 'INSTANTIATING', 'READY']:
-            instantiated_nsirs_list_with_nsr.append(nsir_ref_item)
-
-        if instantiated_nsirs_list_with_nsr:
-          nsr_to_terminate = False
-        else:
-          nsr_to_terminate = True
-      else:
-        nsr_to_terminate = True
-    else:
-      nsr_to_terminate = True
-    
-    # if true, there's not other nsirs sharing the current nsr and so, it can be terminated.
-    if nsr_to_terminate:
-      termin_nsr_item['working-status'] == 'TERMINATING'
-      termin_nsrids_list.append(termin_nsr_item['nsrId'])
-  
-  return termin_nsrids_list, 200
