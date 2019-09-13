@@ -1412,6 +1412,8 @@ def nsi_placement(new_nsir):
   # adds all the VIMs IDs into the slice record first level 'datacenter' field.
   # from each nsir.vldr-list_item.vimAccountId list creates the nsir.datacenter list.
   nsi_datacenter_list = []
+  LOG.info("NSI_MNGR: new NSI:" + str(new_nsir))
+  time.sleep(0.1)
   for vldr_item in new_nsir['vldr-list']:
     for vim_net_stack_item in vldr_item['vim-net-stack']:
       for vimAccountId_item in vim_net_stack_item['vimAccountId']:
