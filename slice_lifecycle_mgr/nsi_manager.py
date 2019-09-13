@@ -182,7 +182,7 @@ class thread_ns_instantiate(Thread):
       if (vldr_item.get('mgmt-network') == None or vldr_item['mgmt-network'] == False):
         # FUTURE WORK: multi-vim options to interconnect a vld with more than two VIMs, programm it here
         # multi-vim requested when a slice instantiated in VIM B, shares a nsr with an already created slice in VIM A.
-        if len(vldr_item['vim-net-stack']) = 2:
+        if len(vldr_item['vim-net-stack']) == 2:
           #TODO: work here for a shared vld among two VIMs requested on two different slice instances
           pass
         else:
