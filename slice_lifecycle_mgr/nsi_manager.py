@@ -1389,7 +1389,7 @@ def nsi_placement(new_nsir):
               vld_in_vim = False
               for vim_net_stack_item in vldr_item['vim-net-stack']:
                 for vimAccountId_item in vim_net_stack_item['vimAccountId']:
-                  if selected_vim == vimAccountId_item['vim--id']:
+                  if selected_vim == vimAccountId_item['vim-id']:
                     vld_in_vim = True
                     break
                 if vld_in_vim:
