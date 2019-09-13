@@ -326,7 +326,7 @@ class thread_ns_instantiate(Thread):
 
             vim_list = []
             network_data = {}
-            for vim_net_stack_item in vldr_item['vim-net-stack']
+            for vim_net_stack_item in vldr_item['vim-net-stack']:
               network_data['instance_id'] = vldr_item['id']
               for vim_item in vim_net_stack_item['vimAccountId']:
                 vim_list_item = {}
