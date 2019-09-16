@@ -1535,6 +1535,7 @@ def terminate_nsi(nsiId, TerminOrder):
           updated_nsi = nsi_repo.update_nsi(terminate_nsi, nsiId)
 
           # starts the thread to terminate while sending back the response
+          LOG.info("NSI_MNGR: termin_nsrids_list[0]: " +str(termin_nsrids_list[0]))
           thread_ns_termination = thread_ns_terminate(terminate_nsi, termin_nsrids_list[0])
           thread_ns_termination.start()
 
