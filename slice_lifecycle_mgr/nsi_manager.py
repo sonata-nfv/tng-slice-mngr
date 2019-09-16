@@ -461,6 +461,7 @@ class thread_ns_instantiate(Thread):
   
   # basic function that manages the whole instantiation.
   def run(self):
+    LOG.info("NSI_MNGR: HI I'M THE INSTANTIATION TREAD.")
     # set to true in order to instantiates NSs in case there are no slice_vld to create
     network_ready = True
 
@@ -1029,15 +1030,17 @@ def create_nsi(nsi_json):
   # Network Slice Placement
   LOG.info("NSI_MNGR:  Placement of the Network Service Instantiations.")
   new_nsir = nsi_placement(new_nsir)
+
+  if new_nsir[1] != 200:
+    LOG.info("NSI_MNGR: Error returning saved nsir.")
+    return (new_nsir[0], new_nsir[1])
   
   # saving the NSI into the repositories
   nsirepo_jsonresponse = nsi_repo.safe_nsi(new_nsir[0])
-
-  if new_nsir[1] != 200:
-    return (new_nsir[0], new_nsir[1])
   
   if nsirepo_jsonresponse[1] == 200:
     # starts the thread to instantiate while sending back the response
+    LOG.info("NSI_MNGR: Calling Instantiation Thread.")
     thread_ns_instantiation = thread_ns_instantiate(new_nsir[0])
     thread_ns_instantiation.start()
   else:
@@ -1420,9 +1423,6 @@ def nsi_placement(new_nsir):
               vim_net_stack_item['id']  = str(uuid.uuid4())
               vim_net_stack_item['vimAccountId'] = vimaccountid_list
               vim_net_stack_list.append(vim_net_stack_item)
-
-
-                  
 
             vldr_item['vim-net-stack'] = vim_net_stack_list
   
