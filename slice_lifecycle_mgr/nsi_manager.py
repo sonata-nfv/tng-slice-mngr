@@ -370,18 +370,18 @@ class thread_ns_instantiate(Thread):
   # .... The code within the next funcion is also inside the terminate_nsi(nsiId, TerminOrder) function, this should 
   # .... be avoid and only have one time the code.
   # Looks for any "INSTANTIATING/INSTANTIATED" nsi sharing a nsr with the current terminating nsi
-  def find_shared_nsr(error_slice):
+  def find_shared_nsr(self):
     ## CREATES A LIST OF NSRs TO TERMINATE CHECKING IF EACH NSR IS SHARED WITH OTHER NSIRs
     # creates a nsirs list without the current one
     nsirs_ref_list = nsi_repo.get_all_saved_nsi()
     nsirs_list_no_current = []
     for nsir_item in nsirs_ref_list:
-      if nsir_item['uuid'] != error_slice['id']:
+      if nsir_item['uuid'] != self.NSI['id']:
         nsirs_list_no_current.append(nsir_item)
     
     # checks if each NSR of the current nsir can be terminated depending if it is shared by other nsirs
     termin_nsrids_list = []
-    for termin_nsr_item in error_slice['nsr-list']:
+    for termin_nsr_item in self.NSI['nsr-list']:
       # if there are other nsirs follow, if not terminate nsr
       if nsirs_list_no_current:
         # creates a list of nsirs with only those having the current nsr
@@ -461,7 +461,7 @@ class thread_ns_instantiate(Thread):
   
   # basic function that manages the whole instantiation.
   def run(self):
-    LOG.info("NSI_MNGR: HI I'M THE INSTANTIATION TREAD.")
+
     # set to true in order to instantiates NSs in case there are no slice_vld to create
     network_ready = True
 
@@ -598,7 +598,7 @@ class thread_ns_instantiate(Thread):
           
           # TODO: improve this section as it only sends the terminate request and considers...
           # ... the nsr already as terminate withouth waiting the confirmation from GTK.
-          check_shared = self.find_shared_nsr(terminate_nsi)
+          check_shared = self.find_shared_nsr()
           
           if check_shared[0]:
             # TERMINATES NSRS within the given list.
@@ -1040,7 +1040,6 @@ def create_nsi(nsi_json):
   
   if nsirepo_jsonresponse[1] == 200:
     # starts the thread to instantiate while sending back the response
-    LOG.info("NSI_MNGR: Calling Instantiation Thread.")
     thread_ns_instantiation = thread_ns_instantiate(new_nsir[0])
     thread_ns_instantiation.start()
   else:
