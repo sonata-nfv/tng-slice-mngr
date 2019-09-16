@@ -922,7 +922,7 @@ class thread_ns_terminate(Thread):
               vim_list.append(vim_list_item)
 
             network_data = {}
-            network_data['instance_id'] = vldr_item['_stack-net-ref']
+            network_data['instance_id'] = vldr_item['id']
             network_data['vim_list'] = vim_list
 
             # calls the function towards the GTK
