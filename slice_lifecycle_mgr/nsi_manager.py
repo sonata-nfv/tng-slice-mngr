@@ -276,23 +276,48 @@ class thread_ns_instantiate(Thread):
               wim_dict['instance_uuid'] = self.NSI['id']   # GTK translates it to service_instance_id for the IA.
               wim_dict['wim_uuid'] = wim_uuid
               wim_dict['vl_id'] = vldr_item['id']
-              LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_conn_points_list[0]) + " / type: " + str(type(wim_conn_points_list[0])))
-              LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_conn_points_list[1]) + " / type: " + str(type(wim_conn_points_list[1])))
-              
               wim_dict['ingress'] = wim_conn_points_list[0]
               wim_dict['egress'] = wim_conn_points_list[1]
               wim_dict['bidirectional'] = True
-
               LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
-              wim_response = mapper.create_wim_network(wim_dict)
-              if wim_response['status'] == 'COMPLETED':
-                self.NSI['_wim-connections'].append(wim_dict)
-                return self.NSI, 200
-              else:
-                LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT created.")
-                self.NSI['errorLog'] = "WAN Enforcement: " + wim_response['error']
-                self.NSI['nsi-status'] = 'ERROR'
-                return self.NSI, 501
+              
+              # check if the WAN connection for thecurrent vldr with those vims already exists
+              if self.NSI['_wim-connections']:
+                for wim_connection_item in self.NSI['_wim-connections']:
+                  if wim_connection_item['vl_id'] == wim_dict['vl_id']:
+
+                    ref_ingress = wim_connection_item['ingress']['location']
+                    ref_egress = wim_connection_item['egress']['location']
+                    new_ingress = wim_dict['ingress']['location']
+                    new_egress = wim_dict['egress']['location']
+                    if new_ingress == ref_ingress and new_egress == ref_egress:
+                      LOG.info("NSI_MNGR: WIM already exists")
+                      create_wim = False
+                      break
+                    elif new_ingress == ref_egress and new_egress == ref_ingress:
+                      LOG.info("NSI_MNGR: WIM already exists")
+                      create_wim = False
+                      break
+                    else:
+                      LOG.info("NSI_MNGR: Creating NEW WIM")
+                      create_wim = True
+                    break
+                  else:
+                    LOG.info("NSI_MNGR: Creating NEW WIM in empty list")
+                    create_wim = True
+                    break
+
+              if create_wim:
+                wim_response = mapper.create_wim_network(wim_dict)
+                if wim_response['status'] == 'COMPLETED':
+                  self.NSI['_wim-connections'].append(wim_dict)
+                  return self.NSI, 200
+                else:
+                  LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT created.")
+                  self.NSI['errorLog'] = "WAN Enforcement: " + wim_response['error']
+                  self.NSI['nsi-status'] = 'ERROR'
+                  return self.NSI, 501
+            
             else:
               return self.NSI, 501
 
@@ -1169,9 +1194,7 @@ def add_vlds(new_nsir, nst_json):
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
-    #vld_record['vimAccountId'] = []
     vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
-    #vld_record['_stack-net-ref']  = str(uuid.uuid4()) # move to the moment the vimAccoutnID is done
     vld_record['vim-net-stack'] = []
 
 
@@ -1235,8 +1258,6 @@ def add_vlds(new_nsir, nst_json):
                     for current_vldr_item in vldr_list:
                       if current_vldr_item['id'] == vldr_ref['id']:
                         current_vldr_item['vim-net-id'] = vldr_ref['vim-net-id']
-                        #current_vldr_item['_stack-net-ref'] = vldr_ref['_stack-net-ref']
-                        #current_vldr_item['vimAccountId'] = vldr_ref['vimAccountId']
                         current_vldr_item['vim-net-stack'] = vldr_ref['vim-net-stack']
                         current_vldr_item['vld-status'] = 'ACTIVE'
                         current_vldr_item['type'] = vldr_ref['type']
@@ -1409,57 +1430,25 @@ def nsi_placement(new_nsir):
               if exist_vl_vimaccountid == False:
                 vimaccountid_list.append(add_vl)
     
+    # Remove already existing vims with the vldr:reads the new vimaccountid_list to be added...
+    for vimaccountid_index, vimaccountid_item in enumerate(vimaccountid_list):
+      found_vimaccount = False
+      # ... reads the existing vim_net_stack_list.vimAccountId...
+      for vim_net_stack_item in vim_net_stack_list:
+        # ...to find out if the new vims already axist and so, there's no need to create again the VLD in that VIM.
+        for ref_vimaccountid_item in vim_net_stack_item['vimAccountId']:
+          if vimaccountid_item == ref_vimaccountid_item['vim-id']:
+            vimaccountid_list.pop(vimaccountid_index)
+            found_vimaccount = True
+            break
+        if found_vimaccount:
+          break
+
     vim_net_stack_item = {}
     vim_net_stack_item['id']  = str(uuid.uuid4())
     vim_net_stack_item['vimAccountId'] = vimaccountid_list
     vim_net_stack_list.append(vim_net_stack_item)
     vldr_item['vim-net-stack'] = vim_net_stack_list
-
-  
-  '''
-  for vld_ref_item in nsr_item['vld']:
-    for vldr_item in new_nsir['vldr-list']:
-      if vld_ref_item['vld-ref'] == vldr_item['id']:
-        vim_net_stack_list = vldr_item['vim-net-stack']
-
-        if vim_net_stack_list:
-          vld_in_vim = False
-          for vim_net_stack_item in vldr_item['vim-net-stack']:
-            for vimAccountId_item in vim_net_stack_item['vimAccountId']:
-              if selected_vim == vimAccountId_item['vim-id']:
-                vld_in_vim = True
-                break
-            if vld_in_vim:
-              break
-        
-        if not vim_net_stack_list or vld_in_vim == False:
-          vimaccountid_list = []
-          for nsr_placement_item in nsr_item['nsr-placement']:
-            # prepares the object in case it has to be added.
-            add_vl = {}
-            add_vl['vim-id'] = nsr_placement_item['vim-id']
-            add_vl['net-created'] = False
-            
-            # if empty, adds the first element
-            if not vimaccountid_list:
-              vimaccountid_list.append(add_vl)
-            else:
-              exist_vl_vimaccountid = False
-              for vimAccountId_item in vimaccountid_list:
-                if vimAccountId_item['vim-id'] == nsr_placement_item['vim-id']:
-                  exist_vl_vimaccountid = True
-                  break
-              
-              if exist_vl_vimaccountid == False:
-                vimaccountid_list.append(add_vl)
-          
-          vim_net_stack_item = {}
-          vim_net_stack_item['id']  = str(uuid.uuid4())
-          vim_net_stack_item['vimAccountId'] = vimaccountid_list
-          vim_net_stack_list.append(vim_net_stack_item)
-
-        vldr_item['vim-net-stack'] = vim_net_stack_list
-  '''
 
   # adds all the VIMs IDs into the slice record first level 'datacenter' field.
   # from each nsir.vldr-list_item.vimAccountId list creates the nsir.datacenter list.
