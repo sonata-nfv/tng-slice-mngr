@@ -611,13 +611,13 @@ class thread_ns_instantiate(Thread):
             mutex_slice2db_access.release()
             
             # waits until all nsrs are either ERROR/TERMINATED or INSTANTIATED (if shared)
-            nsrs_terminated == False
+            nsrs_terminated = False
             while nsrs_terminated == False:
-              nsrs_terminated == True
+              nsrs_terminated = True
               jsonNSI = nsi_repo.get_saved_nsi(self.NSI['id'])
               for nsr_item in jsonNSI['nsr-list']:
                 if nsr_item['working-status'] == 'TERMINATING':
-                  nsrs_terminated == False
+                  nsrs_terminated = False
                   time.sleep(15)
                   break
             
@@ -628,7 +628,7 @@ class thread_ns_instantiate(Thread):
             mutex_slice2db_access.release()
       
       else:
-        #TODO: undo the created vlds --> use while to check all nsrs are terminated or INSTANTIATING, to remove them
+        self.undo_slice_vlds()
         self.NSI['nsi-status'] = 'ERROR'
       
       # Notifies the GTK about the NetSlice process is done (either completed or error).
