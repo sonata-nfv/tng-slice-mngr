@@ -1446,6 +1446,7 @@ def nsi_placement(new_nsir):
                   vimaccountid_list.append(add_vl)
 
     if vimaccountid_list:
+      LOG.info("NSI_MNGR: Adding a VimAccountId into slice!!")
       vim_net_stack_item = {}
       vim_net_stack_item['id']  = str(uuid.uuid4())
       vim_net_stack_item['vimAccountId'] = vimaccountid_list
