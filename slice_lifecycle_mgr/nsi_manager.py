@@ -1270,6 +1270,15 @@ def add_vlds(new_nsir, nst_json):
 
 # does the NSs placement based on the available VIMs resources & the required of each NS.
 def nsi_placement(new_nsir):
+
+  def check_vim (check_vim, check_list):
+    for check_list_item in check_list:
+      for check_vimaccountid_item in check_list_item['vimAccountId']:
+        if check_vimaccountid_item['vim-id'] == check_vim:
+          return True
+    
+    return False
+
   # get the VIMs information registered to the SP
   vims_list = mapper.get_vims_info()
   vims_list_len = len(vims_list['vim_list'])
@@ -1412,43 +1421,36 @@ def nsi_placement(new_nsir):
       for vld_ref_item in nsr_item['vld']:
         if vld_ref_item['vld-ref'] == vldr_item['id']:
           for nsr_placement_item in nsr_item['nsr-placement']:
-            # prepares the object in case it has to be added.
-            add_vl = {}
-            add_vl['vim-id'] = nsr_placement_item['vim-id']
-            add_vl['net-created'] = False
             
-            # if empty, adds the first element
-            if not vimaccountid_list:
-              vimaccountid_list.append(add_vl)
-            else:
-              exist_vl_vimaccountid = False
-              for vimAccountId_item in vimaccountid_list:
-                if vimAccountId_item['vim-id'] == nsr_placement_item['vim-id']:
-                  exist_vl_vimaccountid = True
-                  break
-              
-              if exist_vl_vimaccountid == False:
-                vimaccountid_list.append(add_vl)
-    
-    # Remove already existing vims with the vldr:reads the new vimaccountid_list to be added...
-    for vimaccountid_index, vimaccountid_item in enumerate(vimaccountid_list):
-      found_vimaccount = False
-      # ... reads the existing vim_net_stack_list.vimAccountId...
-      for vim_net_stack_item in vim_net_stack_list:
-        # ...to find out if the new vims already axist and so, there's no need to create again the VLD in that VIM.
-        for ref_vimaccountid_item in vim_net_stack_item['vimAccountId']:
-          if vimaccountid_item == ref_vimaccountid_item['vim-id']:
-            vimaccountid_list.pop(vimaccountid_index)
-            found_vimaccount = True
-            break
-        if found_vimaccount:
-          break
+            # before adding, checks if this vld is already in the vim: True = adds it / False = doesn't add it
+            vld_vim = check_vim(nsr_placement_item['vim-id'], vim_net_stack_list)
 
-    vim_net_stack_item = {}
-    vim_net_stack_item['id']  = str(uuid.uuid4())
-    vim_net_stack_item['vimAccountId'] = vimaccountid_list
-    vim_net_stack_list.append(vim_net_stack_item)
-    vldr_item['vim-net-stack'] = vim_net_stack_list
+            # if the vld does not have the curret vim, add it with a new stack
+            if not vld_vim:
+              # prepares the object in case it has to be added.
+              add_vl = {}
+              add_vl['vim-id'] = nsr_placement_item['vim-id']
+              add_vl['net-created'] = False
+              
+              # if empty, adds the first element
+              if not vimaccountid_list:
+                vimaccountid_list.append(add_vl)
+              else:
+                exist_vl_vimaccountid = False
+                for vimAccountId_item in vimaccountid_list:
+                  if vimAccountId_item['vim-id'] == nsr_placement_item['vim-id']:
+                    exist_vl_vimaccountid = True
+                    break
+                
+                if exist_vl_vimaccountid == False:
+                  vimaccountid_list.append(add_vl)
+
+    if vimaccountid_list:
+      vim_net_stack_item = {}
+      vim_net_stack_item['id']  = str(uuid.uuid4())
+      vim_net_stack_item['vimAccountId'] = vimaccountid_list
+      vim_net_stack_list.append(vim_net_stack_item)
+      vldr_item['vim-net-stack'] = vim_net_stack_list
 
   # adds all the VIMs IDs into the slice record first level 'datacenter' field.
   # from each nsir.vldr-list_item.vimAccountId list creates the nsir.datacenter list.
