@@ -293,7 +293,7 @@ class thread_ns_instantiate(Thread):
                     if new_ingress == ref_ingress and new_egress == ref_egress:
                       create_wim = False
                       break
-                    elif new_ingress == ref_egress and new_egress == ref_ingress
+                    elif new_ingress == ref_egress and new_egress == ref_ingress:
                       create_wim = False
                       break
                     else:
