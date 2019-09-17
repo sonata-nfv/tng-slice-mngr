@@ -361,7 +361,7 @@ class thread_ns_instantiate(Thread):
       for nsr_item in self.NSI['nsr-list']:
         if nsrid_item == nsr_item['nsrId']:
           nsr_item['working-status'] == 'TERMINATING'
-          nsr_item['requestId'] = termination_resp[0]['id']
+          nsr_item['requestId'] = termination_response['id']
           break
 
     return 200
@@ -628,7 +628,7 @@ class thread_ns_instantiate(Thread):
             mutex_slice2db_access.release()
       
       else:
-        #TODO: undo the created vlds...
+        #TODO: undo the created vlds --> use while to check all nsrs are terminated or INSTANTIATING, to remove them
         self.NSI['nsi-status'] = 'ERROR'
       
       # Notifies the GTK about the NetSlice process is done (either completed or error).
