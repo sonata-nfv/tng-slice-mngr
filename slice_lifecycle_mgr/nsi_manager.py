@@ -291,15 +291,19 @@ class thread_ns_instantiate(Thread):
                     new_ingress = wim_dict['ingress']['location']
                     new_egress = wim_dict['egress']['location']
                     if new_ingress == ref_ingress and new_egress == ref_egress:
+                      LOG.info("NSI_MNGR: WIM already exists")
                       create_wim = False
                       break
                     elif new_ingress == ref_egress and new_egress == ref_ingress:
+                      LOG.info("NSI_MNGR: WIM already exists")
                       create_wim = False
                       break
                     else:
+                      LOG.info("NSI_MNGR: Creating NEW WIM")
                       create_wim = True
                     break
                   else:
+                    LOG.info("NSI_MNGR: Creating NEW WIM in empty list")
                     create_wim = True
                     break
 
