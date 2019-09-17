@@ -282,6 +282,7 @@ class thread_ns_instantiate(Thread):
               LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
               
               # check if the WAN connection for thecurrent vldr with those vims already exists
+              create_wim = False
               if self.NSI['_wim-connections']:
                 for wim_connection_item in self.NSI['_wim-connections']:
                   if wim_connection_item['vl_id'] == wim_dict['vl_id']:
@@ -292,11 +293,9 @@ class thread_ns_instantiate(Thread):
                     new_egress = wim_dict['egress']['location']
                     if new_ingress == ref_ingress and new_egress == ref_egress:
                       LOG.info("NSI_MNGR: WIM already exists")
-                      create_wim = False
                       break
                     elif new_ingress == ref_egress and new_egress == ref_ingress:
                       LOG.info("NSI_MNGR: WIM already exists")
-                      create_wim = False
                       break
                     else:
                       LOG.info("NSI_MNGR: Creating NEW WIM")
