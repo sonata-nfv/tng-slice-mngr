@@ -180,14 +180,16 @@ class thread_ns_instantiate(Thread):
       self.NSI['errorLog'] = "WAN Enforcement: " + wims_list['error']
       self.NSI['nsi-status'] = "ERROR"
       LOG.info("NSI_MNGR: WAN FAILED: " + str(wims_list['error']))
+      time.sleep(0.1)
 
       return self.NSI, 501
 
+    LOG.info("NSI_MNGR: WAN looking for VLD"))
+    time.sleep(0.1)
     # loops the slice-vld to find out which one is in two different VIMs
     for vldr_item in self.NSI['vldr-list']:
       # only those not management vld
       if (vldr_item.get('mgmt-network') == None or vldr_item['mgmt-network'] == False):
-        
         # checks if the current vld needs WIM enforcement
         vld_wim_found = False
         if len(vldr_item['vim-net-stack']) > 1:
@@ -200,7 +202,9 @@ class thread_ns_instantiate(Thread):
             vld_wim_found = True
 
         # if true, this VLD needs WAN enforcement
-        if vld_wim_found: 
+        if vld_wim_found:
+          LOG.info("NSI_MNGR: FOUND VLD THAT NEEDS WAN"))
+          time.sleep(0.1)
           wim_conn_points_list = []
           info_found = False
           
