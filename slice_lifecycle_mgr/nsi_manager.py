@@ -179,6 +179,7 @@ class thread_ns_instantiate(Thread):
       wims_list = json.loads(wims_list[0]['message'])
       self.NSI['errorLog'] = "WAN Enforcement: " + wims_list['error']
       self.NSI['nsi-status'] = "ERROR"
+      LOG.info("NSI_MNGR: WAN FAILED: " + str(wims_list['error']))
 
       return self.NSI, 501
 
@@ -360,7 +361,6 @@ class thread_ns_instantiate(Thread):
             virtual_links_item['id'] = vldr_item['vim-net-id']
             virtual_links.append(virtual_links_item)
 
-
             for vim_net_stack_item in vldr_item['vim-net-stack']:
               vim_list = []
               network_data = {}
@@ -371,8 +371,6 @@ class thread_ns_instantiate(Thread):
                 vim_list_item['virtual_links'] = virtual_links
                 vim_list.append(vim_list_item)
 
-              #network_data = {}
-              #network_data['instance_id'] = vldr_item['_stack-net-ref']
               network_data['vim_list'] = vim_list
 
               LOG.info("NSI_MNGR: network_data: " + str(network_data))
@@ -403,7 +401,7 @@ class thread_ns_instantiate(Thread):
           nsr_item['requestId'] = termination_response['id']
           break
 
-    return 200
+    return self.NSI, 200
 
   # TODO: Improve the code in order to avoid duplicated code:
   # .... The code within the next funcion is also inside the terminate_nsi(nsiId, TerminOrder) function, this should 
@@ -475,6 +473,25 @@ class thread_ns_instantiate(Thread):
           if (nst_descriptor['nstd'].get('usageState') == "NOT_IN_USE"):
             nstParameter2update = "usageState=IN_USE"
             updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
+      
+      elif (jsonNSI['nsi-status'] == "TERMINATING"):
+        jsonNSI['nsi-status'] = "TERMINATED"
+
+        # updates NetSlice template usageState if no other nsi is instantiated/ready
+        nsis_list = nsi_repo.get_all_saved_nsi()
+        all_nsis_terminated = True
+        for nsis_item in nsis_list:
+          if (nsis_item['nst-ref'] == jsonNSI['nst-ref'] and nsis_item['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY"]):
+              all_nsis_terminated = False
+              break
+        
+        if (all_nsis_terminated):
+          nst_descriptor = nst_catalogue.get_saved_nst(jsonNSI['nst-ref'])
+          nst_json = nst_descriptor['nstd']
+          if (nst_json['usageState'] == "IN_USE"):
+            nstParameter2update = "usageState=NOT_IN_USE"
+            updatedNST_jsonresponse = nst_catalogue.update_nst(nstParameter2update, jsonNSI['nst-ref'])
+
       else:
         # errors are managed in the main thread function (run)
         jsonNSI['nsi-status'] = 'ERROR'
