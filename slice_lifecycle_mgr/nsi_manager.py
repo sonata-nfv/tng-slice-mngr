@@ -175,6 +175,12 @@ class thread_ns_instantiate(Thread):
 
     # gets WIMS information list to check if the VIMs where to deploy the VNFs are registered within the WIM
     wims_list = mapper.get_wims_info()
+    if wims_list['status'] == 'ERROR':
+      wims_list = json.loads(wims_list['message'])
+      self.NSI['errorLog'] = "WAN Enforcement: " + wims_list['error']
+      self.NSI['nsi-status'] = "ERROR"
+
+      return self.NSI, 501
 
     # loops the slice-vld to find out which one is in two different VIMs
     for vldr_item in self.NSI['vldr-list']:
@@ -259,7 +265,7 @@ class thread_ns_instantiate(Thread):
             if wim_conn_points_list:
               # validates if the two VIMs are registered within the same WIM
               wim_uuid = None
-              for wim_item in wims_list['wim_list']:
+              for wim_item in wims_list[0]['wim_list']:
                 found_wim = True
                 # if any of the two vim_uuids is not in the wim_attached_vims_list, check the next wim
                 for wim_cp_item in wim_conn_points_list:
@@ -350,10 +356,11 @@ class thread_ns_instantiate(Thread):
             virtual_links_item['id'] = vldr_item['vim-net-id']
             virtual_links.append(virtual_links_item)
 
-            vim_list = []
-            network_data = {}
+
             for vim_net_stack_item in vldr_item['vim-net-stack']:
-              network_data['instance_id'] = vldr_item['id']
+              vim_list = []
+              network_data = {}
+              network_data['instance_id'] = vim_net_stack_item['id']
               for vim_item in vim_net_stack_item['vimAccountId']:
                 vim_list_item = {}
                 vim_list_item['uuid'] = vim_item['vim-id']
@@ -364,6 +371,7 @@ class thread_ns_instantiate(Thread):
               #network_data['instance_id'] = vldr_item['_stack-net-ref']
               network_data['vim_list'] = vim_list
 
+              LOG.info("NSI_MNGR: network_data: " + str(network_data))
               networks_response = mapper.delete_vim_network(network_data)
             
               if networks_response['status'] == 'COMPLETED':
@@ -611,7 +619,7 @@ class thread_ns_instantiate(Thread):
           # if the slice is distributed in many VIMs, it starts the configuration of the WAN link
           if len(jsonNSI['datacenter']) > 1:
             LOG.info("NSI_MNGR: Configuring WAN Connection for multi-vim instantiation.")
-            # wan enforcement for multi-vim instantiation
+            # WAN ENFORCEMENT FOR MULTI-VIM DEPLOYMENTS
             wim_configured = self.configure_wim()
             if wim_configured[1] != 200:
               wim_ready = False
