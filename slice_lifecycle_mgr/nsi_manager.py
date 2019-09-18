@@ -273,6 +273,8 @@ class thread_ns_instantiate(Thread):
           #TODO: Improve the following code as it assumes that each VLD has ONLY two nsrs connected [0] & [1]
           # JSON creation and WAN request
           if wim_conn_points_list:
+            LOG.info("NSI_MNGR: inside win_conn_points_list")
+            time.sleep(0.1)
             wim_uuid = None
             # validates if the two VIMs are registered within the same WIM
             for wim_item in wims_list[0]['wim_list']:
@@ -297,7 +299,7 @@ class thread_ns_instantiate(Thread):
             wim_dict['bidirectional'] = True
 
             # check if the WAN connection for theccurrent vldr with those vims already exists
-            create_wim = False
+            create_wim = True
             if self.NSI['_wim-connections']:
               for wim_connection_item in self.NSI['_wim-connections']:
                 if wim_connection_item['vl_id'] == wim_dict['vl_id']:
@@ -309,18 +311,14 @@ class thread_ns_instantiate(Thread):
                   
                   if new_ingress == ref_ingress and new_egress == ref_egress:
                     LOG.info("NSI_MNGR: WIM already exists")
-                    break
+                    create_wim = False
                   elif new_ingress == ref_egress and new_egress == ref_ingress:
                     LOG.info("NSI_MNGR: WIM already exists")
-                    break
+                    create_wim = False
                   else:
                     LOG.info("NSI_MNGR: Creating NEW WIM")
-                    create_wim = True
-                  break
                 else:
                   LOG.info("NSI_MNGR: Creating NEW WIM in empty list")
-                  create_wim = True
-                  break
 
             if create_wim:
               LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
