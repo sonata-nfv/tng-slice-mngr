@@ -175,8 +175,8 @@ class thread_ns_instantiate(Thread):
 
     # gets WIMS information list to check if the VIMs where to deploy the VNFs are registered within the WIM
     wims_list = mapper.get_wims_info()
-    if wims_list['status'] == 'ERROR':
-      wims_list = json.loads(wims_list['message'])
+    if wims_list[1] != 200:
+      wims_list = json.loads(wims_list[0]['message'])
       self.NSI['errorLog'] = "WAN Enforcement: " + wims_list['error']
       self.NSI['nsi-status'] = "ERROR"
 
