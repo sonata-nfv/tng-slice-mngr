@@ -186,147 +186,151 @@ class thread_ns_instantiate(Thread):
     for vldr_item in self.NSI['vldr-list']:
       # only those not management vld
       if (vldr_item.get('mgmt-network') == None or vldr_item['mgmt-network'] == False):
-        # FUTURE WORK: multi-vim options to interconnect a vld with more than two VIMs, programm it here
-        # multi-vim requested when a slice instantiated in VIM B, shares a nsr with an already created slice in VIM A.
-        if len(vldr_item['vim-net-stack']) == 2:
-          #TODO: work here for a shared vld among two VIMs requested on two different slice instances
-          pass
+        
+        # checks if the current vld needs WIM enforcement
+        vld_wim_found = False
+        if len(vldr_item['vim-net-stack']) > 1:
+          # multiple stacks with different vims
+          vld_wim_found = True
         else:
-          # there's only one element in vim-net-stack with the two endpoints to create the WAN-link
+          # one stack with many vims
           vim_net_item = vldr_item['vim-net-stack'][0]
-          
-          # multi-vim requested with a single slice instance placed in differen VIMs
           if len(vim_net_item['vimAccountId']) > 1:
-            wim_conn_points_list = []
-            info_found = False
+            vld_wim_found = True
 
-            # from the SLICE-CP looks for the IP associated to the VDU linked to that CP.
-            for ns_cp_item in vldr_item['ns-conn-point-ref']:
-              for nsr_item in self.NSI['nsr-list']:
-                # compares with the only key within the dict
-                found_vnfd = False
+        # if true, this VLD needs WAN enforcement
+        if vld_wim_found: 
+          wim_conn_points_list = []
+          info_found = False
           
-                if nsr_item['subnet-ref'] in ns_cp_item.keys():
-                  # get the nsr information in order to go into the next level (VNFs info)
-                  nsr_json = mapper.get_nsr(nsr_item['nsrId'])
-                  
-                  for nsr_vl_item in nsr_json['virtual_links']:
-                    # checks if the value exists within the nsr cp-reference
-                    if ns_cp_item[nsr_item['subnet-ref']] in nsr_vl_item['connection_points_reference']:
-                      found_ns_cp = nsr_vl_item['connection_points_reference']
-                      found_ns_cp.remove(ns_cp_item[nsr_item['subnet-ref']])
-                      found_ns_cp = str_2_json(found_ns_cp)
-                  
-                      # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
-                      nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
-                      for nsd_nf_item in nsd_json['nsd']['network_functions']:
-                        if nsd_nf_item['vnf_id'] == found_ns_cp['id']:
-                          # the right VNF name is found
-                          found_vnfd_name = nsd_nf_item['vnf_name']
-                          found_vnfd = True
-                          break
-                    if found_vnfd:
-                      break
-
-                if found_vnfd:
-                  # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
-                  for nsr_nf_item in nsr_json['network_functions']:
-                    found_vnfr = False
-                    vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
-                    if vnfr_json['name'] == found_vnfd_name:
-                      for vnfr_vl_item in vnfr_json['virtual_links']:
-                        # looks for the VLD connected to the selected VNFR external CP
-                        if found_ns_cp['cp'] in vnfr_vl_item['connection_points_reference']:
-                          found_vnf_cp = vnfr_vl_item['connection_points_reference']
-                          found_vnf_cp.remove(found_ns_cp['cp'])
-                          found_vnf_cp = str_2_json(found_vnf_cp)
-                          break
-
-                      # looks for the VDU that is connected to the CP pointing out of the slice
-                      for vnfr_vdu_item in vnfr_json['virtual_deployment_units']:
-                        if vnfr_vdu_item['id'] == found_vnf_cp['id']:
-                          for vnfc_ins_item in vnfr_vdu_item['vnfc_instance']:
-                            for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
-                              if vnfc_ins_cp_item['id'] == found_vnf_cp['cp']:
-                                # VDU found, takins its information for the WIM request
-                                wim_dict = {}
-                                wim_dict['location'] = vnfc_ins_item['vim_id']
-                                wim_dict['nap'] = vnfc_ins_cp_item['interface']['address']
-                                wim_conn_points_list.append(wim_dict)
-                                found_vnfr = True
-                                break
-                            if found_vnfr:
-                              break
-                        if found_vnfr:
-                          break
-                    if found_vnfr:
-                      break
-
-            if wim_conn_points_list:
-              # validates if the two VIMs are registered within the same WIM
-              wim_uuid = None
-              for wim_item in wims_list[0]['wim_list']:
-                found_wim = True
-                # if any of the two vim_uuids is not in the wim_attached_vims_list, check the next wim
-                for wim_cp_item in wim_conn_points_list:
-                  if wim_cp_item['location'] not in wim_item['attached_vims']:
-                    found_wim = False
-                    break
+          # from the SLICE-CP looks for the IP associated to the VDU linked to that CP.
+          for ns_cp_item in vldr_item['ns-conn-point-ref']:
+            for nsr_item in self.NSI['nsr-list']:
+              # compares with the only key within the dict
+              found_vnfd = False
+        
+              if nsr_item['subnet-ref'] in ns_cp_item.keys():
+                # get the nsr information in order to go into the next level (VNFs info)
+                nsr_json = mapper.get_nsr(nsr_item['nsrId'])
                 
-                if found_wim:
-                  wim_uuid = wim_item['uuid']
+                for nsr_vl_item in nsr_json['virtual_links']:
+                  # checks if the value exists within the nsr cp-reference
+                  if ns_cp_item[nsr_item['subnet-ref']] in nsr_vl_item['connection_points_reference']:
+                    found_ns_cp = nsr_vl_item['connection_points_reference']
+                    found_ns_cp.remove(ns_cp_item[nsr_item['subnet-ref']])
+                    found_ns_cp = str_2_json(found_ns_cp)
+                
+                    # if the value exist, requests the NSD to find out the VNFD name which the vnfr is based on
+                    nsd_json = mapper.get_nsd(nsr_json['descriptor_reference'])
+                    for nsd_nf_item in nsd_json['nsd']['network_functions']:
+                      if nsd_nf_item['vnf_id'] == found_ns_cp['id']:
+                        # the right VNF name is found
+                        found_vnfd_name = nsd_nf_item['vnf_name']
+                        found_vnfd = True
+                        break
+                  if found_vnfd:
+                    break
+
+              if found_vnfd:
+                # among all the VNFRs within the NSR, looks fo rthe one based on the VNF name found previously
+                for nsr_nf_item in nsr_json['network_functions']:
+                  found_vnfr = False
+                  vnfr_json = mapper.get_vnfr(nsr_nf_item['vnfr_id'])
+                  if vnfr_json['name'] == found_vnfd_name:
+                    for vnfr_vl_item in vnfr_json['virtual_links']:
+                      # looks for the VLD connected to the selected VNFR external CP
+                      if found_ns_cp['cp'] in vnfr_vl_item['connection_points_reference']:
+                        found_vnf_cp = vnfr_vl_item['connection_points_reference']
+                        found_vnf_cp.remove(found_ns_cp['cp'])
+                        found_vnf_cp = str_2_json(found_vnf_cp)
+                        break
+
+                    # looks for the VDU that is connected to the CP pointing out of the slice
+                    for vnfr_vdu_item in vnfr_json['virtual_deployment_units']:
+                      if vnfr_vdu_item['id'] == found_vnf_cp['id']:
+                        for vnfc_ins_item in vnfr_vdu_item['vnfc_instance']:
+                          for vnfc_ins_cp_item in vnfc_ins_item['connection_points']:
+                            if vnfc_ins_cp_item['id'] == found_vnf_cp['cp']:
+                              # VDU found, takins its information for the WIM request
+                              wim_dict = {}
+                              wim_dict['location'] = vnfc_ins_item['vim_id']
+                              wim_dict['nap'] = vnfc_ins_cp_item['interface']['address']
+                              wim_conn_points_list.append(wim_dict)
+                              found_vnfr = True
+                              break
+                          if found_vnfr:
+                            break
+                      if found_vnfr:
+                        break
+                  if found_vnfr:
+                    break
+          
+          #TODO: Improve the following code as it assumes that each VLD has ONLY two nsrs connected [0] & [1]
+          # JSON creation and WAN request
+          if wim_conn_points_list:
+            wim_uuid = None
+            # validates if the two VIMs are registered within the same WIM
+            for wim_item in wims_list[0]['wim_list']:
+              found_wim = True
+              # if any of the two vim_uuids is not in the wim_attached_vims_list, check the next wim
+              for wim_cp_item in wim_conn_points_list:
+                if wim_cp_item['location'] not in wim_item['attached_vims']:
+                  found_wim = False
                   break
-            
-              # creates the json to request the WIM connection
-              wim_dict = {}
-              wim_dict['instance_uuid'] = vldr_item['vim-net-id']   # GTK translates it to service_instance_id for the IA.
-              wim_dict['wim_uuid'] = wim_uuid
-              wim_dict['vl_id'] = vldr_item['id']
-              wim_dict['ingress'] = wim_conn_points_list[0]
-              wim_dict['egress'] = wim_conn_points_list[1]
-              wim_dict['bidirectional'] = True
+              
+              if found_wim:
+                wim_uuid = wim_item['uuid']
+                break
+          
+            # creates the json to request the WIM connection
+            wim_dict = {}
+            wim_dict['instance_uuid'] = vldr_item['vim-net-id']   # GTK translates it to service_instance_id for the IA.
+            wim_dict['wim_uuid'] = wim_uuid
+            wim_dict['vl_id'] = vldr_item['id']
+            wim_dict['ingress'] = wim_conn_points_list[0]
+            wim_dict['egress'] = wim_conn_points_list[1]
+            wim_dict['bidirectional'] = True
 
-              # check if the WAN connection for thecurrent vldr with those vims already exists
-              create_wim = False
-              if self.NSI['_wim-connections']:
-                for wim_connection_item in self.NSI['_wim-connections']:
-                  if wim_connection_item['vl_id'] == wim_dict['vl_id']:
+            # check if the WAN connection for theccurrent vldr with those vims already exists
+            create_wim = False
+            if self.NSI['_wim-connections']:
+              for wim_connection_item in self.NSI['_wim-connections']:
+                if wim_connection_item['vl_id'] == wim_dict['vl_id']:
 
-                    ref_ingress = wim_connection_item['ingress']['location']
-                    ref_egress = wim_connection_item['egress']['location']
-                    new_ingress = wim_dict['ingress']['location']
-                    new_egress = wim_dict['egress']['location']
-                    
-                    if new_ingress == ref_ingress and new_egress == ref_egress:
-                      LOG.info("NSI_MNGR: WIM already exists")
-                      break
-                    elif new_ingress == ref_egress and new_egress == ref_ingress:
-                      LOG.info("NSI_MNGR: WIM already exists")
-                      break
-                    else:
-                      LOG.info("NSI_MNGR: Creating NEW WIM")
-                      create_wim = True
+                  ref_ingress = wim_connection_item['ingress']['location']
+                  ref_egress = wim_connection_item['egress']['location']
+                  new_ingress = wim_dict['ingress']['location']
+                  new_egress = wim_dict['egress']['location']
+                  
+                  if new_ingress == ref_ingress and new_egress == ref_egress:
+                    LOG.info("NSI_MNGR: WIM already exists")
+                    break
+                  elif new_ingress == ref_egress and new_egress == ref_ingress:
+                    LOG.info("NSI_MNGR: WIM already exists")
                     break
                   else:
-                    LOG.info("NSI_MNGR: Creating NEW WIM in empty list")
+                    LOG.info("NSI_MNGR: Creating NEW WIM")
                     create_wim = True
-                    break
-
-              if create_wim:
-                LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
-                wim_response = mapper.create_wim_network(wim_dict)
-                if wim_response['status'] == 'COMPLETED':
-                  self.NSI['_wim-connections'].append(wim_dict)
-                  return self.NSI, 200
+                  break
                 else:
-                  LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT created.")
-                  wim_response = json.loads(wim_response['message'])
-                  self.NSI['errorLog'] = "WAN Enforcement: " + wim_response['error']
-                  self.NSI['nsi-status'] = 'ERROR'
-                  return self.NSI, 501
-            
-            else:
-              return self.NSI, 501
+                  LOG.info("NSI_MNGR: Creating NEW WIM in empty list")
+                  create_wim = True
+                  break
+
+            if create_wim:
+              LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
+              wim_response = mapper.create_wim_network(wim_dict)
+              if wim_response['status'] == 'COMPLETED':
+                self.NSI['_wim-connections'].append(wim_dict)
+                return self.NSI, 200
+              else:
+                LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT created.")
+                wim_response = json.loads(wim_response['message'])
+                self.NSI['errorLog'] = "WAN Enforcement: " + wim_response['error']
+                self.NSI['nsi-status'] = 'ERROR'
+                return self.NSI, 501
+          else:
+            return self.NSI, 501
 
     return self.NSI, 501
 
