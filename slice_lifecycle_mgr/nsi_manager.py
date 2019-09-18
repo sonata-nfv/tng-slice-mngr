@@ -273,14 +273,13 @@ class thread_ns_instantiate(Thread):
             
               # creates the json to request the WIM connection
               wim_dict = {}
-              wim_dict['instance_uuid'] = self.NSI['id']   # GTK translates it to service_instance_id for the IA.
+              wim_dict['instance_uuid'] = vldr_item['vim-net-id']   # GTK translates it to service_instance_id for the IA.
               wim_dict['wim_uuid'] = wim_uuid
               wim_dict['vl_id'] = vldr_item['id']
               wim_dict['ingress'] = wim_conn_points_list[0]
               wim_dict['egress'] = wim_conn_points_list[1]
               wim_dict['bidirectional'] = True
-              LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
-              
+
               # check if the WAN connection for thecurrent vldr with those vims already exists
               create_wim = False
               if self.NSI['_wim-connections']:
@@ -291,6 +290,7 @@ class thread_ns_instantiate(Thread):
                     ref_egress = wim_connection_item['egress']['location']
                     new_ingress = wim_dict['ingress']['location']
                     new_egress = wim_dict['egress']['location']
+                    
                     if new_ingress == ref_ingress and new_egress == ref_egress:
                       LOG.info("NSI_MNGR: WIM already exists")
                       break
@@ -307,12 +307,14 @@ class thread_ns_instantiate(Thread):
                     break
 
               if create_wim:
+                LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
                 wim_response = mapper.create_wim_network(wim_dict)
                 if wim_response['status'] == 'COMPLETED':
                   self.NSI['_wim-connections'].append(wim_dict)
                   return self.NSI, 200
                 else:
                   LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT created.")
+                  wim_response = json.loads(wim_response['message'])
                   self.NSI['errorLog'] = "WAN Enforcement: " + wim_response['error']
                   self.NSI['nsi-status'] = 'ERROR'
                   return self.NSI, 501
@@ -368,7 +370,8 @@ class thread_ns_instantiate(Thread):
                 vldr_item['vld-status'] = 'INACTIVE'
               else:
                 vldr_item['vld-status'] = 'ERROR'
-                self.NSI['errorLog'] = networks_response['error']
+                error_dict = json.loads(networks_response['message'])
+                self.NSI['errorLog'] = error_dict['error']
 
   # requests to terminate those instantiated nsr of a failed nsi
   def undo_nsrs(self, nsrs_2_terminate):
@@ -1193,7 +1196,8 @@ def add_vlds(new_nsir, nst_json):
     vld_record = {}
     vld_record['id'] = vld_item['id']
     vld_record['name'] = vld_item['name']
-    vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
+    #vld_record['vim-net-id']  = new_nsir['name'] + "." + vld_item['name'] + ".net." + str(uuid.uuid4())
+    vld_record['vim-net-id']  = str(uuid.uuid4())
     vld_record['vim-net-stack'] = []
 
 
