@@ -222,9 +222,9 @@ def get_wims_info():
   if (response.status_code == 200):
       jsonresponse = json.loads(response.text)
   else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
+      jsonresponse = {'status':'ERROR', 'http_code': response.status_code,'message': response.text}   #TODO: ask José the response
 
-  return jsonresponse
+  return jsonresponse, response.status_code
 
 '''
 Objective: Request to create a wim interconnection between vims
