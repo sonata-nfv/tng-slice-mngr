@@ -222,7 +222,8 @@ def get_wims_info():
   if (response.status_code == 200):
       jsonresponse = json.loads(response.text)
   else:
-      jsonresponse = {'status':'ERROR', 'http_code': response.status_code,'message': response.text}   #TODO: ask José the response
+      jsonresponse = {'status':'ERROR', 'http_code': response.status_code,'message': response.text}
+      LOG.info("MAPPER: WAN Network Get Info response: " +str(jsonresponse))
 
   return jsonresponse, response.status_code
 

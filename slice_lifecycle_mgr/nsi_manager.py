@@ -184,7 +184,7 @@ class thread_ns_instantiate(Thread):
 
       return self.NSI, 501
 
-    LOG.info("NSI_MNGR: WAN looking for VLD"))
+    LOG.info("NSI_MNGR: WAN looking for VLD")
     time.sleep(0.1)
     # loops the slice-vld to find out which one is in two different VIMs
     for vldr_item in self.NSI['vldr-list']:
@@ -203,7 +203,7 @@ class thread_ns_instantiate(Thread):
 
         # if true, this VLD needs WAN enforcement
         if vld_wim_found:
-          LOG.info("NSI_MNGR: FOUND VLD THAT NEEDS WAN"))
+          LOG.info("NSI_MNGR: FOUND VLD THAT NEEDS WAN")
           time.sleep(0.1)
           wim_conn_points_list = []
           info_found = False
@@ -341,6 +341,7 @@ class thread_ns_instantiate(Thread):
 
   # requests to remove the networks of a failed nsi
   def undo_slice_vlds(self):
+    self.NSI['nsi-status'] == "TERMINATING"
     #checks if the vldr can be removed (if they are not shared or shared with terminated nsrs)
     for vldr_item in self.NSI['vldr-list']:
       if vldr_item.get('shared-nsrs-list'):
