@@ -940,8 +940,9 @@ class thread_ns_terminate(Thread):
           virtual_links.append(virtual_links_item)
 
           # Prepares the JSON to remove the VLD
-          vim_list = []
+          
           for vim_net_stack_item in vldr_item['vim-net-stack']:
+            vim_list = []
             for vimAccountID_item in vim_net_stack_item['vimAccountId']:
               vim_list_item = {}
               vim_list_item['uuid'] = vimAccountID_item['vim-id']
