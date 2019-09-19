@@ -960,6 +960,7 @@ class thread_ns_terminate(Thread):
             if networks_response['status'] in ['COMPLETED']:
               vldr_item['vld-status'] = "INACTIVE"
             else:
+              LOG.info("NSI_MNGR: Network Slice VLD: " + str(networks_response) + " NOT removed.")
               vldr_item['vld-status'] = "ERROR"
               self.NSI['nsi-status'] = "ERROR"
               self.NSI['errorLog'] = networks_response['error']
