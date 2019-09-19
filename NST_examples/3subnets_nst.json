@@ -93,7 +93,6 @@
 		{
 			"id": "slice_output",
 			"name": "slice_output",
-			"mgmt-network": true,
 			"type": "E-LAN",
 			"access_net": true,
 			"nsd-connection-point-ref": [{
