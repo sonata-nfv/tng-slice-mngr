@@ -294,7 +294,7 @@ class thread_ns_instantiate(Thread):
             wim_dict = {}
             wim_dict['instance_uuid'] = vldr_item['vim-net-id']   # GTK translates it to service_instance_id for the IA.
             wim_dict['wim_uuid'] = wim_uuid
-            wim_dict['vl_id'] = self.NSI['name'] + vldr_item['id']
+            wim_dict['vl_id'] = self.NSI['name'] + "-" + vldr_item['id']
             wim_dict['ingress'] = wim_conn_points_list[0]
             wim_dict['egress'] = wim_conn_points_list[1]
             wim_dict['bidirectional'] = True
@@ -939,9 +939,8 @@ class thread_ns_terminate(Thread):
           virtual_links_item['id'] = vldr_item['vim-net-id']
           virtual_links.append(virtual_links_item)
 
+          # Prepares the JSON to remove the VLD
           vim_list = []
-          # to remove the net if it si placed in multiple VIMs
-          
           for vim_net_stack_item in vldr_item['vim-net-stack']:
             for vimAccountID_item in vim_net_stack_item['vimAccountId']:
               vim_list_item = {}
@@ -954,12 +953,14 @@ class thread_ns_terminate(Thread):
             network_data['vim_list'] = vim_list
 
             # calls the function towards the GTK
+            LOG.info("NSI_MNGR: Remove Network Slice VLD: " + str(network_data))
             networks_response = mapper.delete_vim_network(network_data)
 
             # checks that all the networks are terminated
             if networks_response['status'] in ['COMPLETED']:
               vldr_item['vld-status'] = "INACTIVE"
             else:
+              LOG.info("NSI_MNGR: Network Slice VLD: " + str(networks_response) + " NOT removed.")
               vldr_item['vld-status'] = "ERROR"
               self.NSI['nsi-status'] = "ERROR"
               self.NSI['errorLog'] = networks_response['error']
