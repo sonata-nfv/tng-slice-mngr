@@ -190,7 +190,8 @@ class thread_ns_instantiate(Thread):
     for vldr_item in self.NSI['vldr-list']:
       # only those not management vld
       if (vldr_item.get('mgmt-network') == None or vldr_item['mgmt-network'] == False):
-        # checks if the current vld needs WIM enforcement
+        
+        # nst IF/ELSE simply checks if the checks if the vldr_item needs WIM enforcement
         vld_wim_found = False
         if len(vldr_item['vim-net-stack']) > 1:
           # multiple stacks with different vims
@@ -298,28 +299,32 @@ class thread_ns_instantiate(Thread):
             wim_dict['egress'] = wim_conn_points_list[1]
             wim_dict['bidirectional'] = True
 
-            # check if the WAN connection for theccurrent vldr with those vims already exists
-            create_wim = True
+            # checks if there's already a WIM connection with the same ingress/egress IP @s. If so, no need to create.
             if self.NSI['_wim-connections']:
               for wim_connection_item in self.NSI['_wim-connections']:
+                create_wim = True
                 if wim_connection_item['vl_id'] == wim_dict['vl_id']:
 
-                  ref_ingress = wim_connection_item['ingress']['location']
-                  ref_egress = wim_connection_item['egress']['location']
-                  new_ingress = wim_dict['ingress']['location']
-                  new_egress = wim_dict['egress']['location']
+                  ref_ingress = wim_connection_item['ingress']['nap']
+                  ref_egress = wim_connection_item['egress']['nap']
+                  new_ingress = wim_dict['ingress']['nap']
+                  new_egress = wim_dict['egress']['nap']
                   
                   if new_ingress == ref_ingress and new_egress == ref_egress:
-                    LOG.info("NSI_MNGR: WIM already exists")
+                    LOG.info("NSI_MNGR: WIM already exists with this ingress/egress IP @s")
                     create_wim = False
+                    break
                   elif new_ingress == ref_egress and new_egress == ref_ingress:
-                    LOG.info("NSI_MNGR: WIM already exists")
+                    LOG.info("NSI_MNGR: WIM already exists with this ingress/egress IP @s")
                     create_wim = False
+                    break
                   else:
-                    LOG.info("NSI_MNGR: Creating NEW WIM")
-                else:
-                  LOG.info("NSI_MNGR: Creating NEW WIM in empty list")
+                    continue
+                  
+                  if not create_wim:
+                    break
 
+            # if there's no equal existing WIM connection (create_wim = True), enters and requests it.
             if create_wim:
               LOG.info("NSI_MNGR: JSON to request WIM configuration: " + str(wim_dict))
               wim_response = mapper.create_wim_network(wim_dict)
@@ -335,7 +340,8 @@ class thread_ns_instantiate(Thread):
           else:
             return self.NSI, 501
 
-    return self.NSI, 501
+    # this return only happens if the WIM connection already exists and connects two shared nsrs
+    return self.NSI, 200
 
   # requests to remove the networks of a failed nsi
   def undo_slice_vlds(self):
@@ -769,51 +775,6 @@ class thread_ns_terminate(Thread):
     termination_response = mapper.net_serv_terminate(data)
 
     return termination_response, 201
-
-  '''
-  def send_networks_removal_request(self, vldrs_2_remove):
-    LOG.info("NSI_MNGR: Removing Network Slice VLDs (VIM Networks).")
-    # creates the 1st json level structure {instance_id: ___, vim_list: []}
-    network_data = {}
-    network_data['instance_id'] = self.NSI['id']    # uses the slice id for its networks
-    network_data['vim_list'] = []
-
-    # creates the elements of the 2nd json level structure {uuid:__, virtual_links:[]} and adds them into the 'vim_list'
-    for vldr_item in self.NSI['vldr-list']:
-      for vldrs_2_remove_item in vldrs_2_remove:
-        if vldr_item['vim-net-id'] == vldrs_2_remove_item:
-          vim_item = {}
-          vim_item['uuid'] = vldr_item['vimAccountId']['vim-id']
-          vim_item['virtual_links'] = []
-          if not network_data['vim_list']:
-            network_data['vim_list'].append(vim_item)
-          else:
-            if vim_item not in network_data['vim_list']:
-              network_data['vim_list'].append(vim_item)
-            else:
-              continue
-    
-    # creates the elements of the 3rd json level struture {id: ___, access: bool} and adds them into the 'virtual_links'
-    for vldr_item in self.NSI['vldr-list']:
-      #if vldr_item['id'] in vldrs_2_remove:
-      for vldrs_2_remove_item in vldrs_2_remove:
-        if vldr_item['vim-net-id'] == vldrs_2_remove_item:
-          for vim_item in network_data['vim_list']:
-            if vldr_item['vimAccountId']['vim-id'] == vim_item['uuid']:
-              virtual_link_item = {}
-              virtual_link_item['id'] = vldr_item['vim-net-id']
-              if not vim_item['virtual_links']:
-                vim_item['virtual_links'].append(virtual_link_item)
-              else:
-                if virtual_link_item not in vim_item['virtual_links']:
-                  vim_item['virtual_links'].append(virtual_link_item)
-                else:
-                  continue
-
-    # calls the mapper to sent the networks creation requests to the GTK (and this to the IA)
-    nets_removal_response = mapper.delete_vim_network(network_data)
-    return nets_removal_response
-  '''
   
   def update_nsi_notify_terminate(self):
     mutex_slice2db_access.acquire()
@@ -872,9 +833,10 @@ class thread_ns_terminate(Thread):
     mutex_slice2db_access.acquire()
     
     # remove WAN connections if there are more than one element in nsir['datacenter']
-    if len(self.NSI['datacenter']) > 1:
-      LOG.info("NSI_MNGR: Removing WAN conenctions due to multi-vim deployment.")
+    if self.NSI['_wim-connections']:
       for wan_item in self.NSI['_wim-connections']:
+
+        LOG.info("NSI_MNGR: Removing WAN conenction for the VLD:.")
         # creates the json to request the WIM connection
         wim_dict = {}
         wim_dict['instance_uuid'] = wan_item['instance_uuid'] # GTK translates it to service_instance_id for the IA.
