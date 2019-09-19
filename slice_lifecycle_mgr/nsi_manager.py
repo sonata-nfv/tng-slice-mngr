@@ -328,7 +328,7 @@ class thread_ns_instantiate(Thread):
               wim_response = mapper.create_wim_network(wim_dict)
               if wim_response['status'] == 'COMPLETED':
                 self.NSI['_wim-connections'].append(wim_dict)
-                return self.NSI, 200
+                #return self.NSI, 200
               else:
                 LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT created.")
                 wim_response = json.loads(wim_response['message'])
