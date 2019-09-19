@@ -294,7 +294,7 @@ class thread_ns_instantiate(Thread):
             wim_dict = {}
             wim_dict['instance_uuid'] = vldr_item['vim-net-id']   # GTK translates it to service_instance_id for the IA.
             wim_dict['wim_uuid'] = wim_uuid
-            wim_dict['vl_id'] = vldr_item['id']
+            wim_dict['vl_id'] = self.NSI['name'] + vldr_item['id']
             wim_dict['ingress'] = wim_conn_points_list[0]
             wim_dict['egress'] = wim_conn_points_list[1]
             wim_dict['bidirectional'] = True
@@ -834,6 +834,9 @@ class thread_ns_terminate(Thread):
     if self.NSI['_wim-connections']:
       for wan_item in self.NSI['_wim-connections']:
 
+        #TODO: add the code to check if the wim_connection belongs to two shared nsrs. if the ...
+        # ... current slice is the last one using them, remove everything.
+
         LOG.info("NSI_MNGR: Removing WAN conenction for the VLD:.")
         # creates the json to request the WIM connection
         wim_dict = {}
@@ -848,6 +851,12 @@ class thread_ns_terminate(Thread):
           LOG.info("NSI_MNGR: WAN Enforcement: " + str(wim_response) + " NOT removed.")
           self.NSI['errorLog'] = "WAN Enforcement Removal Error."
           self.NSI['nsi-status'] = 'ERROR'
+          
+          # sends the updated NetSlice instance to the repositories
+          repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
+          # releases mutex for any other thread to acquire it
+          mutex_slice2db_access.release()
+          
           return self.NSI, 501
 
     # sends each of the termination requests
