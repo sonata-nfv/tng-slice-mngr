@@ -300,9 +300,9 @@ class thread_ns_instantiate(Thread):
             wim_dict['bidirectional'] = True
 
             # checks if there's already a WIM connection with the same ingress/egress IP @s. If so, no need to create.
+            create_wim = True
             if self.NSI['_wim-connections']:
               for wim_connection_item in self.NSI['_wim-connections']:
-                create_wim = True
                 if wim_connection_item['vl_id'] == wim_dict['vl_id']:
 
                   ref_ingress = wim_connection_item['ingress']['nap']
@@ -313,16 +313,14 @@ class thread_ns_instantiate(Thread):
                   if new_ingress == ref_ingress and new_egress == ref_egress:
                     LOG.info("NSI_MNGR: WIM already exists with this ingress/egress IP @s")
                     create_wim = False
-                    break
                   elif new_ingress == ref_egress and new_egress == ref_ingress:
                     LOG.info("NSI_MNGR: WIM already exists with this ingress/egress IP @s")
                     create_wim = False
-                    break
                   else:
                     continue
                   
-                  if not create_wim:
-                    break
+                if not create_wim:
+                  break
 
             # if there's no equal existing WIM connection (create_wim = True), enters and requests it.
             if create_wim:
