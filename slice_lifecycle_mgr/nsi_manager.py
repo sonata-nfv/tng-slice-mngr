@@ -969,6 +969,8 @@ class thread_ns_terminate(Thread):
             network_data['vim_list'] = vim_list
 
             # passes the json to the internal function that sends the requests through the mapper
+            LOG.info("NSI_MNGR: REMOVING A WHOLE VLD")
+            time.sleep(0.1)
             vld_removal_requests(network_data)
 
         # checks if the vld exists in multiple-vims and check which segment to remove (if necessary)
@@ -981,6 +983,7 @@ class thread_ns_terminate(Thread):
                 instantiated_nsirs_list.append(nsirs_item)
           
             if instantiated_nsirs_list:
+              LOG.info("NSI_MNGR: instantiated_nsirs_list: " + str(instantiated_nsirs_list))
               # looks in the current vld, all its stacks (networks in vims corresponding to the same slice-vld)
               for vim_net_stack_item in vldr_item['vim-net-stack']:
                 vem_net_stack_id = vim_net_stack_item['id']
@@ -991,7 +994,7 @@ class thread_ns_terminate(Thread):
                     if vldr_ref['id'] == vldr_item['id']:
                       for vim_net_stack_ref in vldr_ref['vim-net-stack']:
                         vim_net_stack_id_ref = vim_net_stack_ref['id']
-
+                        LOG.info("NSI_MNGR: vem_net_stack_id: " + str(vem_net_stack_id) + ", vem_net_stack_id: " + str(vem_net_stack_id))
                         if vem_net_stack_id == vem_net_stack_id:
                           stack_found = True
                           break
@@ -1021,6 +1024,8 @@ class thread_ns_terminate(Thread):
                   network_data['vim_list'] = vim_list
 
                   # passes the json to the internal function that sends the requests through the mapper
+                  LOG.info("NSI_MNGR: REMOVING A STACK")
+                  time.sleep(0.1)
                   vld_removal_requests(network_data)
 
       # sends the updated NetSlice instance to the repositories
