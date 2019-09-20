@@ -827,6 +827,21 @@ class thread_ns_terminate(Thread):
       LOG.info("NSI_MNGR_Notify: THREAD FINISHED, GTK notified with status: " +str(thread_response[1]))
 
   def run(self):
+
+    def vld_removal_requests(network_data):
+      # calls the function towards the GTK
+      LOG.info("NSI_MNGR: Remove Network Slice VLD: " + str(network_data))
+      networks_response = mapper.delete_vim_network(network_data)
+
+      # checks that all the networks are terminated
+      if networks_response['status'] in ['COMPLETED']:
+        vldr_item['vld-status'] = "INACTIVE"
+      else:
+        LOG.info("NSI_MNGR: Network Slice VLD: " + str(networks_response) + " NOT removed.")
+        vldr_item['vld-status'] = "ERROR"
+        self.NSI['nsi-status'] = "ERROR"
+        self.NSI['errorLog'] = networks_response['error']
+
     # acquires mutex to have unique access to the nsi (rpositories)
     mutex_slice2db_access.acquire()
     
@@ -933,14 +948,14 @@ class thread_ns_terminate(Thread):
         else:
           remove_vldr_item = True
         
+        # the whole vld must be removed
         if remove_vldr_item:
           virtual_links = []
           virtual_links_item = {}
           virtual_links_item['id'] = vldr_item['vim-net-id']
           virtual_links.append(virtual_links_item)
 
-          # Prepares the JSON to remove the VLD
-          
+          # Prepares the JSON to remove ALL THE VIM NETWORKS within the slice-vld
           for vim_net_stack_item in vldr_item['vim-net-stack']:
             vim_list = []
             for vimAccountID_item in vim_net_stack_item['vimAccountId']:
@@ -953,18 +968,60 @@ class thread_ns_terminate(Thread):
             network_data['instance_id'] = vim_net_stack_item['id']
             network_data['vim_list'] = vim_list
 
-            # calls the function towards the GTK
-            LOG.info("NSI_MNGR: Remove Network Slice VLD: " + str(network_data))
-            networks_response = mapper.delete_vim_network(network_data)
+            # passes the json to the internal function that sends the requests through the mapper
+            vld_removal_requests(network_data)
 
-            # checks that all the networks are terminated
-            if networks_response['status'] in ['COMPLETED']:
-              vldr_item['vld-status'] = "INACTIVE"
-            else:
-              LOG.info("NSI_MNGR: Network Slice VLD: " + str(networks_response) + " NOT removed.")
-              vldr_item['vld-status'] = "ERROR"
-              self.NSI['nsi-status'] = "ERROR"
-              self.NSI['errorLog'] = networks_response['error']
+        # checks if the vld exists in multiple-vims and check which segment to remove (if necessary)
+        else:
+          nsirs_list = nsi_repo.get_all_saved_nsi()
+          if nsirs_list:
+            instantiated_nsirs_list = []
+            for nsirs_item in nsirs_list:
+              if nsirs_item['nsi-status'] not in ['TERMINATING', 'TERMINATED'] or nsirs_item['uuid'] != self.NSI['id']:
+                instantiated_nsirs_list.append(nsirs_item)
+          
+            if instantiated_nsirs_list:
+              # looks in the current vld, all its stacks (networks in vims corresponding to the same slice-vld)
+              for vim_net_stack_item in vldr_item['vim-net-stack']:
+                vem_net_stack_id = vim_net_stack_item['id']
+                stack_found = False
+                # looks if any other active nsir has the same stack to remove it or not.
+                for instantiated_nsir_item in instantiated_nsirs_list:
+                  for vldr_ref in instantiated_nsir_item['vldr-list']:
+                    if vldr_ref['id'] == vldr_item['id']:
+                      for vim_net_stack_ref in vldr_ref['vim-net-stack']:
+                        vim_net_stack_id_ref = vim_net_stack_ref['id']
+
+                        if vem_net_stack_id == vem_net_stack_id:
+                          stack_found = True
+                          break
+                      
+                    if stack_found:
+                      break
+                  if stack_found:
+                    break
+            
+                # no other nsir has this stack, so it must be removed
+                if not stack_found:
+                  virtual_links = []
+                  virtual_links_item = {}
+                  virtual_links_item['id'] = vldr_item['vim-net-id']
+                  virtual_links.append(virtual_links_item)
+
+                  # Prepares the JSON to remove ONLY THE RIGHT VIM NETWORKS of the slice-vld
+                  vim_list = []
+                  for vimAccountID_item in vim_net_stack_item['vimAccountId']:
+                    vim_list_item = {}
+                    vim_list_item['uuid'] = vimAccountID_item['vim-id']
+                    vim_list_item['virtual_links'] = virtual_links
+                    vim_list.append(vim_list_item)
+
+                  network_data = {}
+                  network_data['instance_id'] = vim_net_stack_item['id']
+                  network_data['vim_list'] = vim_list
+
+                  # passes the json to the internal function that sends the requests through the mapper
+                  vld_removal_requests(network_data)
 
       # sends the updated NetSlice instance to the repositories
       repo_responseStatus = nsi_repo.update_nsi(self.NSI, self.NSI['id'])
