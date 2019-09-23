@@ -939,6 +939,8 @@ class thread_ns_terminate(Thread):
       
       #checks if the vldr can be removed (if they are not shared or shared with terminated nsrs)
       for vldr_item in self.NSI['vldr-list']:
+        LOG.info("NSI_MNGR: Checking VLD: " + str(vldr_item['id']))
+        time.sleep(0.1)
         if vldr_item.get('shared-nsrs-list'):
           for shared_nsrs_item in vldr_item['shared-nsrs-list']:
             remove_vldr_item = True
@@ -947,13 +949,15 @@ class thread_ns_terminate(Thread):
               if (shared_nsrs_item == nsrs_item['nsrId'] and nsrs_item['working-status'] in ['NEW', 'INSTANTIATING', 'INSTANTIATED', 'READY']):
                 remove_vldr_item = False
                 break
-            if remove_vldr_item == False:
+            if not remove_vldr_item:
               break
         else:
           remove_vldr_item = True
         
         # the whole vld must be removed
         if remove_vldr_item:
+          LOG.info("NSI_MNGR: REMOVING A WHOLE VLD")
+          time.sleep(0.1)
           virtual_links = []
           virtual_links_item = {}
           virtual_links_item['id'] = vldr_item['vim-net-id']
@@ -973,14 +977,16 @@ class thread_ns_terminate(Thread):
             network_data['vim_list'] = vim_list
 
             # passes the json to the internal function that sends the requests through the mapper
-            LOG.info("NSI_MNGR: REMOVING A WHOLE VLD")
-            time.sleep(0.1)
             vld_removal_requests(network_data)
 
         # checks if the vld exists in multiple-vims and check which segment to remove (if necessary)
         else:
+          LOG.info("NSI_MNGR: REMOVING A PART of the  VLD")
+          time.sleep(0.1)
           nsirs_list = nsi_repo.get_all_saved_nsi()
           if nsirs_list:
+            LOG.info("NSI_MNGR: SELECTING the NSIRS")
+            time.sleep(0.1)
             instantiated_nsirs_list = []
             for nsirs_item in nsirs_list:
               if nsirs_item['nsi-status'] not in ['TERMINATING', 'TERMINATED'] or nsirs_item['uuid'] != self.NSI['id']:
