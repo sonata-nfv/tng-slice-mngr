@@ -401,11 +401,16 @@ class thread_ns_instantiate(Thread):
       # calls the function towards the GTK
       termination_response = mapper.net_serv_terminate(data)
 
-      for nsr_item in self.NSI['nsr-list']:
-        if nsrid_item == nsr_item['nsrId']:
-          nsr_item['working-status'] == 'TERMINATING'
-          nsr_item['requestId'] = termination_response['id']
-          break
+      if termination_respons[1] == 201:
+        for nsr_item in self.NSI['nsr-list']:
+          if nsrid_item == nsr_item['nsrId']:
+            nsr_item['working-status'] == 'TERMINATING'
+            nsr_item['requestId'] = termination_response['id']
+            break
+      else:
+        LOG.info("NSI_MNGR: ERROR WHEN TERMINATING NSRs FROMA FAILED INSTANTIATION PROCESS: " + str(termination_response['message']))
+        nsr_item['working-status'] == 'ERROR'
+        self.NSI['errorLog'] = 'ERROR when terminating ' + str(nsr_item['nsrName'])
 
     return self.NSI, 200
 
