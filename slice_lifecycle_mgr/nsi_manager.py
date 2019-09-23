@@ -387,8 +387,7 @@ class thread_ns_instantiate(Thread):
                 vldr_item['vld-status'] = 'INACTIVE'
               else:
                 vldr_item['vld-status'] = 'ERROR'
-                error_dict = json.loads(networks_response['message'])
-                self.NSI['errorLog'] = error_dict['error']
+                self.NSI['errorLog'] = networks_response['error']
 
   # requests to terminate those instantiated nsr of a failed nsi
   def undo_nsrs(self, nsrs_2_terminate):
