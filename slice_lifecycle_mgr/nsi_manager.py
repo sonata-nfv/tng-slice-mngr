@@ -989,13 +989,16 @@ class thread_ns_terminate(Thread):
             time.sleep(0.1)
             instantiated_nsirs_list = []
             for nsirs_item in nsirs_list:
-              if nsirs_item['nsi-status'] not in ['TERMINATING', 'TERMINATED'] or nsirs_item['uuid'] != self.NSI['id']:
+              if nsirs_item['nsi-status'] not in ['TERMINATING', 'TERMINATED', 'ERROR'] and nsirs_item['uuid'] != self.NSI['id']:
                 instantiated_nsirs_list.append(nsirs_item)
           
             if instantiated_nsirs_list:
               LOG.info("NSI_MNGR: instantiated_nsirs_list: " + str(instantiated_nsirs_list))
+              time.sleep(0.1)
               # looks in the current vld, all its stacks (networks in vims corresponding to the same slice-vld)
               for vim_net_stack_item in vldr_item['vim-net-stack']:
+                LOG.info("NSI_MNGR: vim_net_stack_item[id]: " + str(vim_net_stack_item['id']))
+                time.sleep(0.1)
                 vem_net_stack_id = vim_net_stack_item['id']
                 stack_found = False
                 # looks if any other active nsir has the same stack to remove it or not.
@@ -1004,11 +1007,10 @@ class thread_ns_terminate(Thread):
                     if vldr_ref['id'] == vldr_item['id']:
                       for vim_net_stack_ref in vldr_ref['vim-net-stack']:
                         vim_net_stack_id_ref = vim_net_stack_ref['id']
-                        LOG.info("NSI_MNGR: vem_net_stack_id: " + str(vem_net_stack_id) + ", vem_net_stack_id: " + str(vem_net_stack_id))
-                        if vem_net_stack_id == vem_net_stack_id:
+                        LOG.info("NSI_MNGR: vem_net_stack_id: " + str(vem_net_stack_id) + ", vem_net_stack_id: " + str(vim_net_stack_id_ref))
+                        if vem_net_stack_id == vim_net_stack_id_ref:
                           stack_found = True
                           break
-                      
                     if stack_found:
                       break
                   if stack_found:
