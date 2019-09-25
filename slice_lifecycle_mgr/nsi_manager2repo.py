@@ -63,6 +63,7 @@ def safe_nsi(NSI_dict):
     if(response.status_code != 200):
         jsonresponse = {}
         jsonresponse ['message'] = response.json()
+        LOG.info("Saving the Network Slice Instance record FAILED: " + str(jsonresponse))
     
     return jsonresponse, response.status_code
 
@@ -74,7 +75,7 @@ def get_all_saved_nsi():
     
     if(response.status_code != 200):
         jsonresponse = {'http_code': response.status_code,'message': response.json()}
-        LOG.info('NSI_MNGR2REPO: nsir getAll from repo failed: ' + str(jsonresponse))
+        LOG.info("Retrieving all Network Slice Instance records FAILED: " + str(jsonresponse))
     
     return jsonresponse
 
@@ -86,7 +87,7 @@ def get_all_saved_nsi_counter():
     
     if(response.status_code != 200):
         jsonresponse = {'http_code': response.status_code,'message': response.json()}
-        LOG.info('NSI_MNGR2REPO: nsir getAll counter from repo failed: ' + str(jsonresponse))
+        LOG.info("Retrieving the total number of Network Slice Instance records FAILED: " + str(jsonresponse))
     
     return jsonresponse
 
@@ -98,7 +99,7 @@ def get_saved_nsi(nsiId):
     
     if(response.status_code != 200):
         jsonresponse = {'http_code': response.status_code,'message': response.json()}
-        LOG.info('NSI_MNGR2REPO: nsir get from repo failed: ' + str(jsonresponse))
+        LOG.info("Retrieving Network Slice Instance record with ID: " +str(nsiId)+ " FAILED. ")
     
     return jsonresponse
 
@@ -113,7 +114,7 @@ def update_nsi(update_NSI, nsiId):
     
     if(response.status_code != 200):
         jsonresponse = {'http_code': response.status_code,'message': response.json()}
-        LOG.info('NSI_MNGR2REPO: nsir update action to repo failed: ' + str(jsonresponse))
+        LOG.info("Updating Network Slice Instance record with ID: " +str(nsiId)+ " FAILED. ")
     
     return jsonresponse
 
@@ -125,6 +126,6 @@ def delete_nsi(nsiId):
     
     if(response.status_code != 200):
         jsonresponse = {'http_code': response.status_code,'message': response.json()}
-        LOG.info('NSI_MNGR2REPO: nsir delete action to repo failed: ' + str(jsonresponse))
+        LOG.info("Removing Network Slice Instance record with ID: " +str(nsiId)+ " FAILED. ")
     
     return jsonresponse.status_code

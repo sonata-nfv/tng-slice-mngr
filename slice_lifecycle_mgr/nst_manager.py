@@ -49,8 +49,7 @@ LOG.setLevel(logging.DEBUG)
 ######################### NETWORK SLICE TEMPLATE CREATION/UPDATE/REMOVE SECTION ##############################
 # Creates a NST and sends it to catalogues
 def create_nst(jsondata):
-  LOG.info("NST_MNGR: Ceating a new NST with the following services: " +str(jsondata))
-  time.sleep(0.1)
+  LOG.info("Check if there is an existing Network Slice Template with same NAME/VENDOR/VERSION.")
   # Validates that no existing NSTD has the same NAME-VENDOR-VERSION (avoid duplicate NSTDs)
   nst_list = nst_catalogue.get_all_saved_nst()
   if nst_list:
@@ -60,6 +59,7 @@ def create_nst(jsondata):
         return_msg['error'] = "NSTD with this description parameters (NAME, VENDOR or VERSION) already exists."
         return return_msg, 400
   
+  LOG.info("Get and check if the necessary Network Services are uploaded in the SP.")
   # Get the current services list to get the uuid for each slice-subnet (NSD) reference
   current_services_list = mapper.get_nsd_list()
   if current_services_list:
@@ -72,6 +72,7 @@ def create_nst(jsondata):
         
       # Checks if all subnets have the field nsd-ref with the copied nsd-id
       if 'nsd-ref' not in subnet_item:
+        LOG.info("The" +str(subnet_item["nsd-name"])+" / "+str(subnet_item["nsd-vendor"])+" / "+str(subnet_item["nsd-version"])+ " NSD does not exist in the SP database.")
         return_msg = {}
         return_msg['error'] = "The following NSD does not exist in the SP database."
         return_msg['nsd-name'] = subnet_item["nsd-name"]
@@ -79,24 +80,26 @@ def create_nst(jsondata):
         return_msg['nsd-version'] = subnet_item["nsd-version"]
         return return_msg, 400
   else:
+    LOG.info("No Network Service Descriptors in the DB.")
     return_msg = {}
     return_msg['error'] = "The list of NSDs is empty."
     return return_msg, 400
   
   #Sends the new NST to the catalogues (DB)
   nst_response = nst_catalogue.safe_nst(jsondata)
+  LOG.info("Network Slice Template saved in the DB.")
   return nst_response
 
 # Updates the information of a selected NST in catalogues
 def updateNST(nstId, NST_string):
-  LOG.info("NST_MNGR: Updating NST with id: " +str(nstId))
+  LOG.info("Update Network Slice Template with ID: " +str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.update_nst(update_NST, nstId)
   
   return nstcatalogue_jsonresponse
 
 # Deletes a NST kept in catalogues
 def remove_nst(nstId):
-  LOG.info("NST_MNGR: Delete NST with id: " + str(nstId))
+  LOG.info("Delete Network Slice Template with ID: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
   if (nstcatalogue_jsonresponse['nstd']["usageState"] == "NOT_IN_USE"):
     nstcatalogue_jsonresponse = nst_catalogue.delete_nst(nstId)
@@ -107,7 +110,7 @@ def remove_nst(nstId):
 ############################################ GET NST SECTION ############################################
 # Returns the information of all the NST in catalogues
 def get_all_nst():
-  LOG.info("NST_MNGR: Retrieving all existing NSTs")
+  LOG.info("Retrieving all existing Network Slice Templates")
   nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst()
   
   if (nstcatalogue_jsonresponse):
@@ -116,7 +119,7 @@ def get_all_nst():
     return ('{"msg":"There are no NSTD in the db."}', 200)
 
 def get_all_nst_counter():
-  LOG.info("NST_MNGR: Retrieving all existing NSTs count")
+  LOG.info("Retrieving the total number of existing Network Slice Template.")
   nstcatalogue_jsonresponse = nst_catalogue.get_all_saved_nst_count()
   
   if (nstcatalogue_jsonresponse):
@@ -128,7 +131,7 @@ def get_all_nst_counter():
 
 # Returns the information of a selected NST in catalogues
 def get_nst(nstId):
-  LOG.info("NST_MNGR: Retrieving NST with id: " + str(nstId))
+  LOG.info("Retrieving Network Slice Template with ID: " + str(nstId))
   nstcatalogue_jsonresponse = nst_catalogue.get_saved_nst(nstId)
 
   if (nstcatalogue_jsonresponse):

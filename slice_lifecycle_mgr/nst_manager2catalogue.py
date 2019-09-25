@@ -57,7 +57,7 @@ def get_base_url():
 
 # POST to send the NST information to the catalogues
 def safe_nst(nst_string):
-    LOG.info("NST_MNGR2CAT: Sending information to the catalogues")
+    LOG.info("Saves Network Slice Template information into the catalogues.")
     url = get_base_url() + '/api/catalogues/v2/nsts'
     data = json.dumps(nst_string)
     response = requests.post(url, data, headers=JSON_CONTENT_HEADER, timeout=1.0, )
@@ -66,33 +66,33 @@ def safe_nst(nst_string):
     if (response.status_code != 201):
         error = {'http_code': response.status_code,'message': response.json()}
         jsonresponse = error
-        LOG.info('NST_MNGR2CAT: nstd to catalogues failed: ' + str(error))
+        LOG.info("Saving Network Slice Template Descriptor into the catalogues FAILED: " + str(error))
     
     return jsonresponse, response.status_code
        
 # GET all NST information from the catalogues
 def get_all_saved_nst():
-    LOG.info("NST_MNGR2CAT: Requesting all NSTD information from catalogues")
+    LOG.info("Retrieve all Network Slice Template Descriptors from catalogues.")
     url = get_base_url() + '/api/catalogues/v2/nsts'
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
     if (response.status_code != 200):
         jsonresponse = {'http_code': response.status_code,'message': response.json()}
-        LOG.info('NSI_MNGR2CAT: nstd getAll from catalogues failed: ' + str(jsonresponse))
+        LOG.info("Retrieve all Network Slice Template Descriptors FAILED: " + str(jsonresponse))
     
     return jsonresponse
 
 # GET the number of NST objects within the catalogues
 def get_all_saved_nst_count():
-    LOG.info("NST_MNGR2CAT: Requesting all NSTD count information from catalogues")
+    LOG.info("Requesting the total number of Network Slice Template Descriptors into the catalogues.")
     url = get_base_url() + '/api/catalogues/v2/nsts?count'
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
     
     if (response.status_code != 200):
         jsonresponse = {'http_code': response.status_code,'message': response.json()}
-        LOG.info('NSI_MNGR2CAT: nstd getAll count from catalogues failed: ' + str(jsonresponse))
+        LOG.info("Retrieveing the total number of Network Slice Template Descriptors FAILED: " + str(jsonresponse))
     
     return jsonresponse
     
@@ -100,20 +100,18 @@ def get_all_saved_nst_count():
 # The url follows this rule(.../nsts/<nstId>/?nstParameter2update) where nstParameter2update is...
 # ... a string following the structure: "<key>=<value>"
 def update_nst(nstParameter2update, nstId):
-    LOG.info("NST_MNGR2CAT: Updating NSTD information")
+    LOG.info("Update the Network Slice Template Descriptor with ID: " +str(nstId))
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId + '?' + nstParameter2update
     jsonresponse = requests.put(url, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     
-    if (jsonresponse.status_code == 200) or (jsonresponse.status_code == 201):
-        LOG.info("NST_MNGR2CAT: NSTD updated.")
-    else:
+    if (jsonresponse.status_code != 200) or (jsonresponse.status_code != 201):
         jsonresponse = {'http_code': jsonresponse.status_code,'message': jsonresponse.json()}
-        LOG.info('NST_MNGR2CAT: nstd update action to catalogues failed: ' + str(jsonresponse))
+        LOG.info('Updated Network Slice Template Descriptor FAILED: ' + str(jsonresponse))
     return jsonresponse
 
 # GET the specific NST item from the catalogues
 def get_saved_nst(nstId):
-    LOG.info("NST_MNGR2CAT: Requesting NST information from catalogues")
+    LOG.info("Requesting Network Slice Template Descriptor with ID: " +str(nstId))
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
     response = requests.get(url, headers=JSON_CONTENT_HEADER)
     jsonresponse = json.loads(response.text)
@@ -121,20 +119,20 @@ def get_saved_nst(nstId):
     if (response.status_code != 200):
         jsonresponse = json.loads(response.text)
         jsonresponse['http_code'] = response.status_code
-        LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(jsonresponse))
+        LOG.info("Retrieveing Network Slice Template Descriptor FAILED: " + str(jsonresponse))
     
     return jsonresponse
     
 # DELETE the specific NST item from catalogues
 def delete_nst(nstId):
-    LOG.info("NST_MNGR2CAT: Deleting NSTD")
+    LOG.info("Deleting Network Slice Template Descriptor with ID:" +str(nstId))
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId
     response = requests.delete(url)
     LOG.info(response.status_code)
     
     if (response.status_code != 200):
         response = {'http_code': response.status_code,'message': response.json()}
-        LOG.info('NST_MNGR2CAT: nstd delete action to catalogues failed: ' + str(response))
+        LOG.info("Remove Network Slice Template Descriptor FAILED: " + str(response))
     
     return response
   

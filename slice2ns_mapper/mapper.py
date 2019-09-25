@@ -100,14 +100,15 @@ Objective: Request to get all registered VIMs information
   } 
 '''
 def get_vims_info():
-  LOG.info("MAPPER: Requesting VIMs information.")
+  LOG.info("Requesting VIMs information.")
   url = get_url_sp_gtk() + '/slices/vims'
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
   
   if (response.status_code == 200):
       jsonresponse = json.loads(response.text)
   else:
-      jsonresponse = {'http_code': response.status_code,'message': response.json()}   #TODO: ask José the response
+      jsonresponse = {'http_code': response.status_code,'message': response.json()}
+      LOG.info(" Retrieving VIMs information FAILED: " +str(jsonresponse))
 
   return jsonresponse
 
@@ -147,8 +148,7 @@ def create_vim_network(network_data):
     jsonresponse = json.loads(response.text)
   else:
     jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-    LOG.info("MAPPER: Networks creation jsonresponse: " +str(jsonresponse))
-    time.sleep(0.1)
+    LOG.info("Creation of VIM Networks (VLDs) FAILED: " +str(jsonresponse))
   
   return jsonresponse
 
@@ -180,8 +180,7 @@ def delete_vim_network(network_data):
     jsonresponse = json.loads(response.text)
   else:
     jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-    LOG.info("MAPPER: Networks removal jsonresponse: " +str(jsonresponse))
-    time.sleep(0.1)
+    LOG.info("Removal of VIM Networks (VLDs) FAILED: " +str(jsonresponse))
 
   return jsonresponse
 
@@ -215,7 +214,6 @@ Objective: Request to get all registered WIMs information
   ]
 '''
 def get_wims_info():
-  LOG.info("MAPPER: Requesting WIMs information.")
   url = get_url_sp_gtk() + '/slices/wims'
   response = requests.get(url, headers=JSON_CONTENT_HEADER)
   
@@ -223,7 +221,7 @@ def get_wims_info():
       jsonresponse = json.loads(response.text)
   else:
       jsonresponse = {'status':'ERROR', 'http_code': response.status_code,'message': response.text}
-      LOG.info("MAPPER: WAN Network Get Info response: " +str(jsonresponse))
+      LOG.info(" Retrieving WIMs information FAILED: " +str(jsonresponse))
 
   return jsonresponse, response.status_code
 
@@ -253,7 +251,6 @@ Objective: Request to create a wim interconnection between vims
   Return: {status: "COMPLETE/ERROR", message: empty/"msg"} 
 '''
 def create_wim_network(wim_link_data):
-  LOG.info("MAPPER: Sending WAN network creation request")
   url = get_url_sp_gtk() + '/slices/wan-networks'
   data_json = json.dumps(wim_link_data)
   response = requests.post(url, data=data_json, headers=JSON_CONTENT_HEADER)
@@ -262,8 +259,7 @@ def create_wim_network(wim_link_data):
     jsonresponse = json.loads(response.text)
   else:
     jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-    LOG.info("MAPPER: WAN Network creation jsonresponse: " +str(jsonresponse))
-    time.sleep(0.1)
+    LOG.info("Creation of WIM VLDs (WAN interconnections) FAILED: " +str(jsonresponse))
   
   return jsonresponse
 
@@ -280,20 +276,13 @@ Objective: Request to delete a wim interconnection between vims
 def delete_wim_network(wim_link_data):
   url = get_url_sp_gtk() + '/slices/wan-networks'
   data_json = json.dumps(wim_link_data)
-  
-  LOG.info("MAPPER: Sending WAN network removal request")
-  LOG.info("MAPPER: URL --> " + str(url) + ", data --> " + str(data_json))
-  time.sleep(0.1)
   response = requests.delete(url, data=data_json, headers=JSON_CONTENT_HEADER)
-  LOG.info("MAPPER: Networks removal response: " +str(response))
-  time.sleep(0.1)
 
   if (response.status_code == 201):
     jsonresponse = json.loads(response.text)
   else:
     jsonresponse = {'status':'ERROR', 'http_code': response.status_code, 'message': response.text}
-    LOG.info("MAPPER: WAN Network removal jsonresponse: " +str(jsonresponse))
-    time.sleep(0.1)
+    LOG.info("Removal of WIM VLDs (WAN interconnections) FAILED: " +str(jsonresponse))
 
   return jsonresponse
 
@@ -364,7 +353,6 @@ def get_vnfr(vnfr_uuid):
   else:
     service_response = json.loads(response.text)
     service_response['http_code'] = response.status_code
-    LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(service_response))
   return service_response
 
 # GET virtual network function DESCRIPTOR
@@ -377,7 +365,6 @@ def get_vnfd(vnfd_name, vnfd_vendor, vnfd_version):
   else:
     function_response = json.loads(response.text)
     function_response['http_code'] = response.status_code
-    LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(function_response))
   return function_response
 
 ################################# NETWORK SERVICE DESCRIPTORS #####################################
@@ -390,7 +377,6 @@ def get_nsd(nsd_uuid):
   else:
     service_response = json.loads(response.text)
     service_response['http_code'] = response.status_code
-    LOG.info('NST_MNGR2CAT: nstd get from catalogue failed: ' + str(service_response))
   return service_response
 
 def get_nsd_list():
@@ -414,8 +400,6 @@ def get_nsd_list():
   else:
       service_response = {'http_code': response.status_code,'message': response.json()}
   
-  LOG.info("MAPPER: Retrieving all available NSDs: "+str(service_response))
-  time.sleep(0.1)
   return service_response
       
 def parseNetworkService(service):

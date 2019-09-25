@@ -39,19 +39,20 @@ from uuid import UUID
 # Global variables
 returnData = {}
 
-# Validation Functions
+#Log definition to make the slice logs idetified among the other possible 5GTango components.
+LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
+TangoLogger.getLogger("slicemngr:json_validator", logging.DEBUG, log_json=True)
+LOG.setLevel(logging.DEBUG)
+
+# Checks if the uuid has the right format (uuidv4)
 def is_valid_uuid(uuid_to_test, version=4):
-    """ Check if uuid_to_test is a valid UUID.
-    Parameters --> uuid_to_test : str / version : {1, 2, 3, 4}
-    Returns    --> `True` if uuid_to_test is a valid UUID, otherwise `False`.
-    """
     try:
         uuid_obj = UUID(uuid_to_test, version=version)
     except:
         return False
     return str(uuid_obj) == uuid_to_test
 
-# CASE: Create NetSlice instantiation
+# Validates the incoming json to start a Network Slice Instantiation process.
 def validate_create_instantiation (jsonData):
   if jsonData['nstId'] and jsonData['name']:
     if (is_valid_uuid(jsonData['nstId']) == True):
@@ -59,14 +60,14 @@ def validate_create_instantiation (jsonData):
       return (returnData, 200)
     else:
       returnData["missing_field"] = "The Network Service Template ID format is wrong, please check it."
-      logging.info('FormValidator NSI_Error: ' + str(returnData))
+      LOG.info('FormValidator NSI_Error: ' + str(returnData))
       return (returnData, 400)
   else:
       returnData["missing_field"] = "Check if you request has a nstId or a name."
-      logging.info('FormValidator NSI_Error: ' + str(returnData))
+      LOG.info('FormValidator NSI_Error: ' + str(returnData))
       return (returnData, 400)
 
-# CASE: Terminate NetSlice Instantiation
+# Validates the incoming json to start a Network Slice Termination process.
 # Possible values for <time> --> instant_termination: 0 / future termination: 2019-07-16T14:01:31.447547
 def validate_terminate_instantiation (jsonData):
   if (jsonData['terminateTime'] == 0 or jsonData['terminateTime'] == "0"):
