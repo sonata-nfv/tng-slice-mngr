@@ -90,13 +90,14 @@ def optionsOneNST(nstId):
 # CREATES a NetSlice template(NST)
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['POST']) 
 def create_slice_template():
-  LOG.info("SLICE_MAIN: received json from portal: " + str(request.json))
+  LOG.info("Request to upload a Network Slice Template: " + str(request.json))
   new_nst = nst_manager.create_nst(request.json)
   return jsonify(new_nst[0]), new_nst[1]
 
 # GETS for all the NetSlice Templates (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors', methods=['GET'])
 def get_all_slice_templates():
+  LOG.info("Request to get ALL Network Slice Templates.")
   args = request.args.to_dict()
   if 'count' in args.keys():
     listNST = nst_manager.get_all_nst_counter()
@@ -108,6 +109,7 @@ def get_all_slice_templates():
 #GETS for a specific NetSlice Template (NST) information
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['GET'])
 def get_slice_template(nstId):
+  LOG.info("Request to get the Network Slice Template with ID: " + str(nstId))
   returnedNST = nst_manager.get_nst(nstId)
 
   return jsonify(returnedNST[0]), returnedNST[1]
@@ -116,7 +118,7 @@ def get_slice_template(nstId):
 @app.route(API_ROOT+API_NST+API_VERSION+'/descriptors/<nstId>', methods=['DELETE'])
 def delete_slice_template(nstId):
   deleted_NSTid = nst_manager.remove_nst(nstId)
-  LOG.info("SLICE_MAIN: Delete NST with id: " + str(nstId))
+  LOG.info("Request to remove Network Slice Template with ID: " + str(nstId))
   
   if deleted_NSTid == 403:
     returnMessage = "Not possible to delete, there are NSInstances using this NSTemplate"
@@ -129,7 +131,7 @@ def delete_slice_template(nstId):
 # CREATES/INSTANTIATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def create_slice_instance():
-  LOG.info("SLICE_MAIN: Request for a Network Slice Instance: " + str(request.json))
+  LOG.info("Request to create a Network Slice Instantiation with the following information: " + str(request.json))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok
   instantiating_nsi = json_validator.validate_create_instantiation(request.json)
@@ -143,6 +145,7 @@ def create_slice_instance():
 # INFORMATION: if changed, a line in nsi_manager.py within its function "createNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/instantiation-change', methods=['POST'])
 def update_slice_instantiation(nsiId):
+  LOG.info("Request to upload the Network Slice Instantiation with ID: " + str(nsiId))
   sliceUpdated = nsi_manager.update_instantiating_nsi(nsiId, request.json)
 
   #[0] error_message or valid_json, [1] status code
@@ -151,7 +154,7 @@ def update_slice_instantiation(nsiId):
 # TERMINATES a NetSlice instance (NSI)
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate', methods=['POST'])
 def create_slice_terminate(nsiId):
-  LOG.info("SLICE_MAIN: received json from portal: " + str(request.json))
+  LOG.info("Request to terminate the Network Slice Instantiation according to the following: " + str(request.json))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 200 ok
   terminating_nsi = json_validator.validate_terminate_instantiation(request.json)
@@ -165,6 +168,7 @@ def create_slice_terminate(nsiId):
 # INFORMATION: if changed, a line in nsi_manager.py within its function "terminateNSI" must have the same URL.
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>/terminate-change', methods=['POST'])
 def update_slice_termination(nsiId):
+  LOG.info("Request to upload the Network Slice Termination with ID: " + str(nsiId))
   sliceUpdated = nsi_manager.update_terminating_nsi(nsiId, request.json)
 
   #[0] error_message or valid_json, [1] status code
@@ -177,6 +181,7 @@ def get_all_slice_instances():
   if 'count' in args.keys():
     allNSI = nsi_manager.get_all_nsi_counter()
   else:
+    LOG.info("Request to retreive all the Network Slice Instantiations.")
     allNSI = nsi_manager.get_all_nsi()
 
   return jsonify(allNSI[0]), allNSI[1]
@@ -184,6 +189,7 @@ def get_all_slice_instances():
 # GETS a SPECIFIC NetSlice instances (NSI) information
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['GET'])
 def get_slice_instance(nsiId):
+  LOG.info("Request to retrieve the Network Slice Instantiation with ID: " + str(nsiId))
   returnedNSI = nsi_manager.get_nsi(nsiId)
 
   return jsonify(returnedNSI[0]), returnedNSI[1]
@@ -191,6 +197,7 @@ def get_slice_instance(nsiId):
 # DELETEs from the ddbb the NetSlice Instance (NSI) record object
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI+'/<nsiId>', methods=['DELETE'])
 def delete_slice_instance(nsiId):
+  LOG.info("Request to remove the Network Slice Instantiation with ID: " + str(nsiId))
   deleted_NSIid = nsi_manager.remove_nsi(nsiId)
   
   return jsonify(deleted_NSIid[0]), deleted_NSIid[1]
