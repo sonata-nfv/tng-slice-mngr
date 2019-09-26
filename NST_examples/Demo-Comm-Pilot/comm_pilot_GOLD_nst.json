@@ -1,5 +1,5 @@
 {
-  "name": "EUCNC_GOLD_CommPilot_NST",
+  "name": "5GTANGO_GOLD_CommPilot_NST",
   "description": "NST for the EUCNC Communications Pilot with GOLD SLA.",
   "vendor": "5gtango",
   "version": "2.0",
@@ -13,9 +13,9 @@
       "id": "comm-pilot-subnet",
       "nsd-name": "communication-pilot",
       "nsd-vendor": "quobis",
-      "nsd-version": "0.6",
-      "sla-name": "eucnc_gold",
-      "sla-ref": "f07e364e-c884-4aa8-a50d-da70a708c663",
+      "nsd-version": "0.5",
+      "sla-name": "comm-pilot-gold-1",
+      "sla-ref": "f0382a70-fe9a-4887-b708-c07737ea57ed",
       "is-shared": false,
       "ingresses": [
         {
