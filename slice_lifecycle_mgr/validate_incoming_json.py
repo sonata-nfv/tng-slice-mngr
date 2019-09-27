@@ -35,6 +35,7 @@
 
 import json, datetime, logging, time
 from uuid import UUID
+from logger import TangoLogger
 
 # Global variables
 returnData = {}
