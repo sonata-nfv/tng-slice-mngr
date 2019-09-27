@@ -8,7 +8,8 @@
 		"slice-service-type": "eMBB"
 	},
 	"usageState": "NOT_IN_USE",
-	"slice_ns_subnets": [{
+	"slice_ns_subnets": [
+		{
 			"id": "Service_subnet_1",
 			"nsd-name": "ns-2-vnf-2-vdu",
 			"nsd-vendor": "eu.5gtango",
@@ -30,13 +31,15 @@
 			"is-shared": false
 		}
 	],
-	"slice_vld": [{
+	"slice_vld": [
+		{
 			"id": "mgmt",
 			"name": "mgmt",
 			"mgmt-network": true,
 			"type": "E-LAN",
 			"access_net": false,
-			"nsd-connection-point-ref": [{
+			"nsd-connection-point-ref": [
+				{
 					"subnet-ref": "Service_subnet_1",
 					"nsd-cp-ref": "mgmt"
 				},
@@ -55,10 +58,12 @@
 			"name": "slice_input",
 			"type": "E-LAN",
 			"access_net": true,
-			"nsd-connection-point-ref": [{
-				"subnet-ref": "Service_subnet_1",
-				"nsd-cp-ref": "input"
-			}]
+			"nsd-connection-point-ref": [
+				{
+					"subnet-ref": "Service_subnet_1",
+					"nsd-cp-ref": "input"
+				}
+			]
 		},
 		{
 			"id": "subnet1_2_subnet2",
