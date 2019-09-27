@@ -17,11 +17,11 @@
       "is-shared": false,
       "ingresses": [
         {
-          "location": "dd1a1746-5f82-4900-8c8d-71e24fe8aafe",
+          "location": "a95d3a8b-c5aa-4982-b0ca-303e0413001b",
           "nap": "10.10.10.1/32"
         },
         {
-          "location": "1e993339-aa00-41cb-bdcd-fc5cd9fc6561",
+          "location": "70babf81-3d2f-4a8a-802c-a454ffbf1966",
           "nap": "10.10.10.2/32"
         }
       ],

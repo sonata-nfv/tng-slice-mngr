@@ -754,7 +754,7 @@ class thread_ns_terminate(Thread):
     self.termin_nsrids_list = termin_nsrids_list
   
   def send_termination_requests(self, nsr_item):
-    LOG.info("Terminating Service: " + str(nsr_item['nsrName']))
+    LOG.info("Terminating Service: " + str(nsr_item))
 
     data = {}
     data["instance_uuid"] = str(nsr_item)
