@@ -335,7 +335,7 @@ class thread_ns_instantiate(Thread):
 
   # requests to remove the networks of a failed nsi
   def undo_slice_vlds(self):
-    LOG.info("Undoing VLDs for slice "+str(self.NSI['id'])" due to an error during its instantiation process.")
+    LOG.info("Undoing VLDs for slice " +str(self.NSI['id'])+" due to an error during its instantiation process.")
     self.NSI['nsi-status'] == "TERMINATING"
     #checks if the vldr can be removed (if they are not shared or shared with terminated nsrs)
     for vldr_item in self.NSI['vldr-list']:
@@ -382,7 +382,7 @@ class thread_ns_instantiate(Thread):
 
   # requests to terminate those instantiated nsr of a failed nsi
   def undo_nsrs(self, nsrs_2_terminate):
-    LOG.info("Undoing NSRs for slice "+str(self.NSI['id'])" due to an error during its instantiation process.")
+    LOG.info("Undoing NSRs for slice "+str(self.NSI['id'])+" due to an error during its instantiation process.")
     for nsrid_item in nsrs_2_terminate:
       # requests to terminate a NSr
       data = {}
@@ -605,7 +605,7 @@ class thread_ns_instantiate(Thread):
       if network_ready:
         LOG.info("Processing all Network Service Instances for slice: " + str(self.NSI['id']))
         # Waits until all the NSs are instantiated/ready or error
-        deployment_timeout = 900   # 15min   #TODO: mmodify for the reviews
+        deployment_timeout = 2 * 3600   # Two hours
         while deployment_timeout > 0:
           # Check ns instantiation status
           nsrs_instantiated = True
@@ -888,8 +888,8 @@ class thread_ns_terminate(Thread):
     mutex_slice2db_access.release()
 
     # Waits until all the NSs are terminated/ready or error
-    # deployment_timeout = 2 * 3600   # Two hours
-    deployment_timeout = 900         # 15 minutes  #TODO: mmodify for the reviews
+    deployment_timeout = 2 * 3600   # Two hours
+
     while deployment_timeout > 0:
       # Check ns instantiation status
       nsi_terminated = True
