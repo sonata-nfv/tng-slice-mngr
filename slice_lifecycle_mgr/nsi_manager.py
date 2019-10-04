@@ -1184,8 +1184,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       subnet_record['requestId'] = '00000000-0000-0000-0000-000000000000'
       subnet_record['isshared'] = subnet_item['is-shared']
       
-      #TODO: validate instantiation parameters
-      # Checks if the subnet item has SLA, ingresses or egresses information
+      # Checks if the subnet item in the NST has SLA, ingresses or egresses information
       if all(key in subnet_item for key in ('sla-name', 'sla-ref')):
         subnet_record['sla-name'] = subnet_item['sla-name']
         subnet_record['sla-ref'] = subnet_item['sla-ref']
@@ -1201,12 +1200,13 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       else:
         subnet_record['egresses'] = []
 
+      # INSTANTIATION PARAMETERS MANAGEMENT
       # Adding the instantiation parameters into the NSI subnet
       if 'instantiation_params' in request_nsi_json:
         instant_params = request_nsi_json['instantiation_params']
         for ip_item in instant_params:
           if ip_item['subnet_id'] == subnet_item['id']:
-            # checking about SLA
+            # adding the SLA uuid to apply to the slice subnet (NS)
             if all(key in instant_params for key in ('sla_id', 'sla_name')):
               subnet_record['sla-name'] = ip_item['sla_name']
               subnet_record['sla-ref'] = ip_item['sla_id']
@@ -1339,9 +1339,11 @@ def nsi_placement(new_nsir):
     return_msg['error'] = "Not found any VIM information, register one to the SP."
     return return_msg, 500
 
-  # NSR placement based on the required nsr resources vs available vim resources
+  # NSR PLACEMENT: based on the required nsr resources vs available vim resources
+  # 2 POSSIBILITIES: placement based on the available resources (Opt 1) or based on the instantiation parameters...
+  # ... (Opt 2). The second option overwrites the first one.
   for nsr_item in new_nsir['nsr-list']:
-    # if NOT shared placement is always done. If shared, only the first time (nsr-placement is empty)
+    # if NSR IS NOT SHARED, placement is always done. Otherwise, only the first time (nsr-placement is empty)
     if (not nsr_item['isshared'] or nsr_item['isshared'] and not nsr_item['nsr-placement']):
       vim_found = False
       nsr_placement_list = []
@@ -1372,11 +1374,9 @@ def nsi_placement(new_nsir):
                   req_sto = req_sto + vdu_item['resource_requirements']['storage']['size']/1024
                 else:
                   req_sto = req_sto + vdu_item['resource_requirements']['storage']['size']
-            
             elif vnfd_info.get('cloudnative_deployment_units'):
               # CNF does not need to look for resources to select VIM.
               pass
-            
             else:
               new_nsir['errorLog'] = "VNF type not accepted for placement, only VNF and CNF."
               new_nsir['nsi-status'] = 'ERROR'
@@ -1388,17 +1388,18 @@ def nsi_placement(new_nsir):
             new_nsir['nsi-status'] = 'ERROR'
             # 409 = The request could not be completed due to a conflict with the current state of the resource.
             return new_nsir, 409
-
       else:
         new_nsir['errorLog'] = "No " + str(nsr_item['subnet-nsdId-ref']) + " NSD FOUND."
         new_nsir['nsi-status'] = 'ERROR'
         # 409 = The request could not be completed due to a conflict with the current state of the resource.
         return new_nsir, 409
 
+      # OPTION 1: Selects the VIM where to deploy the NSR based on the resources availability
       for vim_index, vim_item in enumerate(vims_list['vim_list']):
         #TODO: missing to use storage but this data is not comming in the VIMs information
         #if (req_core != 0 and req_mem != 0 and req_sto != 0 and vim_item['type'] == "vm"): #current nsr only has VNFs
         if (req_core != 0 and req_mem != 0 and vim_item['type'] == "vm"):
+          # VNFs placement looks for th evisrt VIM where it can deploy all the VNF within the same NS
           available_core = vim_item['core_total'] - vim_item['core_used']
           available_memory = vim_item['memory_total'] - vim_item['memory_used']
           #available_storage = vim_item['storage_total'] - vim_item['storage_used']
@@ -1413,17 +1414,16 @@ def nsi_placement(new_nsir):
             else:
               continue
           else:
-            # assigns the VIM to the NSr and adds it ninto the list for the NSIr
+            # assigns the VIM to the NSR and adds it into the list for the NSIr
             selected_vim = vim_item['vim_uuid']
             vim_found = True
             
             # updates resources info in the temp_vims_list json to have the latest info for the next assignment
             vim_item['core_used'] = vim_item['core_used'] + req_core    
             vim_item['memory_used'] = vim_item['memory_used'] + req_mem
-            #vim_item['storage_used'] = vim_item['storage_used'] + req_sto
-        
-        # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF   
+            #vim_item['storage_used'] = vim_item['storage_used'] + req_sto   
         elif (req_core == 0 and req_mem == 0 and vim_item['type'] == "container"):
+          # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF
           selected_vim = {}
           # if no vim is still selected, take the first one
           if not selected_vim:
@@ -1438,7 +1438,6 @@ def nsi_placement(new_nsir):
               # the current VIM has more available resources than the already selected
               selected_vim = vim_item['vim_uuid']
               vim_found = True
-        
         else:
           # if there are no more VIMs in the list, returns error
           if vim_index == (vims_list_len-1) and not selected_vim:
@@ -1451,6 +1450,39 @@ def nsi_placement(new_nsir):
         if vim_found and selected_vim:
           break
 
+      # OPTION 2: Select the VIM where to deploy the NSR based on the instantiation parameters given by the ...
+      # ... user. This option overwrites the selected VIM in option 1.
+      if 'instantiation_params' in request_nsi_json:
+        for subnet_ip_item in request_nsi_json['instantiation_params']:
+          if subnet_ip_item['subnet_id'] == nsr_item['subnet-ref']:
+            if 'vim_id' in subnet_ip_item:
+
+              # loogs for the selected vim and its available resources
+              for vim_item in vims_list['vim_list']:
+                if subnet_ip_item['vim_id'] == vim_item['vim_uuid']:
+                  available_core = vim_item['core_total'] - vim_item['core_used']
+                  available_memory = vim_item['memory_total'] - vim_item['memory_used']
+
+                  # req_core/req_mem/req_sto values come from above when the NS resources are calculated
+                  #if req_core > available_core or req_mem > available_memory or req_sto > available_storage:
+                  if req_core > available_core or req_mem > available_memory:
+                    new_nsir['errorLog'] = str(nsr_item['nsrName']) + " NSR PLACEMENT FAILED, no VIM resources available."
+                    new_nsir['nsi-status'] = 'ERROR'
+                    return new_nsir, 409
+                  else:
+                    # assigns the VIM to the NSR and adds it into the list for the NSIr
+                    selected_vim = subnet_ip_item['vim_id']
+                    vim_found = True
+                    
+                    # updates resources info in the temp_vims_list json to have the latest info for the next assignment
+                    #vim_item['storage_used'] = vim_item['storage_used'] + req_sto 
+                    vim_item['core_used'] = vim_item['core_used'] + req_core    
+                    vim_item['memory_used'] = vim_item['memory_used'] + req_mem
+                  break
+            
+          if vim_found and selected_vim:
+            break
+
       for nsr_placement_item in nsr_placement_list:
         # assigns the VIM to the NSr and adds it into the list for the NSIr
         nsr_placement_item['vim-id'] = selected_vim
@@ -1458,8 +1490,7 @@ def nsi_placement(new_nsir):
       # assigns the generated placement list to the NSir key
       nsr_item['nsr-placement'] = nsr_placement_list
 
-  # VLDR placement: if two nsr linked to the same vld are placed in different VIMs, the vld must have boths VIMs
-  # from each nsir.nsr-list_item.nsr-placement creates the nsir.vldr-list_item.vim-net-stack list.
+  # VLDR PLACEMENT: if two nsr linked to the same vld are placed in different VIMs, the vld must have boths VIMs
   for vldr_item in new_nsir['vldr-list']:
     if not vldr_item['vim-net-stack']:
       vim_net_stack_list = []
@@ -1502,8 +1533,7 @@ def nsi_placement(new_nsir):
       vim_net_stack_list.append(vim_net_stack_item)
       vldr_item['vim-net-stack'] = vim_net_stack_list
 
-  # adds all the VIMs IDs into the slice record first level 'datacenter' field.
-  # from each nsir.vldr-list_item.vimAccountId list creates the nsir.datacenter list.
+  # SLICE PLACEMENT: adds all the VIMs IDs into the slice record 'datacenter' key.
   nsi_datacenter_list = []
   for vldr_item in new_nsir['vldr-list']:
     for vim_net_stack_item in vldr_item['vim-net-stack']:
