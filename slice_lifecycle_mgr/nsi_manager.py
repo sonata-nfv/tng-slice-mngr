@@ -1102,7 +1102,7 @@ def create_nsi(nsi_json):
   
   # Network Slice Placement
   LOG.info("Placement of the Network Service Instantiations.")
-  new_nsir = nsi_placement(new_nsir)
+  new_nsir = nsi_placement(new_nsir, nsi_json)
 
   if new_nsir[1] != 200:
     LOG.info("Error returning saved nsir.")
@@ -1319,7 +1319,7 @@ def add_vlds(new_nsir, nst_json):
   return new_nsir
 
 # does the NSs placement based on the available VIMs resources & the required of each NS.
-def nsi_placement(new_nsir):
+def nsi_placement(new_nsir, request_nsi_json):
 
   def check_vim (check_vim, check_list):
     for check_list_item in check_list:
