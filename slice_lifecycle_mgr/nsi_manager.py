@@ -1204,7 +1204,10 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       # Adding the instantiation parameters into the NSI subnet
       if 'instantiation_params' in request_nsi_json:
         instant_params = request_nsi_json['instantiation_params']
+        LOG.info("instant_params: "+ str(instant_params))
         for ip_item in instant_params:
+          LOG.info("ip_item: "+ str(ip_item))
+          LOG.info("ip_item[subnet_id]: " +str(ip_item['subnet_id']) + " /  subnet_item[id]: "+ str(subnet_item['id']))
           if ip_item['subnet_id'] == subnet_item['id']:
             # adding the SLA uuid to apply to the slice subnet (NS)
             if all(key in instant_params for key in ('sla_id', 'sla_name')):
