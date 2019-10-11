@@ -1459,9 +1459,11 @@ def nsi_placement(new_nsir, request_nsi_json):
           LOG.info("subnet_ip_item[subnet_id]: " +str(subnet_ip_item['subnet_id']) + " /  nsr_item[subnet-ref]: "+ str(nsr_item['subnet-ref']))
           if subnet_ip_item['subnet_id'] == nsr_item['subnet-ref']:
             if 'vim_id' in subnet_ip_item:
+              LOG.info("subnet_ip_item[vim_id]: " + str(subnet_ip_item['vim_id']))
 
               # looks for the selected vim and its available resources
               for vim_item in vims_list['vim_list']:
+                LOG.info("subnet_ip_item[vim_id]: " +str(subnet_ip_item['vim_id']) + " /  vim_item[vim_uuid]: "+ str(vim_item['vim_uuid']))
                 if subnet_ip_item['vim_id'] == vim_item['vim_uuid']:
                   available_core = vim_item['core_total'] - vim_item['core_used']
                   available_memory = vim_item['memory_total'] - vim_item['memory_used']
