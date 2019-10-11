@@ -1450,6 +1450,8 @@ def nsi_placement(new_nsir, request_nsi_json):
         if vim_found and selected_vim:
           break
 
+      LOG.info("BEFORE INSTANTIATION PARAMS: "+ str(nsr_item['nsr-placement']))
+
       # OPTION 2: Select the VIM where to deploy the NSR based on the instantiation parameters given by the ...
       # ... user. This option overwrites the selected VIM in option 1.
       if 'instantiation_params' in request_nsi_json:
@@ -1478,7 +1480,7 @@ def nsi_placement(new_nsir, request_nsi_json):
                     # assigns the VIM to the NSR and adds it into the list for the NSIr
                     selected_vim = subnet_ip_item['vim_id']
                     vim_found = True
-                    LOG.info("selected_vim" + str(selected_vim))
+                    LOG.info("selected_vim: " + str(selected_vim))
                     
                     # updates resources info in the temp_vims_list json to have the latest info for the next assignment
                     #vim_item['storage_used'] = vim_item['storage_used'] + req_sto 
@@ -1495,6 +1497,8 @@ def nsi_placement(new_nsir, request_nsi_json):
       
       # assigns the generated placement list to the NSir key
       nsr_item['nsr-placement'] = nsr_placement_list
+
+      LOG.info("AFTER INSTANTIATION PARAMS: "+ str(nsr_item['nsr-placement']))
 
   # VLDR PLACEMENT: if two nsr linked to the same vld are placed in different VIMs, the vld must have boths VIMs
   for vldr_item in new_nsir['vldr-list']:
