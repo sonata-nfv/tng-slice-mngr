@@ -1058,7 +1058,7 @@ class update_slice_termination(Thread):
 # 2 steps: create_nsi (with its internal functions) and update_instantiating_nsi
 # Network Slice Instance Object Creation
 def create_nsi(nsi_json):
-  LOG.info("Creating a new Network Slice record for the instantiation procedure.")
+  LOG.info("Creating a new Network Slice record before instantiating it.")
   nstId = nsi_json['nstId']
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
   if catalogue_response.get('nstd'):
@@ -1200,14 +1200,11 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       else:
         subnet_record['egresses'] = []
 
-      # INSTANTIATION PARAMETERS MANAGEMENT
+      # INSTANTIATION PARAMETERS MANAGEMENT (VIM selection done in nsi_placement function)
       # Adding the instantiation parameters into the NSI subnet
       if 'instantiation_params' in request_nsi_json:
         instant_params = request_nsi_json['instantiation_params']
-        LOG.info("instant_params: "+ str(instant_params))
         for ip_item in instant_params:
-          LOG.info("ip_item: "+ str(ip_item))
-          LOG.info("ip_item[subnet_id]: " +str(ip_item['subnet_id']) + " /  subnet_item[id]: "+ str(subnet_item['id']))
           if ip_item['subnet_id'] == subnet_item['id']:
             # adding the SLA uuid to apply to the slice subnet (NS)
             if all(key in instant_params for key in ('sla_id', 'sla_name')):
@@ -1456,11 +1453,14 @@ def nsi_placement(new_nsir, request_nsi_json):
       # OPTION 2: Select the VIM where to deploy the NSR based on the instantiation parameters given by the ...
       # ... user. This option overwrites the selected VIM in option 1.
       if 'instantiation_params' in request_nsi_json:
+        LOG.info("instant_params: "+ str(request_nsi_json['instantiation_params']))
         for subnet_ip_item in request_nsi_json['instantiation_params']:
+          LOG.info("subnet_ip_item: " + str(subnet_ip_item))
+          LOG.info("subnet_ip_item[subnet_id]: " +str(subnet_ip_item['subnet_id']) + " /  nsr_item[subnet-ref]: "+ str(nsr_item['subnet-ref']))
           if subnet_ip_item['subnet_id'] == nsr_item['subnet-ref']:
             if 'vim_id' in subnet_ip_item:
 
-              # loogs for the selected vim and its available resources
+              # looks for the selected vim and its available resources
               for vim_item in vims_list['vim_list']:
                 if subnet_ip_item['vim_id'] == vim_item['vim_uuid']:
                   available_core = vim_item['core_total'] - vim_item['core_used']
@@ -1476,6 +1476,7 @@ def nsi_placement(new_nsir, request_nsi_json):
                     # assigns the VIM to the NSR and adds it into the list for the NSIr
                     selected_vim = subnet_ip_item['vim_id']
                     vim_found = True
+                    LOG.info("selected_vim" + str(selected_vim))
                     
                     # updates resources info in the temp_vims_list json to have the latest info for the next assignment
                     #vim_item['storage_used'] = vim_item['storage_used'] + req_sto 
