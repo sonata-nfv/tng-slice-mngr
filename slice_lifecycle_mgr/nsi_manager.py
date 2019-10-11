@@ -1394,8 +1394,8 @@ def nsi_placement(new_nsir, request_nsi_json):
         # 409 = The request could not be completed due to a conflict with the current state of the resource.
         return new_nsir, 409
 
-      # OPTION 1: VIM selection to deploy the NSR based from instantiation parameters
-      if 'instantiation_params' in request_nsi_json:
+      # OPTION 1: VIM selection to deploy the NSR based on instantiation parameters given by the user
+      if not request_nsi_json['instantiation_params']:
         LOG.info("instant_params: "+ str(request_nsi_json['instantiation_params']))
         time.sleep(0.1)
         for subnet_ip_item in request_nsi_json['instantiation_params']:
@@ -1415,13 +1415,14 @@ def nsi_placement(new_nsir, request_nsi_json):
                                 
           if vim_found and selected_vim:
             break
-      # OPTION 2: Automatic VIM placement based on the VIMs resources availability
+      # OPTION 2: VIM selection to deploy the NSR done through placement strategy  based on VIMs resources
       else:
         for vim_index, vim_item in enumerate(vims_list['vim_list']):
+          # VNFs placement looks for th evisrt VIM where it can deploy all the VNF within the same NS
           #TODO: missing to use storage but this data is not comming in the VIMs information
           #if (req_core != 0 and req_mem != 0 and req_sto != 0 and vim_item['type'] == "vm"): #current nsr only has VNFs
           if (req_core != 0 and req_mem != 0 and vim_item['type'] == "vm"):
-            # VNFs placement looks for th evisrt VIM where it can deploy all the VNF within the same NS
+            
             available_core = vim_item['core_total'] - vim_item['core_used']
             available_memory = vim_item['memory_total'] - vim_item['memory_used']
             #available_storage = vim_item['storage_total'] - vim_item['storage_used']
@@ -1444,8 +1445,8 @@ def nsi_placement(new_nsir, request_nsi_json):
               vim_item['core_used'] = vim_item['core_used'] + req_core    
               vim_item['memory_used'] = vim_item['memory_used'] + req_mem
               #vim_item['storage_used'] = vim_item['storage_used'] + req_sto   
+          # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF
           elif (req_core == 0 and req_mem == 0 and vim_item['type'] == "container"):
-            # CNFs placement compares & finds the most resource free VIM available and deploys all CNFs in the VNF
             selected_vim = {}
             # if no vim is still selected, take the first one
             if not selected_vim:
@@ -1460,6 +1461,7 @@ def nsi_placement(new_nsir, request_nsi_json):
                 # the current VIM has more available resources than the already selected
                 selected_vim = vim_item['vim_uuid']
                 vim_found = True
+          # NO placement done
           else:
             # if there are no more VIMs in the list, returns error
             if vim_index == (vims_list_len-1) and not selected_vim:
