@@ -104,7 +104,7 @@ def update_nst(nstParameter2update, nstId):
     url = get_base_url() + '/api/catalogues/v2/nsts/' + nstId + '?' + nstParameter2update
     jsonresponse = requests.put(url, headers=JSON_CONTENT_HEADER, timeout=1.0, )
     
-    if (jsonresponse.status_code != 200) or (jsonresponse.status_code != 201):
+    if (jsonresponse.status_code != 200):
         jsonresponse = {'http_code': jsonresponse.status_code,'message': jsonresponse.json()}
         LOG.info('Updated Network Slice Template Descriptor FAILED: ' + str(jsonresponse))
     return jsonresponse
