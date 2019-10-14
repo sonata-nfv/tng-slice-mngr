@@ -1395,7 +1395,7 @@ def nsi_placement(new_nsir, request_nsi_json):
         return new_nsir, 409
 
       # OPTION 1: VIM selection to deploy the NSR based on instantiation parameters given by the user
-      if not request_nsi_json['instantiation_params']:
+      if request_nsi_json['instantiation_params']:
         LOG.info("instant_params: "+ str(request_nsi_json['instantiation_params']))
         time.sleep(0.1)
         for subnet_ip_item in request_nsi_json['instantiation_params']:
@@ -1480,7 +1480,6 @@ def nsi_placement(new_nsir, request_nsi_json):
       
       # assigns the generated placement list to the NSir key
       nsr_item['nsr-placement'] = nsr_placement_list
-
 
   # VLDR PLACEMENT: if two nsr linked to the same vld are placed in different VIMs, the vld must have boths VIMs
   for vldr_item in new_nsir['vldr-list']:
