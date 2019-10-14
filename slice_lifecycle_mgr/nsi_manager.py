@@ -176,7 +176,6 @@ class thread_ns_instantiate(Thread):
       self.NSI['errorLog'] = "WAN Enforcement: " + wims_list['error']
       self.NSI['nsi-status'] = "ERROR"
       LOG.info("NSI_MNGR: WAN FAILED: " + str(wims_list['error']))
-      time.sleep(0.1)
 
       return self.NSI, 501
 
@@ -816,7 +815,7 @@ class thread_ns_terminate(Thread):
       json_slice_info['instance_uuid'] = jsonNSI['id']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
-      LOG.info("Network Slice INSTANTIATION with ID: "+str(self.NSI['id'])+" finished and tng-gtk notified about it.")
+      LOG.info("Network Slice TERMINATION with ID: "+str(self.NSI['id'])+" finished and tng-gtk notified about it.")
 
   def run(self):
 
@@ -911,7 +910,6 @@ class thread_ns_terminate(Thread):
       # if all services are instantiated or error, break the while loop to notify the GTK
       if nsi_terminated:
         LOG.info("All Network Service Terminations requests processed for Network Slice with ID: "+str(self.NSI['id']))
-        time.sleep(0.1)
         break
   
       time.sleep(15)
@@ -1396,22 +1394,12 @@ def nsi_placement(new_nsir, request_nsi_json):
 
       # OPTION 1: VIM selection to deploy the NSR based on instantiation parameters given by the user
       if request_nsi_json['instantiation_params']:
-        LOG.info("instant_params: "+ str(request_nsi_json['instantiation_params']))
-        time.sleep(0.1)
         for subnet_ip_item in request_nsi_json['instantiation_params']:
-          LOG.info("subnet_ip_item: " + str(subnet_ip_item))
-          LOG.info("subnet_ip_item[subnet_id]: " +str(subnet_ip_item['subnet_id']) + " /  nsr_item[subnet-ref]: "+ str(nsr_item['subnet-ref']))
-          time.sleep(0.1)
           if subnet_ip_item['subnet_id'] == nsr_item['subnet-ref']:
             if 'vim_id' in subnet_ip_item:
-              LOG.info("subnet_ip_item[vim_id]: " + str(subnet_ip_item['vim_id']))
-              time.sleep(0.1)
-
               # assigns the VIM to the NSR and adds it into the list for the NSIr
               selected_vim = subnet_ip_item['vim_id']
               vim_found = True
-              LOG.info("selected_vim: " + str(selected_vim))
-              time.sleep(0.1)
                                 
           if vim_found and selected_vim:
             break
