@@ -153,6 +153,12 @@ class thread_ns_instantiate(Thread):
       data['egresses'] = []
     # data['blacklist'] = []
 
+    # passes the NS instantiation parameters to configure the NS records to create.
+    if self.NSI.get('_instantiation_params'):
+      for _ip_item in self.NSI['_instantiation_params']:
+        if nsr_item['subnet-ref'] == _ip_item['subnet_id']:
+          data['params'] = _ip_item['params']
+  
     # calls the function towards the GTK
     instantiation_response = mapper.net_serv_instantiate(data)
     return instantiation_response
@@ -1145,6 +1151,10 @@ def add_basic_nsi_info(nst_json, nsi_json):
   nsir_dict['nsr-list'] = []
   nsir_dict['vldr-list'] = []
   nsir_dict['_wim-connections']=[]
+  if nsi_json.get('instantiation_params'):
+    nsir_dict['_instantiation_params']=nsi_json['instantiation_params']
+  else:
+    nsir_dict['_instantiation_params']=[]
 
   return nsir_dict
 
