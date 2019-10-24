@@ -1354,6 +1354,7 @@ def nsi_placement(new_nsir, request_nsi_json):
     # if NSR IS NOT SHARED, placement is always done. Otherwise, only the first time (nsr-placement is empty)
     if (not nsr_item['isshared'] or nsr_item['isshared'] and not nsr_item['nsr-placement']):
       vim_found = False
+      do_autoplacement = True
       nsr_placement_list = []
       req_core = req_mem = req_sto = 0
       nsd_obj = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
@@ -1404,17 +1405,29 @@ def nsi_placement(new_nsir, request_nsi_json):
 
       # OPTION 1: VIM selection to deploy the NSR based on instantiation parameters given by the user
       if request_nsi_json['instantiation_params']:
-        for subnet_ip_item in request_nsi_json['instantiation_params']:
-          if subnet_ip_item['subnet_id'] == nsr_item['subnet-ref']:
+        for subnet_ip_index, subnet_ip_item in enumerate(request_nsi_json['instantiation_params']):
+          if subnet_ip_item['subnet_id'] == nsr_item['subnet-ref']: # subnet found in the instantiation_parameters
             if 'vim_id' in subnet_ip_item:
               # assigns the VIM to the NSR and adds it into the list for the NSIr
               selected_vim = subnet_ip_item['vim_id']
               vim_found = True
-                                
-          if vim_found and selected_vim:
+              do_autoplacement = False
+            else:
+              # instantiation_params does not have any assigned vim for the current nsr, so it's automaticaly done
+              do_autoplacement = True
+            
             break
+
+          if subnet_ip_index == (vims_list_len-1): # nsr_item NOT found in the instantiation_parameters, apply autoplacement
+            do_autoplacement = True
+            
+            break
+
       # OPTION 2: VIM selection to deploy the NSR done through placement strategy  based on VIMs resources
       else:
+        do_autoplacement = True
+
+      if do_autoplacement:
         for vim_index, vim_item in enumerate(vims_list['vim_list']):
           # VNFs placement looks for th evisrt VIM where it can deploy all the VNF within the same NS
           #TODO: missing to use storage but this data is not comming in the VIMs information
