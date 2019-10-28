@@ -157,7 +157,8 @@ class thread_ns_instantiate(Thread):
     if self.NSI.get('_instantiation_params'):
       for _ip_item in self.NSI['_instantiation_params']:
         if nsr_item['subnet-ref'] == _ip_item['subnet_id']:
-          data['params'] = _ip_item['params']
+          if _ip_item['params']:
+            data['params'] = _ip_item['params']
   
     # calls the function towards the GTK
     instantiation_response = mapper.net_serv_instantiate(data)
@@ -1417,8 +1418,9 @@ def nsi_placement(new_nsir, request_nsi_json):
               do_autoplacement = True
             
             break
-
-          if subnet_ip_index == (vims_list_len-1): # nsr_item NOT found in the instantiation_parameters, apply autoplacement
+          
+          # nsr_item NOT found in the instantiation_parameters, apply autoplacement
+          if subnet_ip_index == (vims_list_len-1): 
             do_autoplacement = True
             
             break
