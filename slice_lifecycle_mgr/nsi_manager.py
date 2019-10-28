@@ -65,27 +65,28 @@ class thread_ns_instantiate(Thread):
   def send_instantiation_requests(self, nsr_item):
     LOG.info("Instantiating Service: " + str(nsr_item['nsrName']))
     
-    # Sending Network Services Instantiation requests
+    ### STEP_1: Basic NS requests information
     data = {}
     data['name'] = nsr_item['nsrName']
     data['service_uuid'] = nsr_item['subnet-nsdId-ref']
     data['callback'] = "http://tng-slice-mngr:5998/api/nsilcm/v1/nsi/"+str(self.NSI['id'])+"/instantiation-change"
 
-    # Creates the extra parameters for the requests: slice-vld, ingresses, egresses, SLA
+    ### STEP_2: dict to define where (VIM) to deploy the VNFs and how to connect each NS to the slice-vlds
+    mapping = {}
+    network_functions_list = []
+    virtual_links_list = []
+    
+    ## 'network_functions' object creation
+    for nsr_place_item in nsr_item['nsr-placement']:
+      net_funct = {}
+      net_funct['vnf_id'] = nsr_place_item['nsd-comp-ref']
+      net_funct['vim_id'] = nsr_place_item['vim-id']
+      network_functions_list.append(net_funct)
+    
+    mapping['network_functions'] = network_functions_list
+    
+    # creates the virtual_links key for the mapping if there are slice-vld
     if self.NSI.get('vldr-list'):
-      # Preparing the dict to stitch the NS to the Networks (VLDs)
-      mapping = {}
-      network_functions_list = []
-      virtual_links_list = []
-      
-      ## 'network_functions' object creation
-      for nsr_place_item in nsr_item['nsr-placement']:
-        net_funct = {}
-        net_funct['vnf_id'] = nsr_place_item['nsd-comp-ref']
-        net_funct['vim_id'] = nsr_place_item['vim-id']
-        network_functions_list.append(net_funct)
-      mapping['network_functions'] = network_functions_list
-      
       ## 'virtual_links' object creation
       # for each nsr, checks its vlds and looks for its information in vldr-list
       for vld_nsr_item in nsr_item['vld']:
@@ -132,11 +133,12 @@ class thread_ns_instantiate(Thread):
               virt_link['vim_id'] = vim_id_item
               virtual_links_list.append(virt_link)
       
-      mapping['virtual_links'] = virtual_links_list
-      
-      #all the previous information into the mapping dict
-      data['mapping'] = mapping
+    mapping['virtual_links'] = virtual_links_list
 
+    #all the previous information into the mapping dict
+    data['mapping'] = mapping
+
+    ### STEP_3: Creates the extra parameters for the requests: slice-vld, ingresses, egresses, SLA
     if (nsr_item['sla-ref'] != "None"):
       data['sla_id'] = nsr_item['sla-ref']
     else:
@@ -162,7 +164,7 @@ class thread_ns_instantiate(Thread):
           else:
             data['params'] = []
   
-    # calls the function towards the GTK
+    # STEP_4: Calls the function towards the GTK
     LOG.info("NS Instantiation request JSON: " + str(data))
     instantiation_response = mapper.net_serv_instantiate(data)
     return instantiation_response
@@ -1363,6 +1365,7 @@ def nsi_placement(new_nsir, request_nsi_json):
       nsr_placement_list = []
       req_core = req_mem = req_sto = 0
       nsd_obj = mapper.get_nsd(nsr_item['subnet-nsdId-ref'])
+      LOG.info("NSD record to check: "+str(nsd_obj))
       if nsd_obj:
         # prepares the nsr-placement object and gathers the VIMS resources values
         for vnfd_item in nsd_obj['nsd']['network_functions']:
@@ -1543,21 +1546,28 @@ def nsi_placement(new_nsir, request_nsi_json):
 
   # SLICE PLACEMENT: adds all the VIMs IDs into the slice record 'datacenter' key.
   nsi_datacenter_list = []
-  for vldr_item in new_nsir['vldr-list']:
-    for vim_net_stack_item in vldr_item['vim-net-stack']:
-      for vimAccountId_item in vim_net_stack_item['vimAccountId']:
-        #if empty, add the first VIM
-        if not nsi_datacenter_list:
-          nsi_datacenter_list.append(vimAccountId_item['vim-id'])
-        else:
-          existing_vim = False
-          for nsi_datacenter_item in nsi_datacenter_list:
-            if nsi_datacenter_item == vimAccountId_item['vim-id']:
-              existing_vim = True
-              break
-          
-          if existing_vim == False:
+  if new_nsir['vldr-list']:
+    for vldr_item in new_nsir['vldr-list']:
+      for vim_net_stack_item in vldr_item['vim-net-stack']:
+        for vimAccountId_item in vim_net_stack_item['vimAccountId']:
+          #if empty, add the first VIM
+          if not nsi_datacenter_list:
             nsi_datacenter_list.append(vimAccountId_item['vim-id'])
+          else:
+            existing_vim = False
+            for nsi_datacenter_item in nsi_datacenter_list:
+              if nsi_datacenter_item == vimAccountId_item['vim-id']:
+                existing_vim = True
+                break
+            
+            if existing_vim == False:
+              nsi_datacenter_list.append(vimAccountId_item['vim-id'])
+  else:
+    for nsr_item in new_nsir['nsr-list']:
+      for nsr_placement_item in nsr_item['nsr-placement']:
+        if nsr_placement_item['vim-id'] not in nsi_datacenter_list:
+          nsi_datacenter_list.append(nsr_placement_item['vim-id'])
+
   
   new_nsir['datacenter'] = nsi_datacenter_list
   return new_nsir, 200
