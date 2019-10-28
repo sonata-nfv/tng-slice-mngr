@@ -157,7 +157,7 @@ class thread_ns_instantiate(Thread):
     if self.NSI.get('_instantiation_params'):
       for _ip_item in self.NSI['_instantiation_params']:
         if nsr_item['subnet-ref'] == _ip_item['subnet_id']:
-          if _ip_item-get('params'):
+          if _ip_item.get('params'):
             data['params'] = _ip_item['params']
           else:
             data['params'] = []
@@ -611,6 +611,7 @@ class thread_ns_instantiate(Thread):
       mutex_slice2db_access.release()
       
       # if all networks are well created, enters into the NSs instantiation step
+      #TODO: change this condition for one base on the NSR status being INSTANTIATING
       if network_ready:
         LOG.info("Processing all Network Service Instances for slice: " + str(self.NSI['id']))
         # Waits until all the NSs are instantiated/ready or error
