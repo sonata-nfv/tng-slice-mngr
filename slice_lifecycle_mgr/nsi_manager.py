@@ -157,10 +157,13 @@ class thread_ns_instantiate(Thread):
     if self.NSI.get('_instantiation_params'):
       for _ip_item in self.NSI['_instantiation_params']:
         if nsr_item['subnet-ref'] == _ip_item['subnet_id']:
-          if _ip_item['params']:
+          if _ip_item-get('params'):
             data['params'] = _ip_item['params']
+          else:
+            data['params'] = []
   
     # calls the function towards the GTK
+    LOG.info("NS Instantiation request JSON: " + str(data))
     instantiation_response = mapper.net_serv_instantiate(data)
     return instantiation_response
 
