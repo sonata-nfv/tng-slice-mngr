@@ -1222,14 +1222,14 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
         for ip_item in instant_params:
           if ip_item['subnet_id'] == subnet_item['id']:
             # adding the SLA uuid to apply to the slice subnet (NS)
-            if 'sla_name' and 'sla_id' in instant_params:
+            if 'sla_name' and 'sla_id' in ip_item:
               subnet_record['sla-name'] = ip_item['sla_name']
               subnet_record['sla-ref'] = ip_item['sla_id']
             # checking about ingresses
-            if 'ingresses' in instant_params:
+            if 'ingresses' in ip_item:
               subnet_record['ingresses'] = ip_item['ingresses']
             # checking about egresses
-            if 'egresses' in instant_params:
+            if 'egresses' in ip_item:
               subnet_record['egresses'] = ip_item['egresses']
       
       # adding the vld id where each subnet is connected to
