@@ -1,6 +1,6 @@
 {
-  "name": "5GTANGO_noSLA_CommPilot_NST",
-  "description": "NST for the EUCNC Communications Pilot with GOLD SLA.",
+  "name": "5GTANGO_CommPilot_NST",
+  "description": "NST for the Communications Pilot WITHOUT SLA.",
   "vendor": "5gtango",
   "version": "2.0",
   "author": "5GTango",
@@ -17,11 +17,11 @@
       "is-shared": false,
       "ingresses": [
         {
-          "location": "a95d3a8b-c5aa-4982-b0ca-303e0413001b",
+          "location": "9c21ec84-a834-404f-942e-43fa190a8734",
           "nap": "10.10.10.1/32"
         },
         {
-          "location": "70babf81-3d2f-4a8a-802c-a454ffbf1966",
+          "location": "273c4fff-3c5f-406e-a1ee-450099d3a60c",
           "nap": "10.10.10.2/32"
         }
       ],
