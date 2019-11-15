@@ -1200,7 +1200,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
       subnet_record['isshared'] = subnet_item['is-shared']
       
       # Checks if the subnet item in the NST has SLA, ingresses or egresses information
-      if all(key in subnet_item for key in ('sla-name', 'sla-ref')):
+      if 'sla_name' and 'sla_id' in subnet_item:
         subnet_record['sla-name'] = subnet_item['sla-name']
         subnet_record['sla-ref'] = subnet_item['sla-ref']
       else:
@@ -1222,7 +1222,7 @@ def add_subnets(new_nsir, nst_json, request_nsi_json):
         for ip_item in instant_params:
           if ip_item['subnet_id'] == subnet_item['id']:
             # adding the SLA uuid to apply to the slice subnet (NS)
-            if all(key in instant_params for key in ('sla_id', 'sla_name')):
+            if 'sla_name' and 'sla_id' in instant_params:
               subnet_record['sla-name'] = ip_item['sla_name']
               subnet_record['sla-ref'] = ip_item['sla_id']
             # checking about ingresses
