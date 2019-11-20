@@ -786,7 +786,7 @@ class thread_ns_terminate(Thread):
       del jsonNSI["uuid"]
 
       # updates nsir fields
-      jsonNSI['updateTime'] = jsonNSI['terminateTime']
+      jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
       if jsonNSI['nsi-status'] == "TERMINATING":
         jsonNSI['nsi-status'] = "TERMINATED"
       
