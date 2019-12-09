@@ -404,7 +404,7 @@ class thread_ns_instantiate(Thread):
       # calls the function towards the GTK
       termination_response = mapper.net_serv_terminate(data)
 
-      if termination_response[1] == 201:
+      if termination_response[1] in [200, 201]:
         for nsr_item in self.NSI['nsr-list']:
           if nsrid_item == nsr_item['nsrId']:
             nsr_item['working-status'] == 'TERMINATING'
