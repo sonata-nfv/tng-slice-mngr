@@ -776,7 +776,7 @@ class thread_ns_terminate(Thread):
     # calls the function towards the GTK
     termination_response = mapper.net_serv_terminate(data)
 
-    return termination_response, 201
+    return termination_response[0], termination_response[1]
   
   def update_nsi_notify_terminate(self):
     mutex_slice2db_access.acquire()

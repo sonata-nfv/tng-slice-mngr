@@ -306,7 +306,7 @@ def net_serv_terminate(service_data):
     jsonresponse = json.loads(response.text)
   else:
     jsonresponse = {'http_code': response.status_code,'message': response.json()}
-  return jsonresponse
+  return jsonresponse, response.status_code
 
 # POST to call the Gk when a slice is READY (either instantiated or terminated)
 def sliceUpdated(slice_callback, json_slice_info):
