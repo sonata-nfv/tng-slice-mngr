@@ -661,7 +661,7 @@ class thread_ns_instantiate(Thread):
         # FUTURE TODO: ensure this "undo" process is well done.         
         # undoes everything done until this moment (nsrs, and vlds)
         if nsr_error == True or wim_ready == False:
-          LOG.info("ERROR while instantiating slice "+str(self.NSI['id'])+", undoing all the created objects (nsrs and vlds).")
+          LOG.error("ERROR while instantiating slice "+str(self.NSI['id'])+", undoing all the created objects (nsrs and vlds).")
           # acquires mutex to have unique access to the nsi (repositories)
           mutex_slice2db_access.acquire()
           
