@@ -508,6 +508,7 @@ class thread_ns_instantiate(Thread):
       else:
         # errors are managed in the main thread function (run)
         jsonNSI['nsi-status'] = 'ERROR'
+        #TODO: check if any nsr is being instantiated and wait until 
       
       # sends the updated NetSlice instance to the repositories
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
@@ -629,7 +630,7 @@ class thread_ns_instantiate(Thread):
           
           # if all services are instantiated, break the while and proceed with the last steps
           if nsrs_instantiated:
-            LOG.info("ALL Network Service Instantiations belonging to slice: " +str(self.NSI['id'])+ " were well processed.")
+            LOG.info("ALL Network Service Instantiations belonging to slice: " +str(self.NSI['id'])+ " were processed.")
             break
       
           time.sleep(15)
@@ -661,7 +662,7 @@ class thread_ns_instantiate(Thread):
         # FUTURE TODO: ensure this "undo" process is well done.         
         # undoes everything done until this moment (nsrs, and vlds)
         if nsr_error == True or wim_ready == False:
-          LOG.info("ERROR while instantiating slice "+str(self.NSI['id'])+", undoing all the created objects (nsrs and vlds).")
+          LOG.error("ERROR while instantiating slice "+str(self.NSI['id'])+", undoing all the created objects (nsrs and vlds).")
           # acquires mutex to have unique access to the nsi (repositories)
           mutex_slice2db_access.acquire()
           

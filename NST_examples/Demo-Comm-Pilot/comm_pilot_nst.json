@@ -15,16 +15,7 @@
       "nsd-vendor": "quobis",
       "nsd-version": "0.5",
       "is-shared": false,
-      "ingresses": [
-        {
-          "location": "9c21ec84-a834-404f-942e-43fa190a8734",
-          "nap": "10.10.10.1/32"
-        },
-        {
-          "location": "273c4fff-3c5f-406e-a1ee-450099d3a60c",
-          "nap": "10.10.10.2/32"
-        }
-      ],
+      "ingresses": [],
       "egresses": []
     }
   ],
