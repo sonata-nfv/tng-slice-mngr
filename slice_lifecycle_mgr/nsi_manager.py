@@ -508,6 +508,7 @@ class thread_ns_instantiate(Thread):
       else:
         # errors are managed in the main thread function (run)
         jsonNSI['nsi-status'] = 'ERROR'
+        #TODO: check if any nsr is being instantiated and wait until 
       
       # sends the updated NetSlice instance to the repositories
       jsonNSI['updateTime'] = str(datetime.datetime.now().isoformat())
@@ -629,7 +630,7 @@ class thread_ns_instantiate(Thread):
           
           # if all services are instantiated, break the while and proceed with the last steps
           if nsrs_instantiated:
-            LOG.info("ALL Network Service Instantiations belonging to slice: " +str(self.NSI['id'])+ " were well processed.")
+            LOG.info("ALL Network Service Instantiations belonging to slice: " +str(self.NSI['id'])+ " were processed.")
             break
       
           time.sleep(15)
