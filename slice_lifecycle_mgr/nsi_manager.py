@@ -42,6 +42,7 @@ import slice2ns_mapper.mapper as mapper                             # sends requ
 import slice_lifecycle_mgr.nsi_manager2repo as nsi_repo             # sends requests to the repositories
 import slice_lifecycle_mgr.nst_manager2catalogue as nst_catalogue   # sends requests to the catalogues
 from logger import TangoLogger
+from special_log import log_settings
 
 # INFORMATION
 # mutex used to ensure one single access to ddbb (repositories) for the nsi records creation/update/removal
@@ -527,6 +528,7 @@ class thread_ns_instantiate(Thread):
       json_slice_info['instance_uuid'] = jsonNSI['id']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+      log_settings.deplogger.debug("SONATA_SLICER_" + str(self.NSI['id']) + "_NSI_INSTANTIATION_END " + str(datetime.datetime.now().timestamp()))
       LOG.info("Network Slice INSTANTIATION with ID: "+str(self.NSI['id'])+" finished and tng-gtk notified about it.")
   
   # basic function that manages the whole instantiation.
@@ -829,6 +831,8 @@ class thread_ns_terminate(Thread):
       json_slice_info['instance_uuid'] = jsonNSI['id']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
+      
+      log_settings.deplogger.debug("SONATA_SLICER_" + str(self.NSI['id']) + "_NSI_TERMINATE_END " + str(datetime.datetime.now().timestamp()))
       LOG.info("Network Slice TERMINATION with ID: "+str(self.NSI['id'])+" finished and tng-gtk notified about it.")
 
   def run(self):
@@ -1071,6 +1075,9 @@ class update_slice_termination(Thread):
 # Network Slice Instance Object Creation
 def create_nsi(nsi_json):
   LOG.info("Creating a new Network Slice record before instantiating it.")
+  nsi_uuid = str(uuid.uuid4())
+  log_settings.deplogger.debug("SONATA_SLICER_" + nsi_uuid + "_NSI_INSTANTIATION_START " + str(datetime.datetime.now().timestamp()))
+ 
   nstId = nsi_json['nstId']
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
   if catalogue_response.get('nstd'):
@@ -1099,7 +1106,7 @@ def create_nsi(nsi_json):
    
   # creates NSI with the received information
   LOG.info("Creating NSI record basic structure.")
-  new_nsir = add_basic_nsi_info(nst_json, nsi_json)
+  new_nsir = add_basic_nsi_info(nst_json, nsi_json, nsi_uuid)
   
   # adds the NetServices (subnets) information within the NSI record
   LOG.info("Adding subnets into the NSI structure.")
@@ -1136,9 +1143,9 @@ def create_nsi(nsi_json):
   return nsirepo_jsonresponse
   
 # Basic NSI structure
-def add_basic_nsi_info(nst_json, nsi_json):
+def add_basic_nsi_info(nst_json, nsi_json, nsi_uuid):
   nsir_dict = {}
-  nsir_dict['id'] = str(uuid.uuid4())
+  nsir_dict['id'] = nsi_uuid
   nsir_dict['name'] = nsi_json['name']
   if nsi_json.get('description'):
     nsir_dict['description'] = nsi_json['description']
@@ -1590,6 +1597,7 @@ def update_instantiating_nsi(nsiId, request_json):
 # Does all the process to terminate the NSI
 def terminate_nsi(nsiId, TerminOrder):
   LOG.info("Updating the Network Slice Record for the termination procedure.")
+  log_settings.deplogger.debug("SONATA_SLICER_" + str(nsiId) + "_NSI_TERMINATE_START " + str(datetime.datetime.now().timestamp()))
   mutex_slice2db_access.acquire()
   try:
     terminate_nsi = nsi_repo.get_saved_nsi(nsiId)
