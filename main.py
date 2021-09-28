@@ -43,6 +43,7 @@ import slice_lifecycle_mgr.validate_incoming_json as json_validator
 import slice2ns_mapper.mapper as mapper
 from database import database as db
 from logger import TangoLogger
+from special_log import log_settings
 
 #Log definition to make the slice logs idetified among the other possible 5GTango components.
 LOG = TangoLogger.getLogger(__name__, log_level=logging.DEBUG, log_json=True)
@@ -212,6 +213,9 @@ if __name__ == '__main__':
   config = ConfigParser()
   config.read(args.conf_file)
   db.settings = config
+
+  # initializes the logging for the deployment/terminate actions.
+  log_settings.init_logging()
 
   # RUN MAIN SERVER THREAD
   app.run(debug=True, host='0.0.0.0', port=os.environ.get("SLICE_MGR_PORT"))
