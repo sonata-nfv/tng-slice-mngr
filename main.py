@@ -133,7 +133,6 @@ def delete_slice_template(nstId):
 @app.route(API_ROOT+API_NSILCM+API_VERSION+API_NSI, methods=['POST'])
 def create_slice_instance():
   LOG.info("Request to create a Network Slice Instantiation with the following information: " + str(request.json))
-  log_settings.deplogger.debug(str(request.json))
   #log_settings.deplogger.debug("SONATA_SLICER_" + nsi_uuid + "SONATA_NSI_INSTANTIATION_START " + str(datetime.datetime.now().timestamp()))
   
   # validates the fields with uuids (if they are right UUIDv4 format), 400 Bad request / 201 ok

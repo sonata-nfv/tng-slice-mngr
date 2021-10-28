@@ -528,7 +528,7 @@ class thread_ns_instantiate(Thread):
       json_slice_info['instance_uuid'] = jsonNSI['id']
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
-      log_settings.deplogger.debug("SONATA_SLICER_" + str(self.NSI['id']) + "_NSI_INSTANTIATION_END " + str(datetime.datetime.now().timestamp()))
+      log_settings.deplogger.debug("SONATA_SLICER_" + str(self.NSI['nst-ref']) + "SONATA_NSI_INSTANTIATION_END " + str(datetime.datetime.now().timestamp()))
       LOG.info("Network Slice INSTANTIATION with ID: "+str(self.NSI['id'])+" finished and tng-gtk notified about it.")
   
   # basic function that manages the whole instantiation.
@@ -832,7 +832,7 @@ class thread_ns_terminate(Thread):
 
       thread_response = mapper.sliceUpdated(slice_callback, json_slice_info)
       
-      log_settings.deplogger.debug("SONATA_SLICER_" + str(self.NSI['id']) + "_NSI_TERMINATE_END " + str(datetime.datetime.now().timestamp()))
+      log_settings.deplogger.debug("SONATA_SLICER_" + str(self.NSI['nst-ref']) + "SONATA_NSI_TERMINATE_END " + str(datetime.datetime.now().timestamp()))
       LOG.info("Network Slice TERMINATION with ID: "+str(self.NSI['id'])+" finished and tng-gtk notified about it.")
 
   def run(self):
@@ -1076,9 +1076,9 @@ class update_slice_termination(Thread):
 def create_nsi(nsi_json):
   LOG.info("Creating a new Network Slice record before instantiating it.")
   nsi_uuid = str(uuid.uuid4())
-  log_settings.deplogger.debug("SONATA_SLICER_" + nsi_uuid + "_NSI_INSTANTIATION_START " + str(datetime.datetime.now().timestamp()))
- 
   nstId = nsi_json['nstId']
+  log_settings.deplogger.debug("SONATA_SLICER_" + str(nstId) + "SONATA_NSI_INSTANTIATION_START " + str(datetime.datetime.now().timestamp()))
+ 
   catalogue_response = nst_catalogue.get_saved_nst(nstId)
   if catalogue_response.get('nstd'):
     nst_json = catalogue_response['nstd']
@@ -1597,10 +1597,10 @@ def update_instantiating_nsi(nsiId, request_json):
 # Does all the process to terminate the NSI
 def terminate_nsi(nsiId, TerminOrder):
   LOG.info("Updating the Network Slice Record for the termination procedure.")
-  log_settings.deplogger.debug("SONATA_SLICER_" + str(nsiId) + "_NSI_TERMINATE_START " + str(datetime.datetime.now().timestamp()))
   mutex_slice2db_access.acquire()
   try:
     terminate_nsi = nsi_repo.get_saved_nsi(nsiId)
+    log_settings.deplogger.debug("SONATA_SLICER_" + str(terminate_nsi['nst-ref']) + "SONATA_NSI_TERMINATE_START " + str(datetime.datetime.now().timestamp()))
     if terminate_nsi:
       # if nsi is not in TERMINATING/TERMINATED
       if terminate_nsi['nsi-status'] in ["INSTANTIATED", "INSTANTIATING", "READY", "ERROR"]:

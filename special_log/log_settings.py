@@ -14,7 +14,7 @@ def init_logging():
     c_handler = logging.StreamHandler()
     c_handler.setLevel(logging.DEBUG)
     date = datetime.date.today()
-    f_handler = logging.FileHandler('deployments_log_'+str(date)+'.log')
+    f_handler = logging.FileHandler('sonata_filebeat.log')
     f_handler.setLevel(logging.DEBUG)
 
     # Create formatters and add it to handlers
